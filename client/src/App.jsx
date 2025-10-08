@@ -1,35 +1,111 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import StudentDashboard from './pages/StudentDashboard';
+import TeacherDashboard from './pages/TeacherDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import PrincipalDashboard from './pages/PrincipalDashboard';
+import AdminRegisterUser from './pages/AdminRegisterUser';
+import AdminManageUsers from './pages/AdminManageUsers';
+import TeacherRegisterStudent from './pages/TeacherRegisterStudent';
+
+const RootRedirect = () => {
+  const { isAuthenticated, user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="btn-loading" style={{ width: '40px', height: '40px' }}></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated && user) {
+    return <Navigate to={`/${user.role}/dashboard`} replace />;
+  }
+
+  return <Navigate to="/login" replace />;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          <Route
+            path="/student/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/principal/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['principal']}>
+                <PrincipalDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/register-user"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminRegisterUser />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/manage-users"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminManageUsers />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/register-student"
+            element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <TeacherRegisterStudent />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
