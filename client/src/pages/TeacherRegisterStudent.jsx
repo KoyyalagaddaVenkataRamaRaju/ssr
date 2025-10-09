@@ -131,7 +131,7 @@ const TeacherRegisterStudent = () => {
       </div>
 
       <div className="register-content">
-        <Card>
+
           <form className="register-form" onSubmit={handleSubmit}>
             <div className="form-section">
               <h3 className="section-title">Student Information</h3>
@@ -249,9 +249,6 @@ const TeacherRegisterStudent = () => {
               {loading ? 'Registering...' : 'Register Student'}
             </button>
           </form>
-        </Card>
-
-        <Card>
           <h3 className="section-title">My Registered Students ({myStudents.length})</h3>
           <div className="users-table">
             {myStudents.length > 0 ? (
@@ -281,7 +278,6 @@ const TeacherRegisterStudent = () => {
               <p className="no-data">No students registered yet</p>
             )}
           </div>
-        </Card>
       </div>
     </div>
   );

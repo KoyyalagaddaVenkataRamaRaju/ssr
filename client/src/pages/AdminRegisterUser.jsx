@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { UserPlus, CheckCircle, AlertCircle } from 'lucide-react';
 import { adminRegisterUser, getAllUsers } from '../services/authService';
 import Card from '../components/Card';
+import '../styles/register.css';
+
 
 const AdminRegisterUser = () => {
   const [formData, setFormData] = useState({
@@ -105,7 +107,7 @@ const AdminRegisterUser = () => {
       </div>
 
       <div className="register-content">
-        <Card>
+
           <form className="register-form" onSubmit={handleSubmit}>
             <div className="form-section">
               <h3 className="section-title">Basic Information</h3>
@@ -277,9 +279,8 @@ const AdminRegisterUser = () => {
               {loading ? 'Registering...' : 'Register User'}
             </button>
           </form>
-        </Card>
 
-        <Card>
+    
           <h3 className="section-title">Recently Created Users</h3>
           <div className="users-table">
             {recentUsers.length > 0 ? (
@@ -311,7 +312,7 @@ const AdminRegisterUser = () => {
               <p className="no-data">No users created yet</p>
             )}
           </div>
-        </Card>
+    
       </div>
     </div>
   );
