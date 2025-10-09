@@ -10,6 +10,7 @@ import PrincipalDashboard from './pages/PrincipalDashboard';
 import AdminRegisterUser from './pages/AdminRegisterUser';
 import AdminManageUsers from './pages/AdminManageUsers';
 import TeacherRegisterStudent from './pages/TeacherRegisterStudent';
+import Navbar from './components/Navbar';
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -34,7 +35,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<RootRedirect />} />
+          <Route path="/" element={<Navbar/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 

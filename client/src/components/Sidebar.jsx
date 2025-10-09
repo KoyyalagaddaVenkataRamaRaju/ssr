@@ -62,7 +62,7 @@ const Sidebar = () => {
     <div className="dashboard-sidebar">
       <div className="sidebar-header">
         <GraduationCap className="sidebar-logo" size={40} />
-        <h2 className="sidebar-title">CMS</h2>
+        <h2 className="sidebar-title">SSR</h2>
       </div>
       <nav className="sidebar-nav">
         {navItems.map((item, index) => (
