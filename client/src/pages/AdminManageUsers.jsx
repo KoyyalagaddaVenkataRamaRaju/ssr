@@ -91,30 +91,29 @@ const AdminManageUsers = () => {
       </div>
 
       <div className="stats-grid">
-        <Card>
+
           <div className="stat-card">
             <div className="stat-value">{stats.total}</div>
             <div className="stat-label">Total Users</div>
           </div>
-        </Card>
-        <Card>
+
+
           <div className="stat-card">
             <div className="stat-value">{stats.students}</div>
             <div className="stat-label">Students</div>
           </div>
-        </Card>
-        <Card>
+
           <div className="stat-card">
             <div className="stat-value">{stats.teachers}</div>
             <div className="stat-label">Teachers</div>
           </div>
-        </Card>
-        <Card>
+
+
           <div className="stat-card">
             <div className="stat-value">{stats.admins + stats.principals}</div>
             <div className="stat-label">Administrators</div>
           </div>
-        </Card>
+ 
       </div>
 
       {message.text && (
@@ -124,7 +123,7 @@ const AdminManageUsers = () => {
         </div>
       )}
 
-      <Card>
+
         <div className="filters-section">
           <div className="filters-header">
             <Filter size={20} />
@@ -247,7 +246,6 @@ const AdminManageUsers = () => {
             </div>
           )}
         </div>
-      </Card>
     </div>
   );
 };
