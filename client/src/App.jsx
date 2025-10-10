@@ -1,16 +1,23 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import Login from './pages/Login';
-import ForgotPassword from './pages/ForgotPassword';
-import StudentDashboard from './pages/StudentDashboard';
-import TeacherDashboard from './pages/TeacherDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import PrincipalDashboard from './pages/PrincipalDashboard';
-import AdminRegisterUser from './pages/AdminRegisterUser';
-import AdminManageUsers from './pages/AdminManageUsers';
-import TeacherRegisterStudent from './pages/TeacherRegisterStudent';
-import Navbar from './components/Navbar';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import StudentDashboard from "./pages/StudentDashboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import PrincipalDashboard from "./pages/PrincipalDashboard";
+import AdminRegisterUser from "./pages/AdminRegisterUser";
+import AdminManageUsers from "./pages/AdminManageUsers";
+import TeacherRegisterStudent from "./pages/TeacherRegisterStudent";
+import Home from "./pages/Home";
+import ContactUs from "./pages/ContactUs";
+import AdminHeroCarousel from "./pages/AdminHeroCarousel";
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -18,7 +25,10 @@ const RootRedirect = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="btn-loading" style={{ width: '40px', height: '40px' }}></div>
+        <div
+          className="btn-loading"
+          style={{ width: "40px", height: "40px" }}
+        ></div>
       </div>
     );
   }
@@ -35,14 +45,15 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Navbar/>} />
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/contact" element={<ContactUs />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           <Route
             path="/student/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['student']}>
+              <ProtectedRoute allowedRoles={["student"]}>
                 <StudentDashboard />
               </ProtectedRoute>
             }
@@ -51,7 +62,7 @@ function App() {
           <Route
             path="/teacher/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['teacher']}>
+              <ProtectedRoute allowedRoles={["teacher"]}>
                 <TeacherDashboard />
               </ProtectedRoute>
             }
@@ -60,7 +71,7 @@ function App() {
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />
               </ProtectedRoute>
             }
@@ -69,7 +80,7 @@ function App() {
           <Route
             path="/principal/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['principal']}>
+              <ProtectedRoute allowedRoles={["principal"]}>
                 <PrincipalDashboard />
               </ProtectedRoute>
             }
@@ -78,7 +89,7 @@ function App() {
           <Route
             path="/admin/register-user"
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminRegisterUser />
               </ProtectedRoute>
             }
@@ -87,7 +98,7 @@ function App() {
           <Route
             path="/admin/manage-users"
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminManageUsers />
               </ProtectedRoute>
             }
@@ -96,8 +107,16 @@ function App() {
           <Route
             path="/teacher/register-student"
             element={
-              <ProtectedRoute allowedRoles={['teacher']}>
+              <ProtectedRoute allowedRoles={["teacher"]}>
                 <TeacherRegisterStudent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/hero-carousel"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminHeroCarousel/>
               </ProtectedRoute>
             }
           />
