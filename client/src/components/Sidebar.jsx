@@ -1,4 +1,4 @@
-import { GraduationCap, Home, Users, BookOpen, Calendar, FileText, Settings, UserPlus } from 'lucide-react';
+import { GraduationCap, Home, Users, BookOpen, Calendar, FileText, Settings, UserPlus, PlusSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -25,6 +25,7 @@ const Sidebar = () => {
           ...commonItems,
           { name: 'Register User', icon: UserPlus, path: '/admin/register-user' },
           { name: 'Manage Users', icon: Users, path: '/admin/manage-users' },
+          { name: 'Register Department', icon: PlusSquare, path: '/admin/register-department' }, // Added Department Registration
           { name: 'Departments', icon: BookOpen, path: '#' },
           { name: 'Reports', icon: FileText, path: '#' },
           { name: 'Settings', icon: Settings, path: '#' },

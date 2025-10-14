@@ -1,0 +1,148 @@
+import { useState, useEffect } from 'react';
+import { PlusSquare, CheckCircle, AlertCircle } from 'lucide-react';
+import { adminRegisterDepartement } from '../services/departmentService'; // Import department service
+import Card from '../components/Card';
+import '../styles/register.css';
+
+const AdminRegisterDepartment = () => {
+  const [formData, setFormData] = useState({
+    departmentName: '',
+    description: '',
+    departmentImage: '', // Consider using a file upload component
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+    setMessage({ type: '', text: '' });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage({ type: '', text: '' });
+
+    if (!formData.departmentName || !formData.description || !formData.departmentImage) {
+      setMessage({ type: 'error', text: 'Please fill in all required fields' });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await adminRegisterDepartement(formData); // Use department service
+
+      if (response.success) {
+        setMessage({ type: 'success', text: 'Department registered successfully!' });
+        setFormData({
+          departmentName: '',
+          description: '',
+          departmentImage: '',
+        });
+      } else {
+        setMessage({ type: 'error', text: response.message || 'Failed to register department.' });
+      }
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error.message || 'Failed to register department. Please try again.',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="register-user-page">
+      <div className="page-header">
+        <h1 className="page-title">
+          <PlusSquare size={32} />
+          Register New Department
+        </h1>
+        <p className="page-subtitle">Create a new department</p>
+      </div>
+
+      <div className="register-content">
+          <form className="register-form" onSubmit={handleSubmit}>
+            <div className="form-section">
+              <h3 className="section-title">Department Information</h3>
+
+              <div className="form-group">
+                <label htmlFor="departmentName" className="form-label">
+                  Department Name <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="departmentName"
+                  name="departmentName"
+                  className="form-input"
+                  placeholder="Enter department name"
+                  value={formData.departmentName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="description" className="form-label">
+                  Description <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="description"
+                  name="description"
+                  className="form-input"
+                  placeholder="Enter description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="departmentImage" className="form-label">
+                  Department Image URL <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="departmentImage"
+                  name="departmentImage"
+                  className="form-input"
+                  placeholder="Enter image URL"
+                  value={formData.departmentImage}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            {message.text && (
+              <div className={`message ${message.type}`}>
+                {message.type === 'success' ? (
+                  <CheckCircle size={20} />
+                ) : (
+                  <AlertCircle size={20} />
+                )}
+                <span>{message.text}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className={`btn btn-primary ${loading ? 'btn-loading' : ''}`}
+              disabled={loading}
+            >
+              {loading ? 'Registering...' : 'Register Department'}
+            </button>
+          </form>
+      </div>
+    </div>
+  );
+};
+
+export default AdminRegisterDepartment;

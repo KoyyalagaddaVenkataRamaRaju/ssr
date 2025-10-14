@@ -11,6 +11,7 @@ import AdminRegisterUser from './pages/AdminRegisterUser';
 import AdminManageUsers from './pages/AdminManageUsers';
 import TeacherRegisterStudent from './pages/TeacherRegisterStudent';
 import Navbar from './components/Navbar';
+import  AdminRegisterDepartment   from './pages/AdminRegisterDepartment';
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -89,6 +90,15 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminManageUsers />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/register-department"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminRegisterDepartment />
               </ProtectedRoute>
             }
           />
