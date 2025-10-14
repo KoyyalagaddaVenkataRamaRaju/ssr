@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -12,29 +12,10 @@ import AdminRegisterUser from './pages/AdminRegisterUser';
 import AdminManageUsers from './pages/AdminManageUsers';
 import TeacherRegisterStudent from './pages/TeacherRegisterStudent';
 import Navbar from './components/Navbar';
-import  AdminRegisterDepartment   from './pages/AdminRegisterDepartment';
-=======
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import StudentDashboard from "./pages/StudentDashboard";
-import TeacherDashboard from "./pages/TeacherDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import PrincipalDashboard from "./pages/PrincipalDashboard";
-import AdminRegisterUser from "./pages/AdminRegisterUser";
-import AdminManageUsers from "./pages/AdminManageUsers";
-import TeacherRegisterStudent from "./pages/TeacherRegisterStudent";
+import AdminRegisterDepartment from './pages/AdminRegisterDepartment';
 import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import AdminHeroCarousel from "./pages/AdminHeroCarousel";
->>>>>>> 5d5970a69958cfd6aff0da3f21db1e94f09f06c8
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();

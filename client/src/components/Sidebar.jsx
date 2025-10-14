@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { GraduationCap, Home, Users, BookOpen, Calendar, FileText, Settings, UserPlus, PlusSquare } from 'lucide-react';
-=======
-import { GraduationCap, Home, Users, BookOpen, Calendar, FileText, Settings, UserPlus, Image } from 'lucide-react';
->>>>>>> 5d5970a69958cfd6aff0da3f21db1e94f09f06c8
+import { GraduationCap, Home, Users, BookOpen, Calendar, FileText, Settings, UserPlus, PlusSquare, Image } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 
