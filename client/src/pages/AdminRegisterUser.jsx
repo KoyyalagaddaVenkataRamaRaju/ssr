@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, CheckCircle, AlertCircle } from 'lucide-react';
 import { adminRegisterUser, getAllUsers } from '../services/authService';
+import { getAllDepartments } from '../services/departmentService'; // Import getAllDepartments
 import Card from '../components/Card';
 import '../styles/register.css';
-
 
 const AdminRegisterUser = () => {
   const [formData, setFormData] = useState({
@@ -21,9 +21,11 @@ const AdminRegisterUser = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [recentUsers, setRecentUsers] = useState([]);
+  const [departments, setDepartments] = useState([]); // State for departments
 
   useEffect(() => {
     fetchRecentUsers();
+    fetchDepartments(); // Fetch departments on component mount
   }, []);
 
   const fetchRecentUsers = async () => {
@@ -34,6 +36,19 @@ const AdminRegisterUser = () => {
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await getAllDepartments();
+      if (response.success) {
+        setDepartments(response.data);
+      } else {
+        console.error('Error fetching departments:', response.message);
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error);
     }
   };
 
@@ -185,15 +200,20 @@ const AdminRegisterUser = () => {
                 <label htmlFor="department" className="form-label">
                   Department
                 </label>
-                <input
-                  type="text"
+                <select
                   id="department"
                   name="department"
                   className="form-input"
-                  placeholder="Enter department"
                   value={formData.department}
                   onChange={handleChange}
-                />
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((department) => (
+                    <option key={department._id} value={department._id}>
+                      {department.departmentName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">

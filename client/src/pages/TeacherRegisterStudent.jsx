@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, CheckCircle, AlertCircle, Lock } from 'lucide-react';
 import { teacherRegisterStudent, getMyStudents } from '../services/authService';
+import { getAllDepartments } from '../services/departmentService'; // Import getAllDepartments
 import { useAuth } from '../context/AuthContext';
 import Card from '../components/Card';
 
@@ -10,7 +11,7 @@ const TeacherRegisterStudent = () => {
     name: '',
     email: '',
     password: '',
-    department: '',
+    department: user?.department || '', // Initialize with teacher's department
     phone: '',
     enrollmentId: '',
   });
@@ -19,6 +20,7 @@ const TeacherRegisterStudent = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [myStudents, setMyStudents] = useState([]);
   const [hasPermission, setHasPermission] = useState(true);
+  const [departments, setDepartments] = useState([]); // Department state
 
   useEffect(() => {
     if (user && user.canRegisterStudents) {
@@ -27,6 +29,7 @@ const TeacherRegisterStudent = () => {
     } else {
       setHasPermission(false);
     }
+    fetchDepartments(); // Fetch departments
   }, [user]);
 
   const fetchMyStudents = async () => {
@@ -37,6 +40,19 @@ const TeacherRegisterStudent = () => {
       }
     } catch (error) {
       console.error('Error fetching students:', error);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await getAllDepartments();
+      if (response.success) {
+        setDepartments(response.data);
+      } else {
+        console.error('Error fetching departments:', response.message);
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error);
     }
   };
 
@@ -53,7 +69,7 @@ const TeacherRegisterStudent = () => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
 
-    if (!formData.name || !formData.email || !formData.password) {
+    if (!formData.name || !formData.email || !formData.password || !formData.department) {
       setMessage({ type: 'error', text: 'Please fill in all required fields' });
       return;
     }
@@ -80,7 +96,7 @@ const TeacherRegisterStudent = () => {
           name: '',
           email: '',
           password: '',
-          department: '',
+          department: user?.department || '', // Keep teacher's department
           phone: '',
           enrollmentId: '',
         });
@@ -186,17 +202,24 @@ const TeacherRegisterStudent = () => {
 
               <div className="form-group">
                 <label htmlFor="department" className="form-label">
-                  Department
+                  Department <span className="required">*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   id="department"
                   name="department"
                   className="form-input"
-                  placeholder="Enter department"
                   value={formData.department}
                   onChange={handleChange}
-                />
+                  required // Make department required
+                  disabled={true} // Disable the select element
+                >
+                  {/* Display only the teacher's department */}
+                  {departments.filter(dept => dept._id === user?.department).map(department => (
+                    <option key={department._id} value={department._id}>
+                      {department.departmentName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">

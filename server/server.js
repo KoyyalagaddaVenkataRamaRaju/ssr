@@ -10,6 +10,7 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/user.js';
 import registrationRoutes from './routes/registration.js';
+import departmentRoutes from './routes/department.js';
 import heroCarouselRoutes from './routes/heroCarousel.js';
 
 // Load environment variables
@@ -51,6 +52,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api', registrationRoutes);
+app.use('/api/departments', departmentRoutes);
 app.use('/api/hero-carousel', heroCarouselRoutes);
 
 // 404 route for unknown endpoints

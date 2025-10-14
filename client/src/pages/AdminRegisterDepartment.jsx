@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PlusSquare, CheckCircle, AlertCircle } from 'lucide-react';
-import { adminRegisterDepartement } from '../services/departmentService'; // Import department service
+import { adminRegisterDepartement, getAllDepartments } from '../services/departmentService';
 import Card from '../components/Card';
 import '../styles/register.css';
 
@@ -8,11 +8,16 @@ const AdminRegisterDepartment = () => {
   const [formData, setFormData] = useState({
     departmentName: '',
     description: '',
-    departmentImage: '', // Consider using a file upload component
+    departmentImage: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [departments, setDepartments] = useState([]); // State to store departments
+
+  useEffect(() => {
+    fetchDepartments(); // Fetch departments on component mount
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,7 +40,7 @@ const AdminRegisterDepartment = () => {
     setLoading(true);
 
     try {
-      const response = await adminRegisterDepartement(formData); // Use department service
+      const response = await adminRegisterDepartement(formData);
 
       if (response.success) {
         setMessage({ type: 'success', text: 'Department registered successfully!' });
@@ -44,6 +49,7 @@ const AdminRegisterDepartment = () => {
           description: '',
           departmentImage: '',
         });
+        fetchDepartments(); // Refresh department list after successful creation
       } else {
         setMessage({ type: 'error', text: response.message || 'Failed to register department.' });
       }
@@ -54,6 +60,19 @@ const AdminRegisterDepartment = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await getAllDepartments();
+      if (response.success) {
+        setDepartments(response.data); // Assuming the API returns an array of departments
+      } else {
+        setMessage({ type: 'error', text: response.message || 'Failed to fetch departments.' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to fetch departments. Please try again.' });
     }
   };
 
@@ -140,6 +159,30 @@ const AdminRegisterDepartment = () => {
               {loading ? 'Registering...' : 'Register Department'}
             </button>
           </form>
+
+        {/* Display Departments */}
+          <h3 className="section-title">Registered Departments</h3>
+          <div className="department-list">
+            {departments.length > 0 ? (
+              <div className="department-grid">
+                {departments.map((department) => (
+                  <div key={department._id} className="department-item">
+                    <img
+                      src={department.departmentImage}
+                      alt={department.departmentName}
+                      className="department-image"
+                    />
+                    <div className="department-details">
+                      <h4 className="department-name">{department.departmentName}</h4>
+                      <p className="department-description">{department.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No departments registered yet.</p>
+            )}
+          </div>
       </div>
     </div>
   );
