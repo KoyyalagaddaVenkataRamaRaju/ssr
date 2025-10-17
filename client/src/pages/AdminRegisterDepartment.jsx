@@ -3,6 +3,7 @@ import { PlusSquare, CheckCircle, AlertCircle } from 'lucide-react';
 import { adminRegisterDepartement, getAllDepartments } from '../services/departmentService';
 import Card from '../components/Card';
 import '../styles/register.css';
+import { Link } from 'react-router-dom'; // Import Link
 
 const AdminRegisterDepartment = () => {
   const [formData, setFormData] = useState({
@@ -166,6 +167,8 @@ const AdminRegisterDepartment = () => {
             {departments.length > 0 ? (
               <div className="department-grid">
                 {departments.map((department) => (
+                  <div>
+                  <Link to={`/departments/${department._id}`}>
                   <div key={department._id} className="department-item">
                     <img
                       src={department.departmentImage}
@@ -173,9 +176,13 @@ const AdminRegisterDepartment = () => {
                       className="department-image"
                     />
                     <div className="department-details">
-                      <h4 className="department-name">{department.departmentName}</h4>
+                     
+                        <h4 className="department-name">{department.departmentName}</h4>
+        
                       <p className="department-description">{department.description}</p>
                     </div>
+                    </div>
+                    </Link>
                   </div>
                 ))}
               </div>

@@ -1,5 +1,5 @@
 import Department from '../models/Departement.js';
-
+import Batch from '../models/Batch.js';
 
 export const adminRegisterDepartment = async (req, res) => {
   try {
@@ -66,13 +66,102 @@ export const adminRegisterDepartment = async (req, res) => {
   }
 };
 
-
 export const getAllDepartments = async (req, res) => {
   try {
     const departments = await Department.find({});
     res.status(200).json({
       success: true,
       data: departments,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+export const getDepartmentById = async (req, res) => {
+  try {
+    const department = await Department.findById(req.params.id);
+
+    if (!department) {
+      return res.status(404).json({
+        success: false,
+        message: 'Department not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: department,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+export const createBatch = async (req, res) => {
+  try {
+    const { batchName, numberOfSections } = req.body;
+    const departmentId = req.params.id;
+
+    const department = await Department.findById(departmentId);
+
+    if (!department) {
+      return res.status(404).json({
+        success: false,
+        message: 'Department not found',
+      });
+    }
+
+    const batch = await Batch.create({
+      batchName,
+      department: departmentId,
+      numberOfSections,
+    });
+
+    department.batches.push(batch._id);
+    await department.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Batch created successfully',
+      data: batch,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+export const getAllBatchesByDepartmentId = async (req, res) => {
+  try {
+    const departmentId = req.params.id;
+
+    const department = await Department.findById(departmentId).populate('batches');
+
+    if (!department) {
+      return res.status(404).json({
+        success: false,
+        message: 'Department not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: department.batches,
     });
   } catch (error) {
     console.error(error);

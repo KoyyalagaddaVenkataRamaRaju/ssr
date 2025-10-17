@@ -31,6 +31,7 @@ const Sidebar = () => {
           {name:'HomeCarousel',icon:Image,path:'/admin/hero-carousel'},
           { name: 'Reports', icon: FileText, path: '#' },
           { name: 'Settings', icon: Settings, path: '#' },
+           {name:'Attendance ',icon:FileText,path:'/teacher/attendance'}
         ];
       case 'teacher':
         const teacherItems = [
@@ -39,6 +40,7 @@ const Sidebar = () => {
           { name: 'Students', icon: Users, path: '#' },
           { name: 'Attendance', icon: Calendar, path: '#' },
           { name: 'Grades', icon: FileText, path: '#' },
+    
         ];
 
         if (user?.canRegisterStudents) {
