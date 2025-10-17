@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import { useState, useEffect } from 'react';
 import { PlusSquare, CheckCircle, AlertCircle } from 'lucide-react';
 import { adminRegisterDepartement, getAllDepartments } from '../services/departmentService';
@@ -169,7 +167,7 @@ const AdminRegisterDepartment = () => {
             {departments.length > 0 ? (
               <div className="department-grid">
                 {departments.map((department) => (
-                  <div>
+                  <div key={department._id}>
                   <Link to={`/departments/${department._id}`}>
                   <div key={department._id} className="department-item">
                     <img
@@ -198,4 +196,3 @@ const AdminRegisterDepartment = () => {
 };
 
 export default AdminRegisterDepartment;
->>>>>>> 6b82786e9f4a1cba78934c87eea6230b331d3376
