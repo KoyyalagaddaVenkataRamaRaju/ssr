@@ -128,6 +128,7 @@ export const toggleTeacherPermission = async (userId) => {
 export const getAllUsers = async (filters = {}) => {
   try {
     const queryParams = new URLSearchParams(filters).toString();
+    console.log(queryParams);
     const response = await api.get(`/api/admin/users?${queryParams}`);
     return response.data;
   } catch (error) {

@@ -31,9 +31,50 @@ export const adminRegisterDepartement = async (departmentData) => {
   }
 };
 
+
+export const fetchTeachersByDepartment = async (departmentId) => {
+  console.log(departmentId)
+  try {
+    const response = await api.get(`/api/admin/users?role=teacher&department=${departmentId}`);
+    console.log(response.data)
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+
 export const getAllDepartments = async () => {
   try {
     const response = await api.get('/api/departments');
+    console.log(response.data)
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+export const getDepartmentById = async (departmentId) => {
+  try {
+    const response = await api.get(`/api/departments/${departmentId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+export const createBatch = async (departmentId, batchData) => {
+  try {
+    const response = await api.post(`/api/departments/${departmentId}/batches`, batchData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+export const getAllBatchesByDepartmentId = async (departmentId) => {
+  try {
+    const response = await api.get(`/api/departments/${departmentId}/batches`);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };

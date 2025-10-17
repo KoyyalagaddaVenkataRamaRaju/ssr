@@ -17,6 +17,8 @@ import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import AdminHeroCarousel from "./pages/AdminHeroCarousel";
 import Placements from "./components/Placements";
+import DepartmentPage from './pages/DepartmentPage';
+import AttendanceSidebar from './components/AttendanceSidebar';
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -113,6 +115,17 @@ function App() {
             }
           />
 
+
+          <Route
+            path="/departments/:departmentId"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <DepartmentPage />
+              </ProtectedRoute>
+            }
+          /> 
+
+
           <Route
             path="/teacher/register-student"
             element={
@@ -121,6 +134,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+
+
+           <Route
+            path="/teacher/attendance"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AttendanceSidebar />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/admin/hero-carousel"
             element={

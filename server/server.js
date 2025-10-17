@@ -12,6 +12,13 @@ import userRoutes from './routes/user.js';
 import registrationRoutes from './routes/registration.js';
 import departmentRoutes from './routes/department.js';
 import heroCarouselRoutes from './routes/heroCarousel.js';
+import subjectRoutes from './routes/subjects.js';
+import teacherAllocationRoutes from './routes/teacherAllocations.js';
+import timetableRoutes from './routes/timetablepage.js';
+import attendanceRoutes from './routes/attendance.js';
+
+
+
 
 // Load environment variables
 dotenv.config();
@@ -75,6 +82,10 @@ app.get("/api/placements", (req, res) => {
   ];
   res.json(data);
 });
+app.use('/api/subjects', subjectRoutes);
+app.use('/api/teacher-allocations', teacherAllocationRoutes);
+app.use('/api/timetable', timetableRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // 404 route for unknown endpoints
 app.use((req, res, next) => {
