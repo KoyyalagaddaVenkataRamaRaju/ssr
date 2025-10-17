@@ -18,6 +18,7 @@ import TeacherRegisterStudent from "./pages/TeacherRegisterStudent";
 import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import AdminHeroCarousel from "./pages/AdminHeroCarousel";
+import Placements from "./components/Placements";
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -49,6 +50,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/placements" element={<Placements/>}/>
 
           <Route
             path="/student/dashboard"

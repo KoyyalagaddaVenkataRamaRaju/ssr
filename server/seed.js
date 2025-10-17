@@ -9,7 +9,7 @@ const seedAdmin = async () => {
   try {
     await connectDB();
 
-    const adminEmail = 'pranav2005@gmail.com';
+    const adminEmail = 'upendra201@gmail.com';
     const existingAdmin = await User.findOne({ email: adminEmail });
 
     if (existingAdmin) {
@@ -20,7 +20,7 @@ const seedAdmin = async () => {
     const admin = await User.create({
       name: 'Admin User',
       email: adminEmail,
-      password: 'Pra@2309',
+      password: 'admin@2025',
       role: 'admin',
       department: 'Administration',
       phone: '1234567890',
@@ -29,7 +29,7 @@ const seedAdmin = async () => {
 
     console.log('Admin account created successfully!');
     console.log(`Email: ${admin.email}`);
-    console.log('Password: Pra@2309');
+    console.log(`Password: ${admin.password}`);
 
     process.exit(0);
   } catch (error) {
