@@ -61,6 +61,27 @@ app.use('/api/user', userRoutes);
 app.use('/api', registrationRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/hero-carousel', heroCarouselRoutes);
+app.get("/api/placements", (req, res) => {
+  const data = [
+    {
+      year: "2024",
+      records: [
+        { company: "TCS", placed: 120, package: 5.5 },
+        { company: "Infosys", placed: 90, package: 4.8 },
+        { company: "Wipro", placed: 75, package: 4.2 },
+      ],
+    },
+    {
+      year: "2023",
+      records: [
+        { company: "Amazon", placed: 12, package: 18 },
+        { company: "Cognizant", placed: 100, package: 4.5 },
+        { company: "HCL", placed: 65, package: 3.8 },
+      ],
+    },
+  ];
+  res.json(data);
+});
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/teacher-allocations', teacherAllocationRoutes);
 app.use('/api/timetable', timetableRoutes);

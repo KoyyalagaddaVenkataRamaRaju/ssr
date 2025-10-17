@@ -16,6 +16,7 @@ import AdminRegisterDepartment from './pages/AdminRegisterDepartment';
 import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import AdminHeroCarousel from "./pages/AdminHeroCarousel";
+import Placements from "./components/Placements";
 import DepartmentPage from './pages/DepartmentPage';
 import AttendanceSidebar from './components/AttendanceSidebar';
 
@@ -49,6 +50,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/placements" element={<Placements/>}/>
 
           <Route
             path="/student/dashboard"
