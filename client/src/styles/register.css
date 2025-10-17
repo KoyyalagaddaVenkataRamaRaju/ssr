@@ -328,3 +328,47 @@
     min-width: 800px;
   }
 }
+
+
+
+/* Add this to your register.css or a separate CSS file */
+.department-list {
+  padding: 1rem;
+}
+
+.department-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+  gap: 1rem;
+}
+
+.department-item {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.department-image {
+  width: 200%;
+  height: 250px; /* Fixed height for images */
+  object-fit: cover; /* Maintain aspect ratio and cover the area */
+}
+
+.department-details {
+  padding: 1rem;
+}
+
+.department-name {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.department-description {
+  font-size: 1rem;
+  color: #666;
+}

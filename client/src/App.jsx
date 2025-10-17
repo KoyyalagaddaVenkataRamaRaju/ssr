@@ -1,20 +1,18 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import StudentDashboard from "./pages/StudentDashboard";
-import TeacherDashboard from "./pages/TeacherDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import PrincipalDashboard from "./pages/PrincipalDashboard";
-import AdminRegisterUser from "./pages/AdminRegisterUser";
-import AdminManageUsers from "./pages/AdminManageUsers";
-import TeacherRegisterStudent from "./pages/TeacherRegisterStudent";
+
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import StudentDashboard from './pages/StudentDashboard';
+import TeacherDashboard from './pages/TeacherDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import PrincipalDashboard from './pages/PrincipalDashboard';
+import AdminRegisterUser from './pages/AdminRegisterUser';
+import AdminManageUsers from './pages/AdminManageUsers';
+import TeacherRegisterStudent from './pages/TeacherRegisterStudent';
+import Navbar from './components/Navbar';
+import AdminRegisterDepartment from './pages/AdminRegisterDepartment';
 import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import AdminHeroCarousel from "./pages/AdminHeroCarousel";
@@ -102,6 +100,15 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminManageUsers />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/register-department"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminRegisterDepartment />
               </ProtectedRoute>
             }
           />
