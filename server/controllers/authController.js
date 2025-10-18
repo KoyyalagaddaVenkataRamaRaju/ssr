@@ -27,6 +27,7 @@ export const register = async (req, res) => {
       email,
       password,
       role,
+      batch: role === 'student' ? req.body.batch : undefined,
       department,
       phone,
       enrollmentId,

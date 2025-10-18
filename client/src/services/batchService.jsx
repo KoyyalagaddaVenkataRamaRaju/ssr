@@ -11,41 +11,60 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token'); // Retrieve token from localStorage
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-
-export const getAllBatches = async (departmentId) => {
+// ✅ Fetch all batches (no department filter here)
+export const getAllBatches = async () => {
   try {
-    const response = await api.get(`/api/batches?department=${departmentId}`);
+    const response = await api.get('/api/batches');
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };
   }
 };
 
+export const getAllBatchesbyTeacher = async () => {
+  try {
+    const response = await api.get('/api/batches/all');
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+// ✅ Fetch a single batch by ID (and its departments)
+export const getBatchById = async (batchId) => {
+  try {
+    console.log("Service",batchId)
+    const response = await api.get(`/api/batches/${batchId}`);
+    
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+// ✅ Optional (kept if used elsewhere)
 export const createBatch = async (batchData) => {
   try {
-    const response = await api.post('/api/batches', batchData); // No departmentId in URL
+    const response = await api.post('/api/batches', batchData);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };
   }
 };
 
-
+// ✅ Fetch all departments (used in other components)
 export const getAllDepartments = async () => {
   try {
     const response = await api.get('/api/departments');
-    console.log(response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };
