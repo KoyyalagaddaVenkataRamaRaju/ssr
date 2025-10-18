@@ -167,7 +167,7 @@ const AdminRegisterDepartment = () => {
             {departments.length > 0 ? (
               <div className="department-grid">
                 {departments.map((department) => (
-                  <div>
+                  <div key={department._id}>
                   <Link to={`/departments/${department._id}`}>
                   <div key={department._id} className="department-item">
                     <img
