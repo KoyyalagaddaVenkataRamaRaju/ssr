@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { teacherAllocationService } from '../services/teacherAllocationService.js';
 import { subjectService } from '../services/subjectService.js';
 import axios from 'axios';
-import {fetchTeachersByDepartment} from '../services/departmentService.jsx';
+import {fetchTeachersByDepartment,fetchBatchesByDepartment} from '../services/teacherAllocationService.jsx';
 
 const TeacherAllocation = () => {
   const [teachers, setTeachers] = useState([]);
@@ -82,7 +82,7 @@ api.interceptors.request.use(
       const response = await fetchTeachersByDepartment(departmentId);
       console.log(response.data);
       if (response.success) {
-        console.log(response.users);
+        
         setTeachers(response.users);
       } else {
         setError(response.message || 'Failed to fetch batches.');
@@ -105,15 +105,19 @@ api.interceptors.request.use(
     }
   };
 
-  const fetchBatchesByDepartment = async (departmentId) => {
+  const fetchBatches = async (departmentId) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/batches?department=${departmentId}`);
-      const data = await response.json();
-      if (data.success) {
-        setBatches(data.data);
+      const response = await fetchBatchesByDepartment(departmentId);
+      console.log(response.data);
+      if (response.success) {
+        setBatches(response.data);
+      } else {
+        setError(response.message || 'Failed to fetch batches.');
       }
-    } catch (error) {
-      console.error('Error fetching batches:', error);
+    } catch (err) {
+      setError('Failed to fetch batches. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,7 +126,7 @@ api.interceptors.request.use(
     setFormData({ ...formData, department: departmentId });
     if (departmentId) {
       fetchTeachers(departmentId);
-      fetchBatchesByDepartment(departmentId);
+      fetchBatches(departmentId);
       if (formData.year) {
         fetchSubjectsByDepartment(departmentId, formData.year);
       }
@@ -230,7 +234,7 @@ api.interceptors.request.use(
                 Teacher
               </label>
               <select
-                value={formData}
+                value={formData.teacher}
                 onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
                 required
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
@@ -300,18 +304,7 @@ api.interceptors.request.use(
               </select>
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                Academic Year
-              </label>
-              <input
-                type="text"
-                value={formData.academicYear}
-                onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-                required
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-              />
-            </div>
+          
           </div>
 
           <button

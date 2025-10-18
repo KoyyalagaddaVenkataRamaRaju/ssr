@@ -31,6 +31,15 @@ const subjectSchema = new mongoose.Schema({
     type: Number,
     default: 3
   },
+  subjectType: {
+    type: String,
+    enum: ['Theory', 'Practical', 'Lab', 'Project', 'Elective'],
+    default: 'Theory'
+  },
+  description: {
+    type: String,
+    trim: true
+  },
   isActive: {
     type: Boolean,
     default: true

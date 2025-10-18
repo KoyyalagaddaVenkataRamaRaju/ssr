@@ -27,7 +27,7 @@ const Sidebar = () => {
           { name: 'Register User', icon: UserPlus, path: '/admin/register-user' },
           { name: 'Manage Users', icon: Users, path: '/admin/manage-users' },
           { name: 'Register Department', icon: PlusSquare, path: '/admin/register-department' }, // Added Department Registration
-          { name: 'Departments', icon: BookOpen, path: '#' },
+          { name: 'Register Batches', icon: BookOpen, path: '/batches' },
           {name:'HomeCarousel',icon:Image,path:'/admin/hero-carousel'},
           { name: 'Reports', icon: FileText, path: '#' },
           { name: 'Settings', icon: Settings, path: '#' },

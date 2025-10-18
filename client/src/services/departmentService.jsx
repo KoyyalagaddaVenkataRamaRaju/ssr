@@ -63,18 +63,20 @@ export const getDepartmentById = async (departmentId) => {
   }
 };
 
-export const createBatch = async (departmentId, batchData) => {
+// services/departmentService.js
+export const createBatch = async (batchData) => {
   try {
-    const response = await api.post(`/api/departments/${departmentId}/batches`, batchData);
+    const response = await api.post('/api/batches', batchData); // No departmentId in URL
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };
   }
 };
 
-export const getAllBatchesByDepartmentId = async (departmentId) => {
+
+export const getAllBatches = async (departmentId) => {
   try {
-    const response = await api.get(`/api/departments/${departmentId}/batches`);
+    const response = await api.get(`/api/batches`);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };

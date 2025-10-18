@@ -16,6 +16,8 @@ import subjectRoutes from './routes/subjects.js';
 import teacherAllocationRoutes from './routes/teacherAllocations.js';
 import timetableRoutes from './routes/timetablepage.js';
 import attendanceRoutes from './routes/attendance.js';
+import batchRoutes from './routes/batch.js';
+import semesterRoutes from './routes/semester.js';
 
 
 
@@ -86,7 +88,8 @@ app.use('/api/subjects', subjectRoutes);
 app.use('/api/teacher-allocations', teacherAllocationRoutes);
 app.use('/api/timetable', timetableRoutes);
 app.use('/api/attendance', attendanceRoutes);
-
+app.use('/api/batches', batchRoutes);
+app.use('/api/semesters', semesterRoutes);
 // 404 route for unknown endpoints
 app.use((req, res, next) => {
   res.status(404).json({

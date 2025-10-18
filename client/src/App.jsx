@@ -17,8 +17,9 @@ import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import AdminHeroCarousel from "./pages/AdminHeroCarousel";
 import Placements from "./components/Placements";
-import DepartmentPage from './pages/DepartmentPage';
+import DepartmentPage from './pages/AdminRegisterBatchPage';
 import AttendanceSidebar from './components/AttendanceSidebar';
+import AdminRegisterBatchPage from './pages/AdminRegisterBatchPage';
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -117,10 +118,10 @@ function App() {
 
 
           <Route
-            path="/departments/:departmentId"
+            path="/batches"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <DepartmentPage />
+                <AdminRegisterBatchPage />
               </ProtectedRoute>
             }
           /> 
