@@ -18,6 +18,7 @@ import timetableRoutes from './routes/timetablepage.js';
 import attendanceRoutes from './routes/attendance.js';
 import batchRoutes from './routes/batch.js';
 import semesterRoutes from './routes/semester.js';
+import feesRoutes from './routes/fees.js';
 
 
 
@@ -63,6 +64,7 @@ app.use('/api/user', userRoutes);
 app.use('/api', registrationRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/hero-carousel', heroCarouselRoutes);
+app.use('/api/fees', feesRoutes);
 app.get("/api/placements", (req, res) => {
   const data = [
     {

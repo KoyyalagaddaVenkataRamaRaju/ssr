@@ -1,6 +1,7 @@
-import { GraduationCap, Home, Users, BookOpen, Calendar, FileText, Settings, UserPlus, PlusSquare, Image } from 'lucide-react';
+import { GraduationCap, Home, Users, BookOpen, Calendar, FileText, Settings, UserPlus, PlusSquare, Image, CopySlash, BadgeDollarSign } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
+import path from 'path';
 
 
 const Sidebar = () => {
@@ -28,6 +29,8 @@ const Sidebar = () => {
           { name: 'Manage Users', icon: Users, path: '/admin/manage-users' },
           { name: 'Register Department', icon: PlusSquare, path: '/admin/register-department' }, // Added Department Registration
           { name: 'Register Batches', icon: BookOpen, path: '/batches' },
+          {name:'Fees',icon: CopySlash,path:'/admin/fees'},
+          {name:'studentfee',icon:BadgeDollarSign,path:'/admin/studentfees'},
           {name:'HomeCarousel',icon:Image,path:'/admin/hero-carousel'},
           { name: 'Reports', icon: FileText, path: '#' },
           { name: 'Settings', icon: Settings, path: '#' },
