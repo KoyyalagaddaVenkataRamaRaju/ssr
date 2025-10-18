@@ -25,7 +25,7 @@ api.interceptors.request.use(
 
 export const getAllBatches = async (departmentId) => {
   try {
-    const response = await api.get(`/api/batches`);
+    const response = await api.get(`/api/batches?department=${departmentId}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };

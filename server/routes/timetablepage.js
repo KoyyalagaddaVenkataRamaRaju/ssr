@@ -8,12 +8,12 @@ import {
   updateTimetable,
   deleteTimetable
 } from '../controllers/timetableController.js';
-import { protect, authorize } from '../middleware/auth.js';
+import { protect, authorize,admin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.post('/', protect, authorize('admin'), createTimetable);
-router.get('/', protect, getAllTimetables);
+router.post('/', protect, admin, createTimetable);
+router.get('/', protect,admin, getAllTimetables);
 router.get('/batch/:batchId/section/:section', protect, getTimetableByBatchSection);
 router.get('/teacher/:teacherId', protect, getTimetableByTeacher);
 router.get('/:id', protect, getTimetableById);

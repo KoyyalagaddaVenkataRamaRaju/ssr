@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-
+import { fetchBatchesByDepartment ,fetchTeacherandSubjectAllocations,createTimetable,fetchTimetablebyBatchandSection} from '../services/timetableService.jsx';
 const TimetablePreparation = () => {
   const [departments, setDepartments] = useState([]);
   const [batches, setBatches] = useState([]);
   const [allocations, setAllocations] = useState([]);
   const [timetables, setTimetables] = useState([]);
+  const [loading, setLoading] = useState(true);
+     const [error, setError] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedBatch, setSelectedBatch] = useState('');
   const [selectedSection, setSelectedSection] = useState('A');
@@ -42,7 +44,7 @@ const TimetablePreparation = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/departments');
+      const response = await fetch('http://localhost:3000/api/departments');
       const data = await response.json();
       if (data.success) {
         setDepartments(data.data);
@@ -52,45 +54,50 @@ const TimetablePreparation = () => {
     }
   };
 
-  const fetchBatchesByDepartment = async (departmentId) => {
+const fetchBatches = async (departmentId) => {
+  console.log("Fetching batches for department:", departmentId);
     try {
-      const response = await fetch(`http://localhost:5000/api/batches?department=${departmentId}`);
-      const data = await response.json();
-      if (data.success) {
-        setBatches(data.data);
+      const response = await fetchBatchesByDepartment(departmentId);
+      console.log(response.data);
+      if (response.success) {
+        setBatches(response.data);
+      } else {
+        setError(response.message || 'Failed to fetch batches.');
       }
-    } catch (error) {
-      console.error('Error fetching batches:', error);
+    } catch (err) {
+      setError('Failed to fetch batches. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchAllocations = async (departmentId, batchId, section) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/teacher-allocations?department=${departmentId}&batch=${batchId}&section=${section}`
-      );
-      const data = await response.json();
-      if (data.success) {
-        setAllocations(data.data);
+      const response = await fetchTeacherandSubjectAllocations(departmentId,batchId,section);
+      console.log(response.data);
+      if (response.success) {
+        setAllocations(response.data);
+      } else {
+        setError(response.message || 'Failed to fetch batches.');
       }
-    } catch (error) {
-      console.error('Error fetching allocations:', error);
+    } catch (err) {
+      setError('Failed to fetch batches. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchTimetable = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/timetable/batch/${selectedBatch}/section/${selectedSection}`
-      );
-      const data = await response.json();
-      if (data.success) {
-        setTimetables(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching timetable:', error);
+  try {
+    const data = await fetchTimetablebyBatchandSection(selectedBatch, selectedSection);
+    if (data.success) {
+      setTimetables(data.data);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching timetable:', error);
+    setError(error.message || 'Failed to fetch timetable');
+  }
+};
 
   const handleDepartmentChange = (e) => {
     const departmentId = e.target.value;
@@ -98,7 +105,7 @@ const TimetablePreparation = () => {
     setSelectedBatch('');
     setAllocations([]);
     if (departmentId) {
-      fetchBatchesByDepartment(departmentId);
+      fetchBatches(departmentId);
     }
   };
 
@@ -115,6 +122,7 @@ const TimetablePreparation = () => {
     setSelectedSection(section);
     if (selectedBatch && selectedDepartment && section) {
       fetchAllocations(selectedDepartment, selectedBatch, section);
+      
     }
   };
 
@@ -144,15 +152,9 @@ const TimetablePreparation = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/timetable', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(timetableData)
-      });
-
-      const data = await response.json();
+      const response = await createTimetable(timetableData);
+      console.log(response.data)
+      const data = response.data;
       if (data.success) {
         alert('Timetable entry added successfully!');
         fetchTimetable();
@@ -178,7 +180,7 @@ const TimetablePreparation = () => {
     if (!window.confirm('Are you sure you want to remove this timetable entry?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/timetable/${id}`, {
+      const response = await fetch(`http://localhost:3000/api/timetable/${id}`, {
         method: 'DELETE'
       });
 

@@ -66,3 +66,42 @@ export const getAllBatches = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
+
+export const getDepartmentById = async (req, res) => {
+  try {
+    
+    const { departmentId } = req.query;
+    console.log("Backend",departmentId)
+    if (!departmentId) {
+      return res.status(400).json({
+        success: false,
+        message: "departmentId is required in query parameter",
+      });
+    }
+
+    // Find the batch containing this department
+    const batch = await Batch.find(
+      { "departments.departmentId": departmentId },
+      { "departments.$": 1, batchName: 1 } // return only the matching department and batch name
+    );
+
+    if (!batch) {
+      return res.status(404).json({
+        success: false,
+        message: "Department not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: batch,
+    });
+  } catch (error) {
+    console.error("Error fetching department:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
