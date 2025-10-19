@@ -68,8 +68,15 @@ export const teacherRegisterStudent = async (req, res) => {
 export const getMyStudents = async (req, res) => {
   try {
     const students = await User.find({ createdBy: req.user._id, role: 'student' })
-      .populate('batch', 'batchName')
-      .populate('department', 'departmentName');
+      .populate({
+        path: 'batch',
+        select: 'batchName', // ensure batchName is included
+      })
+      .populate({
+        path: 'department',
+        select: 'departmentName departmentId', // ensure departmentName is included
+      })
+      .lean(); // optional but makes it cleaner JSON
 
     res.status(200).json({
       success: true,
@@ -80,3 +87,4 @@ export const getMyStudents = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };
+

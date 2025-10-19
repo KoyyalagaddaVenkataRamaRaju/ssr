@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, CheckCircle, AlertCircle, Lock } from 'lucide-react';
+import { UserPlus, CheckCircle, AlertCircle, Lock, Loader2 } from 'lucide-react';
 import { teacherRegisterStudent, getMyStudents } from '../services/authService';
-import { getAllBatchesbyTeacher, getBatchById ,getAllDepartments} from '../services/batchService';
+import { getAllBatchesbyTeacher, getBatchById } from '../services/batchService';
+import { getAllDepartments } from '../services/departmentService';
 import { useAuth } from '../context/AuthContext';
 import Card from '../components/Card';
+import '../styles/register.css'; // Ensure styling consistency
 
 const TeacherRegisterStudent = () => {
   const { user } = useAuth();
@@ -21,72 +23,78 @@ const TeacherRegisterStudent = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [myStudents, setMyStudents] = useState([]);
-  const [allDepartments, setAllDepartments] = useState([]);
-  const [hasPermission, setHasPermission] = useState(true);
   const [departments, setDepartments] = useState([]);
   const [batches, setBatches] = useState([]);
+  const [hasPermission, setHasPermission] = useState(false);
+  const [fetchingStudents, setFetchingStudents] = useState(false);
 
   useEffect(() => {
     if (user && user.canRegisterStudents) {
       setHasPermission(true);
-      fetchMyStudents();
-      fetchBatches();
-      fetchDepartments();
+      fetchInitialData();
     } else {
       setHasPermission(false);
     }
   }, [user]);
 
+  const fetchInitialData = async () => {
+    fetchBatches();
+    fetchDepartments();
+    fetchMyStudents();
+  };
+
   const fetchDepartments = async () => {
     try {
       const response = await getAllDepartments();
-      // response.data expected to be an array of department objects
       if (response && response.success) {
-        setAllDepartments(response.data || []);
-      } else {
-        setAllDepartments([]);
-      }
-    } catch (err) {
-      console.log('Failed to fetch departments', err);
-      setAllDepartments([]);
-    }
-  };
-
-  // Fetch all batches
-  const fetchBatches = async () => {
-    try {
-      const response = await getAllBatchesbyTeacher();
-      if (response.success) setBatches(response.data);
-    } catch (error) {
-      console.error('Error fetching batches:', error);
-    }
-  };
-
-  // Fetch departments dynamically based on selected batch
-  const fetchDepartmentsByBatch = async (batchId) => {
-    try {
-      console.log(batchId)
-      const response = await getBatchById(batchId);
-      console.log("page",response.data)
-      // response.data is expected to be an object like { departments: [...] }
-      if (response && response.success && response.data && Array.isArray(response.data.departments)) {
-        setDepartments(response.data.departments);
+        setDepartments(response.data);
       } else {
         setDepartments([]);
       }
     } catch (error) {
-      console.error('Error fetching departments:', error);
+      console.error('Failed to fetch departments:', error);
       setDepartments([]);
     }
   };
 
-  // Fetch students created by the logged-in teacher
+  const fetchBatches = async () => {
+    try {
+      const response = await getAllBatchesbyTeacher();
+      if (response.success) setBatches(response.data);
+      else setBatches([]);
+    } catch (error) {
+      console.error('Error fetching batches:', error);
+      setBatches([]);
+    }
+  };
+
+  const fetchDepartmentsByBatch = async (batchId) => {
+    try {
+      const response = await getBatchById(batchId);
+      if (response?.success && Array.isArray(response.data?.departments)) {
+        setDepartments(response.data.departments.map((d) => ({
+          _id: d.departmentId?._id || d.departmentId,
+          departmentName: d.departmentName,
+        })));
+      } else {
+        setDepartments([]);
+      }
+    } catch (error) {
+      console.error('Error fetching departments by batch:', error);
+      setDepartments([]);
+    }
+  };
+
   const fetchMyStudents = async () => {
+    setFetchingStudents(true);
     try {
       const response = await getMyStudents();
       if (response.success) setMyStudents(response.students);
+      else setMyStudents([]);
     } catch (error) {
       console.error('Error fetching students:', error);
+    } finally {
+      setFetchingStudents(false);
     }
   };
 
@@ -97,7 +105,6 @@ const TeacherRegisterStudent = () => {
     if (name === 'batch') {
       setFormData({ ...formData, batch: value, department: '' });
       fetchDepartmentsByBatch(value);
-      fetchDepartments();
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -107,20 +114,21 @@ const TeacherRegisterStudent = () => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
 
-    // Validation
-    if (!formData.name || !formData.email || !formData.password || !formData.department || !formData.batch) {
-      setMessage({ type: 'error', text: 'Please fill in all required fields' });
+    const { name, email, password, department, batch } = formData;
+
+    if (!name || !email || !password || !department || !batch) {
+      setMessage({ type: 'error', text: 'Please fill in all required fields.' });
       return;
     }
 
     const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex.test(formData.email)) {
-      setMessage({ type: 'error', text: 'Please enter a valid email address' });
+    if (!emailRegex.test(email)) {
+      setMessage({ type: 'error', text: 'Please enter a valid email address.' });
       return;
     }
 
-    if (formData.password.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+    if (password.length < 6) {
+      setMessage({ type: 'error', text: 'Password must be at least 6 characters.' });
       return;
     }
 
@@ -129,8 +137,15 @@ const TeacherRegisterStudent = () => {
       const response = await teacherRegisterStudent(formData);
       if (response.success) {
         setMessage({ type: 'success', text: 'Student registered successfully!' });
-        setFormData({ name: '', email: '', password: '', department: '', batch: '', phone: '', enrollmentId: '' });
-        setDepartments([]);
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          department: '',
+          batch: '',
+          phone: '',
+          enrollmentId: '',
+        });
         fetchMyStudents();
       } else {
         setMessage({ type: 'error', text: response.message || 'Failed to register student.' });
@@ -167,7 +182,7 @@ const TeacherRegisterStudent = () => {
         <h1 className="page-title">
           <UserPlus size={32} /> Register New Student
         </h1>
-        <p className="page-subtitle">Create and manage your assigned students</p>
+        <p className="page-subtitle">Create and manage your assigned students.</p>
       </div>
 
       <div className="register-content">
@@ -175,20 +190,26 @@ const TeacherRegisterStudent = () => {
           <div className="form-section">
             <h3 className="section-title">Student Information</h3>
 
-            <div className="form-group">
-              <label>Full Name <span className="required">*</span></label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} className="form-input" placeholder="Enter full name" />
-            </div>
-
-            <div className="form-group">
-              <label>Email Address <span className="required">*</span></label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-input" placeholder="Enter email" />
-            </div>
-
-            <div className="form-group">
-              <label>Password <span className="required">*</span></label>
-              <input type="password" name="password" value={formData.password} onChange={handleChange} className="form-input" placeholder="Min 6 characters" />
-            </div>
+            {['name', 'email', 'password', 'phone', 'enrollmentId'].map((field) => (
+              <div key={field} className="form-group">
+                <label>
+                  {field === 'password'
+                    ? 'Password'
+                    : field === 'enrollmentId'
+                    ? 'Enrollment ID'
+                    : field.charAt(0).toUpperCase() + field.slice(1)}
+                  {['name', 'email', 'password'].includes(field) && <span className="required">*</span>}
+                </label>
+                <input
+                  type={field === 'password' ? 'password' : field === 'email' ? 'email' : 'text'}
+                  name={field}
+                  value={formData[field]}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder={`Enter ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
+                />
+              </div>
+            ))}
 
             <div className="form-group">
               <label>Batch <span className="required">*</span></label>
@@ -202,34 +223,18 @@ const TeacherRegisterStudent = () => {
 
             <div className="form-group">
               <label>Department <span className="required">*</span></label>
-            <select
-              name="department"
-              value={formData.department}
-              onChange={handleChange}
-              className="form-input"
-            >
-              <option value="">Select Department</option>
-              {/* If a batch is selected, show only departments assigned to that batch (resolve names from allDepartments). Otherwise show all departments. */}
-  
-           {departments.map((d) => {
-                    // d could be an object like { department: deptId } or might be just an 
-                return (
-                      <option key={d._id} value={d._id}>
-                        {d.departmentName}
-                      </option>
-                    );
-                  })}
-            </select>
-            </div>
-
-            <div className="form-group">
-              <label>Phone</label>
-              <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="form-input" placeholder="Enter phone number" />
-            </div>
-
-            <div className="form-group">
-              <label>Enrollment ID</label>
-              <input type="text" name="enrollmentId" value={formData.enrollmentId} onChange={handleChange} className="form-input" placeholder="Enter enrollment ID" />
+              <select
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                className="form-input"
+                disabled={!departments.length}
+              >
+                <option value="">Select Department</option>
+                {departments.map((dept) => (
+                  <option key={dept._id} value={dept._id}>{dept.departmentName}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -241,13 +246,15 @@ const TeacherRegisterStudent = () => {
           )}
 
           <button type="submit" className={`btn btn-primary ${loading ? 'btn-loading' : ''}`} disabled={loading}>
-            {loading ? 'Registering...' : 'Register Student'}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : 'Register Student'}
           </button>
         </form>
 
         <h3 className="section-title">My Registered Students ({myStudents.length})</h3>
         <div className="users-table">
-          {myStudents.length > 0 ? (
+          {fetchingStudents ? (
+            <p>Loading students...</p>
+          ) : myStudents.length > 0 ? (
             <table>
               <thead>
                 <tr>
@@ -264,16 +271,16 @@ const TeacherRegisterStudent = () => {
                   <tr key={student._id}>
                     <td>{student.name}</td>
                     <td>{student.email}</td>
-                    <td>{student.enrollmentId || '-'}</td>
-                    <td>{student.department?.departmentName || '-'}</td>
-                    <td>{student.batch?.batchName || '-'}</td>
+                    <td>{student.enrollmentId || '—'}</td>
+                    <td>{student.department?.departmentName || '—'}</td>
+                    <td>{student.batch?.batchName || '—'}</td>
                     <td>{new Date(student.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <p className="no-data">No students registered yet</p>
+            <p className="no-data">No students registered yet.</p>
           )}
         </div>
       </div>
