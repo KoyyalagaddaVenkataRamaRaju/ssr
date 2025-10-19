@@ -77,7 +77,7 @@ export const adminRegisterUser = async (req, res) => {
 
 export const teacherRegisterStudent = async (req, res) => {
   try {
-    const { name, email, password, department, phone, enrollmentId } = req.body;
+    const { name, email, password, batch,department, phone, enrollmentId } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -99,6 +99,7 @@ export const teacherRegisterStudent = async (req, res) => {
       name,
       email,
       password,
+      batch,
       role: 'student',
       department,
       phone,
