@@ -58,9 +58,9 @@ const fetchBatches = async (departmentId) => {
   console.log("Fetching batches for department:", departmentId);
     try {
       const response = await fetchBatchesByDepartment(departmentId);
-      console.log(response.data);
+      console.log(response.data.batches);
       if (response.success) {
-        setBatches(response.data);
+        setBatches(response.data.batches);
       } else {
         setError(response.message || 'Failed to fetch batches.');
       }

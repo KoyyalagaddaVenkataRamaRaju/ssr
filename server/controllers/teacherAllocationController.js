@@ -21,6 +21,7 @@ export const getAllAllocations = async (req, res) => {
   try {
     const { teacher, department, batch, academicYear } = req.query;
     const filter = { isActive: true };
+    console.log(department, batch, academicYear);
 
     if (teacher) filter.teacher = teacher;
     if (department) filter.department = department;

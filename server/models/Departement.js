@@ -33,10 +33,11 @@ const departmentSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // store both the Batch _id and a snapshot of the batchName
     batches: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Batch',
+        batchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch', required: true },
+       batchName: { type: String, required: true, trim: true, maxlength: 50 },
       },
     ],
   },

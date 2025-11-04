@@ -46,10 +46,18 @@ export const createBatch = async (req, res) => {
       endDate,
     });
 
-    await Department.updateMany(
-      { _id: { $in: deptIds } },
-      { $push: { batches: batch._id } }
-    );
+await Department.updateMany(
+  { _id: { $in: deptIds } },
+  {
+    $push: {
+      batches: {
+        batchId: batch._id,
+        batchName: batch.batchName, // ✅ store snapshot name
+      },
+    },
+  }
+);
+
 
     return res.status(201).json({
       success: true,
