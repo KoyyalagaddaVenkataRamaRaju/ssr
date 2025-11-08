@@ -4,6 +4,7 @@ import { adminRegisterUser, getAllUsers } from '../services/authService';
 import { getAllDepartments } from '../services/departmentService'; // Import getAllDepartments
 import Card from '../components/Card';
 import '../styles/register.css';
+import { fetchBatchesByDepartment } from '../services/teacherAllocationService.jsx';
 
 const AdminRegisterUser = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const AdminRegisterUser = () => {
     password: '',
     role: 'student',
     department: '',
+    batch:'',
     section: '',
     phone: '',
     enrollmentId: '',
@@ -23,7 +25,7 @@ const AdminRegisterUser = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [recentUsers, setRecentUsers] = useState([]);
   const [departments, setDepartments] = useState([]); // State for departments
-
+   const [batches, setBatches] = useState([]);
   useEffect(() => {
     fetchRecentUsers();
     fetchDepartments(); // Fetch departments on component mount
@@ -50,6 +52,39 @@ const AdminRegisterUser = () => {
       }
     } catch (error) {
       console.error('Error fetching departments:', error);
+    }
+  };
+
+
+
+   const fetchBatches = async (departmentId) => {
+      try {
+        const response = await fetchBatchesByDepartment(departmentId);
+        console.log(response.data);
+        if (response.success) {
+          setBatches(response.data);
+        } else {
+          setError(response.message || 'Failed to fetch batches.');
+        }
+      } catch (err) {
+        setError('Failed to fetch batches. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+ const handleDepartmentChange = (e) => {
+    const departmentId = e.target.value;
+    console.log(departmentId)
+    console.log('Selected Department ID:', departmentId);
+    setFormData({
+      ...formData,
+      department: departmentId,
+      batch: '',
+      year: ''
+    });
+    if (departmentId) {
+      fetchBatches(departmentId);
     }
   };
 
@@ -236,7 +271,7 @@ const AdminRegisterUser = () => {
                   name="department"
                   className="form-input"
                   value={formData.department}
-                  onChange={handleChange}
+                  onChange={handleDepartmentChange}
                 >
                   <option value="">Select Department</option>
                   {departments.map((department) => (
@@ -246,6 +281,34 @@ const AdminRegisterUser = () => {
                   ))}
                 </select>
               </div>
+
+
+                <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Batch
+              </label>
+              <select
+                name="batch"
+                value={formData.batch}
+                onChange={handleChange}
+                disabled={!formData.department}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ccc',
+                  opacity: !formData.department ? 0.5 : 1
+                }}
+              >
+                <option value="">Select Batch</option>
+                
+                {batches.map(batch => (
+                  <option key={batch._id} value={batch._id}>
+                    {batch.batchName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
               <div className="form-group">
                 <label htmlFor="phone" className="form-label">
@@ -279,26 +342,7 @@ const AdminRegisterUser = () => {
                 </div>
               )}
 
-              {formData.role === 'student' && (
-                <div className="form-group">
-                  <label htmlFor="section" className="form-label">
-                    Section
-                  </label>
-                  <select
-                    id="section"
-                    name="section"
-                    className="form-input"
-                    value={formData.section}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select Section</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                  </select>
-                </div>
-              )}
+           
 
               {formData.role === 'teacher' && (
                 <>
