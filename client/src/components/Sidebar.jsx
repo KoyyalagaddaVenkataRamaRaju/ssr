@@ -58,6 +58,7 @@ const Sidebar = () => {
           { name: 'Grades', icon: FileText, path: '#' },
           { name: 'Schedule', icon: Calendar, path: '#' },
           { name: 'Profile', icon: Users, path: '#' },
+          {name:'Pay Fees',icon:BadgeDollarSign,path:'/student/payfees'}
         ];
       default:
         return commonItems;
