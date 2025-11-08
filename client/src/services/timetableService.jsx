@@ -35,7 +35,7 @@ export const  fetchBatchesByDepartment= async (departmentId) => {
 };
 
 export const  fetchTeacherandSubjectAllocations= async (departmentId,batchId,section) => {
-    console.log(departmentId)
+  console.log(departmentId,batchId,section)
   try {
     const response = await api.get(`api/teacher-allocations?department=${departmentId}&batch=${batchId}&section=${section}`);
     console.log(response.data)

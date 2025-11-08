@@ -19,6 +19,8 @@ const TimetablePreparation = () => {
     roomNumber: '',
     academicYear: '2025-2026'
   });
+  const [selectedTeacher, setSelectedTeacher] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const periods = [
@@ -77,6 +79,10 @@ const fetchBatches = async (departmentId) => {
       console.log(response.data);
       if (response.success) {
         setAllocations(response.data);
+        // reset teacher/subject selection when allocations change
+        setSelectedTeacher('');
+        setSelectedSubject('');
+        setFormData(prev => ({ ...prev, teacherAllocation: '' }));
       } else {
         setError(response.message || 'Failed to fetch batches.');
       }
@@ -90,6 +96,7 @@ const fetchBatches = async (departmentId) => {
   const fetchTimetable = async () => {
   try {
     const data = await fetchTimetablebyBatchandSection(selectedBatch, selectedSection);
+    
     if (data.success) {
       setTimetables(data.data);
     }
@@ -111,6 +118,7 @@ const fetchBatches = async (departmentId) => {
 
   const handleBatchChange = (e) => {
     const batchId = e.target.value;
+    console.log(batchId)
     setSelectedBatch(batchId);
     if (batchId && selectedDepartment && selectedSection) {
       fetchAllocations(selectedDepartment, batchId, selectedSection);
@@ -241,8 +249,9 @@ const fetchBatches = async (departmentId) => {
             >
               <option value="">Select Batch</option>
               {batches.map(batch => (
-                <option key={batch._id} value={batch._id}>
+                <option key={batch._id} value={batch.batchId}>
                   {batch.batchName}
+                
                 </option>
               ))}
             </select>
@@ -321,20 +330,57 @@ const fetchBatches = async (departmentId) => {
 
                 <div>
                   <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                    Teacher & Subject
+                    Teacher
                   </label>
                   <select
-                    value={formData.teacherAllocation}
-                    onChange={(e) => setFormData({ ...formData, teacherAllocation: e.target.value })}
+                    value={selectedTeacher}
+                    onChange={(e) => {
+                      const teacherId = e.target.value;
+                      setSelectedTeacher(teacherId);
+                      setSelectedSubject('');
+                      // clear previously selected allocation
+                      setFormData({ ...formData, teacherAllocation: '' });
+                    }}
                     required
                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                   >
-                    <option value="">Select Teacher & Subject</option>
-                    {allocations.map(allocation => (
-                      <option key={allocation._id} value={allocation._id}>
-                        {allocation.teacher?.name} - {allocation.subject?.subjectName}
-                      </option>
-                    ))}
+                    <option value="">Select Teacher</option>
+                    {
+                      // derive unique teachers from allocations
+                      Array.from(new Map(allocations.map(a => [a.teacher?._id, a.teacher])).values())
+                        .filter(Boolean)
+                        .map(teacher => (
+                          <option key={teacher._id} value={teacher._id}>{teacher.name}</option>
+                        ))
+                    }
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                    Subject
+                  </label>
+                  <select
+                    value={formData.teacherAllocation}
+                    onChange={(e) => {
+                      const allocationId = e.target.value;
+                      setSelectedSubject(allocationId);
+                      // also ensure selectedTeacher matches allocation's teacher
+                      const alloc = allocations.find(a => a._id === allocationId);
+                      if (alloc && alloc.teacher) setSelectedTeacher(alloc.teacher._id);
+                      setFormData({ ...formData, teacherAllocation: allocationId });
+                    }}
+                    required
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                  >
+                    <option value="">Select Subject</option>
+                    {allocations
+                      .filter(a => selectedTeacher ? (a.teacher && a.teacher._id === selectedTeacher) : true)
+                      .map(allocation => (
+                        <option key={allocation._id} value={allocation._id}>
+                          {allocation.subject?.subjectName}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
