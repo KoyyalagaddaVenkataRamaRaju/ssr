@@ -12,6 +12,7 @@ const AdminRegisterUser = () => {
     password: '',
     role: 'student',
     department: '',
+    section: '',
     phone: '',
     enrollmentId: '',
     employeeId: '',
@@ -70,6 +71,12 @@ const AdminRegisterUser = () => {
       return;
     }
 
+    // require section for students
+    if (formData.role === 'student' && !formData.section) {
+      setMessage({ type: 'error', text: 'Please select a section for the student' });
+      return;
+    }
+
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     if (!emailRegex.test(formData.email)) {
       setMessage({ type: 'error', text: 'Please enter a valid email address' });
@@ -94,6 +101,7 @@ const AdminRegisterUser = () => {
           password: '',
           role: 'student',
           department: '',
+          section: '',
           phone: '',
           enrollmentId: '',
           employeeId: '',
@@ -175,6 +183,7 @@ const AdminRegisterUser = () => {
                 />
               </div>
 
+
               <div className="form-group">
                 <label htmlFor="role" className="form-label">
                   Role <span className="required">*</span>
@@ -192,6 +201,28 @@ const AdminRegisterUser = () => {
                 </select>
               </div>
             </div>
+
+              {formData.role === 'student' && (
+  <div className="form-group">
+    <label htmlFor="section" className="form-label">
+      Section
+    </label>
+    <select
+      id="section"
+      name="section"
+      className="form-input"
+      value={formData.section}
+      onChange={handleChange}
+    >
+      <option value="">Select Section</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+      <option value="D">D</option>
+    </select>
+  </div>
+)}
+
 
             <div className="form-section">
               <h3 className="section-title">Additional Details</h3>
@@ -245,6 +276,27 @@ const AdminRegisterUser = () => {
                     value={formData.enrollmentId}
                     onChange={handleChange}
                   />
+                </div>
+              )}
+
+              {formData.role === 'student' && (
+                <div className="form-group">
+                  <label htmlFor="section" className="form-label">
+                    Section
+                  </label>
+                  <select
+                    id="section"
+                    name="section"
+                    className="form-input"
+                    value={formData.section}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Section</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                  </select>
                 </div>
               )}
 
@@ -311,6 +363,7 @@ const AdminRegisterUser = () => {
                     <th>Email</th>
                     <th>Role</th>
                     <th>Department</th>
+                    <th>Section</th>
                     <th>Created At</th>
                   </tr>
                 </thead>
@@ -323,6 +376,7 @@ const AdminRegisterUser = () => {
                         <span className={`role-badge ${user.role}`}>{user.role}</span>
                       </td>
                       <td>{user.department || '-'}</td>
+                      <td>{user.section || '-'}</td>
                       <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))}

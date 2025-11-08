@@ -6,6 +6,7 @@ import TimetablePreparation from '../pages/TimetablePreparation';
 import TakeAttendance from '../pages/TakeAttendance';
 import AttendanceReport from '../pages/AttendanceReport';
 import Attendance from '../../../server/models/Attendance.js';
+import SectionManagement from '../pages/SectionManagement.jsx';
 
 
 function AttendanceSidebar() {
@@ -26,6 +27,8 @@ function AttendanceSidebar() {
         return <TakeAttendance teacherId={currentTeacherId} />;
       case 'report':
         return <AttendanceReport />;
+      case 'section':
+        return <SectionManagement />;
       default:
         return <SubjectManagement />;
     }
@@ -108,6 +111,21 @@ function AttendanceSidebar() {
               }}
             >
               Timetable
+            </button>
+             <button
+              onClick={() => setActiveTab('section')}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: activeTab === 'section' ? 'white' : 'transparent',
+                color: activeTab === 'section' ? '#007bff' : 'white',
+                border: activeTab === 'section' ? 'none' : '1px solid white',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: activeTab ==='section' ? 'bold' : 'normal',
+                fontSize: '14px'
+              }}
+            >
+              Section
             </button>
             <button
               onClick={() => setActiveTab('attendance')}

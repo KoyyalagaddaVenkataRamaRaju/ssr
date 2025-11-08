@@ -2,7 +2,7 @@ import User from '../models/User.js';
 
 export const adminRegisterUser = async (req, res) => {
   try {
-    const { name, email, password, role, department, phone, enrollmentId, employeeId, canRegisterStudents } = req.body;
+    const { name, email, password, role, department, phone, enrollmentId, employeeId, canRegisterStudents, section, batch } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({
@@ -37,11 +37,12 @@ export const adminRegisterUser = async (req, res) => {
       createdBy: req.user.id,
       isActive: true,
     };
-
-    if (role === 'student' && enrollmentId) {
-      userData.enrollmentId = enrollmentId;
+    // optional fields for students
+    if (role === 'student') {
+      if (enrollmentId) userData.enrollmentId = enrollmentId;
+      if (section) userData.section = section;
+      if (batch) userData.batch = batch;
     }
-
     if (role === 'teacher') {
       if (employeeId) userData.employeeId = employeeId;
       userData.canRegisterStudents = canRegisterStudents === true;
@@ -60,6 +61,8 @@ export const adminRegisterUser = async (req, res) => {
         department: user.department,
         phone: user.phone,
         enrollmentId: user.enrollmentId,
+        section: user.section,
+        batch: user.batch,
         employeeId: user.employeeId,
         canRegisterStudents: user.canRegisterStudents,
         createdAt: user.createdAt,
@@ -77,7 +80,7 @@ export const adminRegisterUser = async (req, res) => {
 
 export const teacherRegisterStudent = async (req, res) => {
   try {
-    const { name, email, password, batch,department, phone, enrollmentId } = req.body;
+    const { name, email, password, batch, department, phone, enrollmentId, section } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -102,6 +105,7 @@ export const teacherRegisterStudent = async (req, res) => {
       batch,
       role: 'student',
       department,
+      section,
       phone,
       enrollmentId,
       createdBy: req.user.id,
@@ -117,6 +121,7 @@ export const teacherRegisterStudent = async (req, res) => {
         email: student.email,
         role: student.role,
         department: student.department,
+        section: student.section,
         phone: student.phone,
         enrollmentId: student.enrollmentId,
         createdAt: student.createdAt,

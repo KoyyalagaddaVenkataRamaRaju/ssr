@@ -19,6 +19,7 @@ import attendanceRoutes from './routes/attendance.js';
 import batchRoutes from './routes/batch.js';
 import semesterRoutes from './routes/semester.js';
 import feesRoutes from './routes/fees.js';
+import sectionRoutes from './routes/sections.js';
 
 
 
@@ -92,6 +93,7 @@ app.use('/api/timetable', timetableRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/batches', batchRoutes);
 app.use('/api/semesters', semesterRoutes);
+app.use('/api/sections', sectionRoutes);
 // 404 route for unknown endpoints
 app.use((req, res, next) => {
   res.status(404).json({

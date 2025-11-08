@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    section: {
+      type: String,
+      trim: true,
+      required: function() { return this.role === 'student'; }
+    },
     enrollmentId: {
       type: String,
       trim: true,
