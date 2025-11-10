@@ -26,7 +26,14 @@ api.interceptors.request.use(
 );
 
 
-
+export const fetchDepartment = async () => {
+  try {
+    const response = await api.get('/api/departments'); 
+    return response.data;}
+   catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  } 
+}
 
 
 export const fetchBatchesByDepartmentId = async (departmentId) => {

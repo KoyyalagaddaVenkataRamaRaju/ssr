@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchBatchesByDepartmentId, fetchSubjectsByDepartmentId, fetchAttendanceReport } from '../services/attendanceService';
+import { fetchBatchesByDepartmentId, fetchSubjectsByDepartmentId, fetchAttendanceReport,fetchDepartment } from '../services/attendanceService';
 
 
 
@@ -23,10 +23,10 @@ const AttendanceReport = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/departments');
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const response = await fetchDepartment();
+      const data = response.data;
+      if (response.success) {
+        setDepartments(data);
       }
     } catch (error) {
       console.error('Error fetching departments:', error);
