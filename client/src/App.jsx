@@ -20,8 +20,8 @@ import Placements from "./components/Placements";
 import DepartmentPage from './pages/AdminRegisterBatchPage';
 import AttendanceSidebar from './components/AttendanceSidebar';
 import AdminRegisterBatchPage from './pages/AdminRegisterBatchPage';
-import AdminFeesManager from './pages/AdminFeesManager';
-import AdminStudentFees from './pages/AdminStudentFees';
+import AdminFeeManager from './pages/AdminFeeManager';
+import StudentFeeDashboard from './pages/StudentFeeDashboard';
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -121,15 +121,15 @@ function App() {
           path='/admin/fees'
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminFeesManager/>
+              <AdminFeeManager/>
             </ProtectedRoute>
           }
           />
           <Route
-          path='/admin/studentfees'
+          path='/student/payfees'
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminStudentFees/>
+            <ProtectedRoute >
+              <StudentFeeDashboard/>
             </ProtectedRoute>
           }
           />
