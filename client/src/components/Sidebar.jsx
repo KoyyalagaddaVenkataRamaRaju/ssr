@@ -41,8 +41,9 @@ const Sidebar = () => {
           ...commonItems,
           { name: 'My Classes', icon: BookOpen, path: '#' },
           { name: 'Students', icon: Users, path: '#' },
-          { name: 'Attendance', icon: Calendar, path: '#' },
+          { name: 'Attendance', icon: Calendar, path: '' },
           { name: 'Grades', icon: FileText, path: '#' },
+
     
         ];
 

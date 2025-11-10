@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { fetchBatchesByDepartmentId, fetchSubjectsByDepartmentId, fetchAttendanceReport } from '../services/attendanceService';
+
+
 
 const AttendanceReport = () => {
   const [departments, setDepartments] = useState([]);
@@ -20,7 +23,7 @@ const AttendanceReport = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/departments');
+      const response = await fetch('http://localhost:3000/api/departments');
       const data = await response.json();
       if (data.success) {
         setDepartments(data.data);
@@ -32,10 +35,12 @@ const AttendanceReport = () => {
 
   const fetchBatchesByDepartment = async (departmentId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/batches?department=${departmentId}`);
-      const data = await response.json();
-      if (data.success) {
-        setBatches(data.data);
+      const response = await fetchBatchesByDepartmentId(departmentId);
+      if (response && response.success) {
+        setBatches(response.data);
+      } else if (Array.isArray(response)) {
+        // if service returned array directly
+        setBatches(response);
       }
     } catch (error) {
       console.error('Error fetching batches:', error);
@@ -44,10 +49,11 @@ const AttendanceReport = () => {
 
   const fetchSubjectsByDepartment = async (departmentId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/subjects?department=${departmentId}`);
-      const data = await response.json();
-      if (data.success) {
-        setSubjects(data.data);
+      const response = await fetchSubjectsByDepartmentId(departmentId);
+      if (response && response.success) {
+        setSubjects(response.data);
+      } else if (Array.isArray(response)) {
+        setSubjects(response);
       }
     } catch (error) {
       console.error('Error fetching subjects:', error);
@@ -70,22 +76,12 @@ const AttendanceReport = () => {
     }
 
     try {
-      let url = `http://localhost:5000/api/attendance/report/batch/${filters.batch}/section/${filters.section}`;
-      const params = new URLSearchParams();
-
-      if (filters.subject) params.append('subject', filters.subject);
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.success) {
-        setReportData(data.data);
+      const response = await fetchAttendanceReport(filters);
+      if (response && response.success) {
+        setReportData(response.data);
+      } else if (Array.isArray(response)) {
+        // service may return array directly
+        setReportData(response);
       }
     } catch (error) {
       console.error('Error fetching report:', error);

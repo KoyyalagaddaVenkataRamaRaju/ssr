@@ -78,6 +78,7 @@ export const getTimetableByTeacher = async (req, res) => {
       teacher: req.params.teacherId,
       isActive: true
     })
+    
       .populate('department', 'departmentName departmentId')
       .populate('batch', 'batchName')
       .populate('subject', 'subjectName subjectCode')

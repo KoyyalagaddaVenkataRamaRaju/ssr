@@ -24,7 +24,7 @@ function AttendanceSidebar() {
       case 'timetable':
         return <TimetablePreparation />;
       case 'attendance':
-        return <TakeAttendance teacherId={currentTeacherId} />;
+        return <TakeAttendance teacherId={'6908f2dfc4983efc102b9b11'} />;
       case 'report':
         return <AttendanceReport />;
       case 'section':

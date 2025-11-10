@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { fetchTeacherTimetableId,fetchStudentbyBatchandSection } from '../services/attendanceService';
+import { attendenceofStudents } from '../services/attendanceService';
+
 
 const TakeAttendance = ({ teacherId }) => {
   const [timetables, setTimetables] = useState({});
@@ -6,6 +9,8 @@ const TakeAttendance = ({ teacherId }) => {
   const [students, setStudents] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (teacherId) {
@@ -14,32 +19,55 @@ const TakeAttendance = ({ teacherId }) => {
   }, [teacherId]);
 
   const fetchTeacherTimetable = async () => {
+    console.log("Fetching timetable for teacherId:", teacherId);
     try {
-      const response = await fetch(`http://localhost:5000/api/timetable/teacher/${teacherId}`);
-      const data = await response.json();
-      if (data.success) {
-        setTimetables(data.data);
+      const response = await fetchTeacherTimetableId(teacherId);
+      console.log(response.data)
+      if (!response.success) {
+        throw new Error('Failed to fetch timetable');
+      }
+      const data =  response.data;
+      if (response.success) {
+        setTimetables(response.data);
+      } else {
+        throw new Error(data.message || 'Failed to fetch timetable data');
       }
     } catch (error) {
       console.error('Error fetching timetable:', error);
+      
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchStudents = async (batchId, section) => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/api/users?role=student&batch=${batchId}&section=${section}`);
-      const data = await response.json();
-      if (data.success) {
-        setStudents(data.data);
-        const initialRecords = data.data.map(student => ({
+      const response = await fetchStudentbyBatchandSection(batchId, section);
+      if (!response.success) {
+        throw new Error('Failed to fetch students');
+      }
+      const data =  response.data;
+      console.log(response)
+      if (response.success) {
+        setStudents(data);
+        const initialRecords = data.map(student => ({
           student: student._id,
           status: 'Present',
           remarks: ''
         }));
         setAttendanceRecords(initialRecords);
+      } else {
+        throw new Error(data.message || 'Failed to fetch student data');
       }
     } catch (error) {
       console.error('Error fetching students:', error);
+      setError(error.message);
+      setStudents([]);
+      setAttendanceRecords([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -91,26 +119,24 @@ const TakeAttendance = ({ teacherId }) => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/attendance', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(attendanceData)
-      });
+      const response = await attendenceofStudents(attendanceData);
 
-      const data = await response.json();
-      if (data.success) {
+      if (!response.success) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data =  response.data;
+      if (response.success) {
         alert('Attendance marked successfully!');
         setSelectedTimetable(null);
         setStudents([]);
         setAttendanceRecords([]);
       } else {
-        alert('Error: ' + data.error);
+        alert('Error: ' + (data.error || 'Failed to mark attendance'));
       }
     } catch (error) {
       console.error('Error submitting attendance:', error);
-      alert('Failed to mark attendance');
+      alert('Failed to mark attendance: ' + error.message);
     }
   };
 
@@ -194,7 +220,19 @@ const TakeAttendance = ({ teacherId }) => {
           ))}
         </div>
 
-        {getCurrentDayTimetable().length === 0 && (
+        {isLoading && (
+          <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
+            Loading...
+          </div>
+        )}
+        
+        {!isLoading && error && (
+          <div style={{ textAlign: 'center', color: '#dc3545', padding: '20px' }}>
+            {error}
+          </div>
+        )}
+
+        {!isLoading && !error && getCurrentDayTimetable().length === 0 && (
           <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
             No classes scheduled for today
           </div>
