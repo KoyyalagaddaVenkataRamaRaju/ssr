@@ -14,7 +14,7 @@ const Navbar = () => {
     topBar: {
       backgroundColor: '#7A54B1',
       padding: '10px 0',
-      fontSize: '13px',
+      fontSize: '12px',
       color: '#ffffff',
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     },
