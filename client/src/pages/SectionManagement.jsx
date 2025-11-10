@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchBatchesByDepartment } from '../services/teacherAllocationService.jsx';
 import { createSection,fetchSectionsbyDepartementandBatchandYear} from '../services/sectionService.jsx';
-
+import { fetchDepartment} from '../services/attendanceService.jsx';
 
 const SectionManagement = () => {
   const [departments, setDepartments] = useState([]);
@@ -31,10 +31,10 @@ const SectionManagement = () => {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/departments');
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const response = await fetchDepartment();
+      const data =response.data;
+      if (response.success) {
+        setDepartments(data);
       }
     } catch (error) {
       console.error('Error fetching departments:', error);

@@ -3,7 +3,7 @@ import { teacherAllocationService } from '../services/teacherAllocationService.j
 import { subjectService } from '../services/subjectService.js';
 import axios from 'axios';
 import {fetchTeachersByDepartment,fetchBatchesByDepartment} from '../services/teacherAllocationService.jsx';
-
+import { fetchDepartment} from '../services/attendanceService.jsx';
 const TeacherAllocation = () => {
   const [teachers, setTeachers] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -67,10 +67,10 @@ api.interceptors.request.use(
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/departments');
-      const data = await response.json();
-      if (data.success) {
-        setDepartments(data.data);
+      const response = await fetchDepartment();
+      const data = response.data;
+      if (response.success) {
+        setDepartments(data);
       }
     } catch (error) {
       console.error('Error fetching departments:', error);
