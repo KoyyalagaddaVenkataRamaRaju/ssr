@@ -4,7 +4,9 @@ import {
   getAllDepartments,
 } from "../services/batchService.jsx";
 import axios from "axios";
-import { Modal, Button, Form, Table, Spinner } from "react-bootstrap";
+import Sidebar from "../components/Sidebar";
+import { Layers, CreditCard, Loader } from "lucide-react";
+import { Modal, Button, Form, Table } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminFeeManager = () => {
@@ -13,12 +15,12 @@ const AdminFeeManager = () => {
   const [departments, setDepartments] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [academicYears, setAcademicYears] = useState([]);
-
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedFee, setSelectedFee] = useState(null);
   const [students, setStudents] = useState([]);
   const [showStudentModal, setShowStudentModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
@@ -33,55 +35,46 @@ const AdminFeeManager = () => {
   const [discount, setDiscount] = useState(0);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  // ✅ Fetch dropdown data using your secure service wrapper
-  const fetchDropdownData = async () => {
-    try {
-      const batchRes = await getAllBatches();
-      const deptRes = await getAllDepartments();
-
-      console.log("Batch Response:", batchRes);
-      console.log("Department Response:", deptRes);
-
-      setBatches(batchRes.batches || batchRes.data || []);
-      setDepartments(deptRes.departments || deptRes.data || []);
-
-      // Fetch semesters directly with token
-      const token = localStorage.getItem("token");
-      const semRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/semesters`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      console.log("Semester Response:", semRes.data);
-      setSemesters(semRes.data.semesters || semRes.data.data || []);
-    } catch (err) {
-      console.error("Error fetching dropdown data:", err);
-      if (err?.status === 401 || err?.response?.status === 401) {
-        alert("Session expired. Please log in again.");
-      }
-    }
-  };
-
-  // ✅ Fetch fees (secured)
-  const fetchFees = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/fees`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFees(data.fees || []);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching fees:", err);
-      setLoading(false);
-    }
-  };
-
+  // Fetch data with skeleton delay
   useEffect(() => {
-    fetchDropdownData();
-    fetchFees();
+    let alive = true;
+    const load = async () => {
+      try {
+        const [batchRes, deptRes] = await Promise.all([
+          getAllBatches(),
+          getAllDepartments(),
+        ]);
+        const token = localStorage.getItem("token");
+        const semRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/semesters`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (!alive) return;
+
+        setBatches(batchRes.batches || batchRes.data || []);
+        setDepartments(deptRes.departments || deptRes.data || []);
+        setSemesters(semRes.data.semesters || semRes.data.data || []);
+
+        const feeRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/fees`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setFees(feeRes.data.fees || []);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    load();
+    const timer = setTimeout(() => {
+      if (alive) setLoading(false);
+    }, 1000);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
   }, []);
 
-  // ✅ Generate academic years from batch dates
   const handleBatchChange = (e) => {
     const batchId = e.target.value;
     const selectedBatch = batches.find((b) => b._id === batchId);
@@ -100,11 +93,9 @@ const AdminFeeManager = () => {
     }
   };
 
-  // ✅ Handle input changes
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // ✅ Add / Edit Fee
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -118,14 +109,11 @@ const AdminFeeManager = () => {
           config
         );
       } else {
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/fees`,
-          formData,
-          config
-        );
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/fees`, formData, config);
       }
 
-      fetchFees();
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/fees`, config);
+      setFees(res.data.fees || []);
       setShowModal(false);
       setEditMode(false);
       setFormData({
@@ -142,19 +130,15 @@ const AdminFeeManager = () => {
     }
   };
 
-  // ✅ Delete Fee
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this fee record?")) {
-      const token = localStorage.getItem("token");
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/fees/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchFees();
-    }
+    if (!window.confirm("Are you sure you want to delete this fee record?")) return;
+    const token = localStorage.getItem("token");
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/fees/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setFees(fees.filter((f) => f._id !== id));
   };
 
-  // ✅ Edit Fee
   const handleEdit = (fee) => {
     setSelectedFee(fee);
     setFormData({
@@ -169,7 +153,6 @@ const AdminFeeManager = () => {
     setShowModal(true);
   };
 
-  // ✅ View Students
   const handleViewStudents = async (fee) => {
     const token = localStorage.getItem("token");
     const { data } = await axios.get(
@@ -181,7 +164,6 @@ const AdminFeeManager = () => {
     setShowStudentModal(true);
   };
 
-  // ✅ Apply Discount
   const applyDiscount = async (studentId) => {
     if (!discount || discount < 0) return alert("Enter valid discount amount");
     const token = localStorage.getItem("token");
@@ -201,74 +183,157 @@ const AdminFeeManager = () => {
     }
   };
 
-  // ✅ Loading state
-  if (loading)
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <Spinner animation="border" variant="primary" />
-      </div>
-    );
-
   return (
-    <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-        <h3 className="mb-2">Fee Management</h3>
-        <Button variant="primary" onClick={() => setShowModal(true)}>
-          + Add Fee
-        </Button>
-      </div>
+    <>
+      <style>
+        {`
+          :root {
+            --sidebar-width: 250px;
+            --sidebar-collapsed: 80px;
+          }
+          body {
+            background: linear-gradient(135deg, #f3e5f5, #e0f7fa);
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+          }
+          .fee-page {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+          }
+          .main-content {
+            flex-grow: 1;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 30px 40px;
+            transition: margin-left 0.36s ease;
+          }
+          .page-header {
+            margin-bottom: 1.5rem;
+          }
+          .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4a148c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+          .page-subtitle {
+            color: #666;
+            margin-top: 4px;
+          }
+          .table-container {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(70,60,90,0.05);
+          }
+          .skeleton {
+            background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite linear;
+            border-radius: 8px;
+          }
+          @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+        `}
+      </style>
 
-      {/* Fee List Table */}
-      <Table bordered hover responsive className="shadow-sm">
-        <thead className="table-dark">
-          <tr>
-            <th>Fee Name</th>
-            <th>Batch</th>
-            <th>Department</th>
-            <th>Semester</th>
-            <th>Academic Year</th>
-            <th>Total Amount</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {fees.map((fee) => (
-            <tr key={fee._id}>
-              <td>{fee.feeName}</td>
-              <td>{fee.batch?.batchName}</td>
-              <td>{fee.department?.departmentName}</td>
-              <td>{fee.semester?.semesterName}</td>
-              <td>{fee.academicYear}</td>
-              <td>₹{fee.totalAmount}</td>
-              <td>
-                <Button
-                  variant="info"
-                  size="sm"
-                  onClick={() => handleViewStudents(fee)}
-                  className="me-2"
-                >
-                  View
+      <div className="fee-page">
+        <Sidebar onToggle={setSidebarOpen} />
+
+        <div
+          className="main-content"
+          style={{
+            marginLeft: sidebarOpen ? "var(--sidebar-width)" : "var(--sidebar-collapsed)",
+          }}
+        >
+          {loading ? (
+            <>
+              <div className="skeleton" style={{ height: 35, width: 280, marginBottom: 16 }} />
+              <div className="skeleton" style={{ height: 50, width: 160, marginBottom: 20 }} />
+              <div className="skeleton" style={{ height: 400, borderRadius: 10 }} />
+            </>
+          ) : (
+            <>
+              <div className="page-header">
+                <h1 className="page-title">
+                  <CreditCard size={28} /> Fee Management
+                </h1>
+                <p className="page-subtitle">Manage fee structures and student payments</p>
+              </div>
+
+              <div className="d-flex justify-content-end mb-3">
+                <Button variant="primary" onClick={() => setShowModal(true)}>
+                  + Add Fee
                 </Button>
-                <Button
-                  variant="warning"
-                  size="sm"
-                  onClick={() => handleEdit(fee)}
-                  className="me-2"
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDelete(fee._id)}
-                >
-                  Delete
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+              </div>
+
+              <div className="table-container">
+                <Table bordered hover responsive>
+                  <thead className="table-dark">
+                    <tr>
+                      <th>Fee Name</th>
+                      <th>Batch</th>
+                      <th>Department</th>
+                      <th>Semester</th>
+                      <th>Academic Year</th>
+                      <th>Total Amount</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fees.map((fee) => (
+                      <tr key={fee._id}>
+                        <td>{fee.feeName}</td>
+                        <td>{fee.batch?.batchName}</td>
+                        <td>{fee.department?.departmentName}</td>
+                        <td>{fee.semester?.semesterName}</td>
+                        <td>{fee.academicYear}</td>
+                        <td>₹{fee.totalAmount}</td>
+                        <td>
+                          <Button
+                            variant="info"
+                            size="sm"
+                            onClick={() => handleViewStudents(fee)}
+                            className="me-2"
+                          >
+                            View
+                          </Button>
+                          <Button
+                            variant="warning"
+                            size="sm"
+                            onClick={() => handleEdit(fee)}
+                            className="me-2"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDelete(fee._id)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Add/Edit Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
@@ -288,15 +353,9 @@ const AdminFeeManager = () => {
               />
             </Form.Group>
 
-            {/* Batch Dropdown */}
             <Form.Group className="mb-3">
               <Form.Label>Batch</Form.Label>
-              <Form.Select
-                name="batch"
-                value={formData.batch}
-                onChange={handleBatchChange}
-                required
-              >
+              <Form.Select name="batch" value={formData.batch} onChange={handleBatchChange} required>
                 <option value="">Select Batch</option>
                 {batches.map((b) => (
                   <option key={b._id} value={b._id}>
@@ -306,7 +365,6 @@ const AdminFeeManager = () => {
               </Form.Select>
             </Form.Group>
 
-            {/* Department Dropdown */}
             <Form.Group className="mb-3">
               <Form.Label>Department</Form.Label>
               <Form.Select
@@ -324,7 +382,6 @@ const AdminFeeManager = () => {
               </Form.Select>
             </Form.Group>
 
-            {/* Semester Dropdown */}
             <Form.Group className="mb-3">
               <Form.Label>Semester</Form.Label>
               <Form.Select
@@ -336,13 +393,12 @@ const AdminFeeManager = () => {
                 <option value="">Select Semester</option>
                 {semesters.map((s) => (
                   <option key={s._id} value={s._id}>
-                    {s.semesterName} (Sem {s.semesterNumber})
+                    {s.semesterName}
                   </option>
                 ))}
               </Form.Select>
             </Form.Group>
 
-            {/* Academic Year Dropdown */}
             <Form.Group className="mb-3">
               <Form.Label>Academic Year</Form.Label>
               <Form.Select
@@ -382,12 +438,7 @@ const AdminFeeManager = () => {
       </Modal>
 
       {/* Student Modal */}
-      <Modal
-        show={showStudentModal}
-        onHide={() => setShowStudentModal(false)}
-        size="lg"
-        centered
-      >
+      <Modal show={showStudentModal} onHide={() => setShowStudentModal(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Students - {selectedFee?.feeName}</Modal.Title>
         </Modal.Header>
@@ -419,9 +470,7 @@ const AdminFeeManager = () => {
                       type="number"
                       min="0"
                       placeholder="Enter discount"
-                      value={
-                        selectedStudent === s.student._id ? discount : ""
-                      }
+                      value={selectedStudent === s.student._id ? discount : ""}
                       onChange={(e) => {
                         setDiscount(e.target.value);
                         setSelectedStudent(s.student._id);
@@ -443,7 +492,7 @@ const AdminFeeManager = () => {
           </Table>
         </Modal.Body>
       </Modal>
-    </div>
+    </>
   );
 };
 

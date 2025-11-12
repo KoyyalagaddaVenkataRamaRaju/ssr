@@ -1,438 +1,544 @@
-import { useState, useEffect } from 'react';
-import { UserPlus, CheckCircle, AlertCircle } from 'lucide-react';
-import { adminRegisterUser, getAllUsers } from '../services/authService';
-import { getAllDepartments } from '../services/departmentService'; // Import getAllDepartments
-import Card from '../components/Card';
-import '../styles/register.css';
+import { useState, useEffect } from "react";
+import { UserPlus, CheckCircle, AlertCircle, ClipboardList } from "lucide-react";
+import Sidebar from "../components/Sidebar";
+import { adminRegisterUser, getAllUsers } from "../services/authService";
+import { getAllDepartments } from "../services/departmentService";
 import { fetchBatchesByDepartment } from '../services/teacherAllocationService.jsx';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminRegisterUser = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'student',
-    department: '',
-    batch:'',
-    section: '',
-    phone: '',
-    enrollmentId: '',
-    employeeId: '',
+    name: "",
+    email: "",
+    password: "",
+    role: "student",
+    department: "",
+    batch: "",
+    section: "",
+    phone: "",
+    enrollmentId: "",
+    employeeId: "",
     canRegisterStudents: false,
   });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
   const [recentUsers, setRecentUsers] = useState([]);
-  const [departments, setDepartments] = useState([]); // State for departments
-   const [batches, setBatches] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [batches, setBatches] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // 🕐 Initial Load
   useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000);
     fetchRecentUsers();
-    fetchDepartments(); // Fetch departments on component mount
+    fetchDepartments();
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchRecentUsers = async () => {
     try {
       const response = await getAllUsers({ limit: 10 });
-      if (response.success) {
-        setRecentUsers(response.users);
-      }
+      if (response.success) setRecentUsers(response.users);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     }
   };
 
   const fetchDepartments = async () => {
     try {
       const response = await getAllDepartments();
-      if (response.success) {
-        setDepartments(response.data);
-      } else {
-        console.error('Error fetching departments:', response.message);
-      }
+      if (response.success) setDepartments(response.data);
     } catch (error) {
-      console.error('Error fetching departments:', error);
+      console.error("Error fetching departments:", error);
     }
   };
 
+  const fetchBatches = async (departmentId) => {
+    try {
+      const response = await fetchBatchesByDepartment(departmentId);
+      if (response.success) setBatches(response.data);
+    } catch (err) {
+      console.error("Failed to fetch batches:", err);
+    }
+  };
 
-
-   const fetchBatches = async (departmentId) => {
-      try {
-        const response = await fetchBatchesByDepartment(departmentId);
-        console.log(response.data);
-        if (response.success) {
-          setBatches(response.data);
-        } else {
-          setError(response.message || 'Failed to fetch batches.');
-        }
-      } catch (err) {
-        setError('Failed to fetch batches. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-  
- const handleDepartmentChange = (e) => {
+  const handleDepartmentChange = (e) => {
     const departmentId = e.target.value;
-    console.log(departmentId)
-    console.log('Selected Department ID:', departmentId);
     setFormData({
       ...formData,
       department: departmentId,
-      batch: '',
-      year: ''
+      batch: "",
     });
-    if (departmentId) {
-      fetchBatches(departmentId);
-    }
+    if (departmentId) fetchBatches(departmentId);
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     });
-    setMessage({ type: '', text: '' });
+    setMessage({ type: "", text: "" });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage({ type: '', text: '' });
+    setMessage({ type: "", text: "" });
 
-    if (!formData.name || !formData.email || !formData.password || !formData.role) {
-      setMessage({ type: 'error', text: 'Please fill in all required fields' });
-      return;
-    }
-
-    // require section for students
-    if (formData.role === 'student' && !formData.section) {
-      setMessage({ type: 'error', text: 'Please select a section for the student' });
-      return;
-    }
-
-    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex.test(formData.email)) {
-      setMessage({ type: 'error', text: 'Please enter a valid email address' });
+    if (!formData.name || !formData.email || !formData.password) {
+      setMessage({ type: "error", text: "Please fill in all required fields" });
       return;
     }
 
     if (formData.password.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+      setMessage({ type: "error", text: "Password must be at least 6 characters" });
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       const response = await adminRegisterUser(formData);
-
       if (response.success) {
-        setMessage({ type: 'success', text: 'User registered successfully!' });
+        setMessage({ type: "success", text: "User registered successfully!" });
         setFormData({
-          name: '',
-          email: '',
-          password: '',
-          role: 'student',
-          department: '',
-          section: '',
-          phone: '',
-          enrollmentId: '',
-          employeeId: '',
+          name: "",
+          email: "",
+          password: "",
+          role: "student",
+          department: "",
+          batch: "",
+          section: "",
+          phone: "",
+          enrollmentId: "",
+          employeeId: "",
           canRegisterStudents: false,
         });
         fetchRecentUsers();
       }
     } catch (error) {
       setMessage({
-        type: 'error',
-        text: error.message || 'Failed to register user. Please try again.',
+        type: "error",
+        text: error.message || "Failed to register user.",
       });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="register-user-page">
-      <div className="page-header">
-        <h1 className="page-title">
-          <UserPlus size={32} />
-          Register New User
-        </h1>
-        <p className="page-subtitle">Create new student or teacher accounts</p>
-      </div>
+    <>
+      <style>
+        {`
+        :root {
+          --sidebar-width: 250px;
+          --sidebar-collapsed: 80px;
+        }
 
-      <div className="register-content">
+        body {
+          background: linear-gradient(135deg, #f3e5f5, #e0f7fa);
+          font-family: 'Poppins', sans-serif;
+          color: #333;
+          margin: 0;
+          height: 100vh;
+          overflow: hidden;
+        }
 
-          <form className="register-form" onSubmit={handleSubmit}>
-            <div className="form-section">
-              <h3 className="section-title">Basic Information</h3>
+        .register-page {
+          display: flex;
+          height: 100vh;
+          width: 100%;
+        }
 
-              <div className="form-group">
-                <label htmlFor="name" className="form-label">
-                  Full Name <span className="required">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  className="form-input"
-                  placeholder="Enter full name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
+        /* Scrollable main content */
+        .main-content {
+          flex-grow: 1;
+          padding: 30px 40px;
+          transition: margin-left 0.36s ease;
+          overflow-y: auto;
+          height: 100vh;
+          scrollbar-width: thin;
+          scrollbar-color: #c1a9f1 #f4f4f4;
+        }
+
+        .main-content::-webkit-scrollbar {
+          width: 8px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+          background: #b39ddb;
+          border-radius: 8px;
+        }
+        .main-content::-webkit-scrollbar-thumb:hover {
+          background: #9575cd;
+        }
+
+        .page-header {
+          margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #4a148c;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .page-subtitle {
+          color: #666;
+          margin-top: 4px;
+        }
+
+        /* FORM STYLING */
+        .form-section {
+          background: #fff;
+          border-radius: 12px;
+          padding: 24px;
+          box-shadow: 0 6px 18px rgba(70,60,90,0.06);
+          margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+          font-weight: 600;
+          color: #4a148c;
+          margin-bottom: 1rem;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .form-group {
+          margin-bottom: 1rem;
+        }
+
+        .form-label {
+          font-weight: 500;
+          display: block;
+          margin-bottom: 6px;
+        }
+
+        .form-input, select {
+          width: 100%;
+          padding: 10px 12px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          transition: border 0.2s;
+        }
+
+        .form-input:focus, select:focus {
+          border-color: #6a1b9a;
+          outline: none;
+          box-shadow: 0 0 4px rgba(106,27,154,0.3);
+        }
+
+        .btn-primary {
+          background: linear-gradient(90deg,#6a1b9a,#1e88e5);
+          border: none;
+          padding: 10px 20px;
+          color: #fff;
+          border-radius: 8px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+          background: linear-gradient(90deg,#5e35b1,#1976d2);
+          transform: scale(1.02);
+        }
+
+        /* MESSAGE */
+        .message {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border-radius: 6px;
+          padding: 10px;
+          margin-bottom: 10px;
+          font-weight: 500;
+        }
+
+        .message.success {
+          background: #e8f5e9;
+          color: #2e7d32;
+          border: 1px solid #a5d6a7;
+        }
+
+        .message.error {
+          background: #ffebee;
+          color: #c62828;
+          border: 1px solid #ef9a9a;
+        }
+
+        /* RECENT USERS TABLE */
+        .users-table {
+          background: #fff;
+          border-radius: 10px;
+          box-shadow: 0 6px 18px rgba(70,60,90,0.04);
+          overflow-x: auto;
+          margin-top: 1.5rem;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        th, td {
+          padding: 12px;
+          border-bottom: 1px solid #f3f3f3;
+          text-align: left;
+        }
+
+        th {
+          background: #6a1b9a;
+          color: #fff;
+        }
+
+        tr:hover td {
+          background: #faf1ff;
+        }
+
+        .skeleton {
+          background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.4s infinite linear;
+          border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+
+        @media (max-width: 768px) {
+          .main-content {
+            padding: 1rem;
+          }
+        }
+        `}
+      </style>
+
+      <div className="register-page">
+        {/* Sticky Sidebar */}
+        <Sidebar onToggle={setSidebarOpen} />
+
+        {/* Scrollable Content */}
+        <div
+          className="main-content"
+          style={{
+            marginLeft: sidebarOpen ? "var(--sidebar-width)" : "var(--sidebar-collapsed)",
+          }}
+        >
+          {loading ? (
+            <>
+              <div className="skeleton" style={{ height: 35, width: 250, marginBottom: 20 }}></div>
+              <div className="skeleton" style={{ height: 500, borderRadius: 12 }}></div>
+            </>
+          ) : (
+            <>
+              <div className="page-header">
+                <h1 className="page-title">
+                  <UserPlus size={28} /> Register New User
+                </h1>
+                <p className="page-subtitle">Create new student or teacher accounts</p>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="email" className="form-label">
-                  Email Address <span className="required">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="form-input"
-                  placeholder="Enter email address"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              {/* Form */}
+              <form className="form-section" onSubmit={handleSubmit}>
+                <h3 className="section-title">User Information</h3>
 
-              <div className="form-group">
-                <label htmlFor="password" className="form-label">
-                  Password <span className="required">*</span>
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  className="form-input"
-                  placeholder="Enter password (min 6 characters)"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-
-              <div className="form-group">
-                <label htmlFor="role" className="form-label">
-                  Role <span className="required">*</span>
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  className="form-input"
-                  value={formData.role}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="student">Student</option>
-                  <option value="teacher">Teacher</option>
-                </select>
-              </div>
-            </div>
-
-              {formData.role === 'student' && (
-  <div className="form-group">
-    <label htmlFor="section" className="form-label">
-      Section
-    </label>
-    <select
-      id="section"
-      name="section"
-      className="form-input"
-      value={formData.section}
-      onChange={handleChange}
-    >
-      <option value="">Select Section</option>
-      <option value="A">A</option>
-      <option value="B">B</option>
-      <option value="C">C</option>
-      <option value="D">D</option>
-    </select>
-  </div>
-)}
-
-
-            <div className="form-section">
-              <h3 className="section-title">Additional Details</h3>
-
-              <div className="form-group">
-                <label htmlFor="department" className="form-label">
-                  Department
-                </label>
-                <select
-                  id="department"
-                  name="department"
-                  className="form-input"
-                  value={formData.department}
-                  onChange={handleDepartmentChange}
-                >
-                  <option value="">Select Department</option>
-                  {departments.map((department) => (
-                    <option key={department._id} value={department._id}>
-                      {department.departmentName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-
-                <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                Batch
-              </label>
-              <select
-                name="batch"
-                value={formData.batch}
-                onChange={handleChange}
-                disabled={!formData.department}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid #ccc',
-                  opacity: !formData.department ? 0.5 : 1
-                }}
-              >
-                <option value="">Select Batch</option>
-                
-                {batches.map(batch => (
-                  <option key={batch._id} value={batch._id}>
-                    {batch.batchName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-              <div className="form-group">
-                <label htmlFor="phone" className="form-label">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  className="form-input"
-                  placeholder="Enter phone number"
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {formData.role === 'student' && (
+                {/* Fields */}
                 <div className="form-group">
-                  <label htmlFor="enrollmentId" className="form-label">
-                    Enrollment ID
-                  </label>
+                  <label className="form-label">Full Name *</label>
                   <input
                     type="text"
-                    id="enrollmentId"
-                    name="enrollmentId"
+                    name="name"
                     className="form-input"
-                    placeholder="Enter enrollment ID"
-                    value={formData.enrollmentId}
+                    value={formData.name}
                     onChange={handleChange}
+                    placeholder="Enter full name"
+                    required
                   />
                 </div>
-              )}
 
-           
+                <div className="form-group">
+                  <label className="form-label">Email Address *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="form-input"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter email address"
+                    required
+                  />
+                </div>
 
-              {formData.role === 'teacher' && (
-                <>
+                <div className="form-group">
+                  <label className="form-label">Password *</label>
+                  <input
+                    type="password"
+                    name="password"
+                    className="form-input"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter password (min 6 chars)"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Role *</label>
+                  <select
+                    name="role"
+                    className="form-input"
+                    value={formData.role}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                  </select>
+                </div>
+
+                {/* Department & Batch */}
+                <div className="form-group">
+                  <label className="form-label">Department</label>
+                  <select
+                    name="department"
+                    className="form-input"
+                    value={formData.department}
+                    onChange={handleDepartmentChange}
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map((dep) => (
+                      <option key={dep._id} value={dep._id}>
+                        {dep.departmentName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Batch</label>
+                  <select
+                    name="batch"
+                    className="form-input"
+                    value={formData.batch}
+                    onChange={handleChange}
+                    disabled={!formData.department}
+                  >
+                    <option value="">Select Batch</option>
+                    {batches.map((batch) => (
+                      <option key={batch._id} value={batch._id}>
+                        {batch.batchName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Role-based fields */}
+                {formData.role === "student" && (
                   <div className="form-group">
-                    <label htmlFor="employeeId" className="form-label">
-                      Employee ID
-                    </label>
-                    <input
-                      type="text"
-                      id="employeeId"
-                      name="employeeId"
+                    <label className="form-label">Section</label>
+                    <select
+                      name="section"
                       className="form-input"
-                      placeholder="Enter employee ID"
-                      value={formData.employeeId}
+                      value={formData.section}
                       onChange={handleChange}
-                    />
+                    >
+                      <option value="">Select Section</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                    </select>
                   </div>
-
-                  <div className="form-group checkbox-group">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        name="canRegisterStudents"
-                        checked={formData.canRegisterStudents}
-                        onChange={handleChange}
-                      />
-                      <span>Allow this teacher to register students</span>
-                    </label>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {message.text && (
-              <div className={`message ${message.type}`}>
-                {message.type === 'success' ? (
-                  <CheckCircle size={20} />
-                ) : (
-                  <AlertCircle size={20} />
                 )}
-                <span>{message.text}</span>
+
+                {formData.role === "teacher" && (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">Employee ID</label>
+                      <input
+                        type="text"
+                        name="employeeId"
+                        className="form-input"
+                        value={formData.employeeId}
+                        onChange={handleChange}
+                        placeholder="Enter employee ID"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>
+                        <input
+                          type="checkbox"
+                          name="canRegisterStudents"
+                          checked={formData.canRegisterStudents}
+                          onChange={handleChange}
+                        />{" "}
+                        Allow teacher to register students
+                      </label>
+                    </div>
+                  </>
+                )}
+
+                {/* Message */}
+                {message.text && (
+                  <div className={`message ${message.type}`}>
+                    {message.type === "success" ? <CheckCircle /> : <AlertCircle />}
+                    <span>{message.text}</span>
+                  </div>
+                )}
+
+                <button type="submit" className="btn-primary" disabled={submitting}>
+                  {submitting ? "Registering..." : "Register User"}
+                </button>
+              </form>
+
+              {/* Recent Users */}
+              <h3 className="section-title">
+                <ClipboardList size={20} /> Recently Created Users
+              </h3>
+              <div className="users-table">
+                {recentUsers.length ? (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Section</th>
+                        <th>Created</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentUsers.map((user) => (
+                        <tr key={user._id}>
+                          <td>{user.name}</td>
+                          <td>{user.email}</td>
+                          <td>{user.role}</td>
+                          <td>{user.department || "-"}</td>
+                          <td>{user.section || "-"}</td>
+                          <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p style={{ padding: "12px" }}>No users created yet.</p>
+                )}
               </div>
-            )}
-
-            <button
-              type="submit"
-              className={`btn btn-primary ${loading ? 'btn-loading' : ''}`}
-              disabled={loading}
-            >
-              {loading ? 'Registering...' : 'Register User'}
-            </button>
-          </form>
-
-    
-          <h3 className="section-title">Recently Created Users</h3>
-          <div className="users-table">
-            {recentUsers.length > 0 ? (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Department</th>
-                    <th>Section</th>
-                    <th>Created At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentUsers.map((user) => (
-                    <tr key={user._id}>
-                      <td>{user.name}</td>
-                      <td>{user.email}</td>
-                      <td>
-                        <span className={`role-badge ${user.role}`}>{user.role}</span>
-                      </td>
-                      <td>{user.department || '-'}</td>
-                      <td>{user.section || '-'}</td>
-                      <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p className="no-data">No users created yet</p>
-            )}
-          </div>
-    
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

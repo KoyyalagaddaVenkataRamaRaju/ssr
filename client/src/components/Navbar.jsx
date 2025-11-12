@@ -25,7 +25,7 @@ const Navbar = () => {
     },
     contactInfo: {
       display: 'flex',
-      gap: '25px',
+      gap: '20px',
       alignItems: 'center',
     },
     loginBtn: {
@@ -38,6 +38,14 @@ const Navbar = () => {
       fontWeight: '600',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
+    },
+    applyBtn: {
+      backgroundColor: '#ffffff',
+      color: '#7A54B1',
+      padding: '6px 20px',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
     },
     navbar: {
       backgroundColor: '#ffffff',
@@ -52,7 +60,6 @@ const Navbar = () => {
       display: 'flex',
       alignItems: 'center',
       gap: '15px',
-      padding: '18px 0',
       textDecoration: 'none',
       color: '#333',
     },
@@ -200,7 +207,7 @@ const Navbar = () => {
         {`
           .nav-link-hover:hover {
             color: #7A54B1 !important;
-            border-bottom-color: #7A54B1 !important;
+            border-bottom-color: #7A5 4B1 !important;
           }
           .dropdown-link-hover {
             position: relative;
@@ -240,6 +247,14 @@ const Navbar = () => {
               <span>📞 +91.....00000</span>
               <span>✉️ info@collage.edu.in</span>
             </div>
+            <div style={{gap:'30px', display: 'flex'}}>
+            <button
+             style={styles.applyBtn}
+              className="login-btn-hover"
+              onClick={() => alert('Application functionality coming soon!')} 
+            >
+              Apply Now
+            </button>
             <button
               style={styles.loginBtn}
               className="login-btn-hover"
@@ -247,6 +262,7 @@ const Navbar = () => {
             >
               Login
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -259,11 +275,11 @@ const Navbar = () => {
                 <div style={styles.logo}>
                   <svg viewBox="0 0 50 50" fill="#7A54B1">
                     <circle cx="25" cy="25" r="23" fill="#7A54B1" />
-                    <text x="25" y="33" fontSize="22" fill="white" textAnchor="middle" fontWeight="bold" fontFamily="Arial">P</text>
+                    <text x="25" y="33" fontSize="22" fill="white" textAnchor="middle" fontWeight="bold" fontFamily="Arial">S</text>
                   </svg>
                 </div>
                 <div>
-                  <h1 style={styles.brandText}>Pranav</h1>
+                  <h1 style={styles.brandText}>SSR</h1>
                   <p style={styles.brandSubtext}>Degree College</p>
                 </div>
               </a>
