@@ -61,37 +61,38 @@ const StatsCounter = () => {
       <style>
         {`
         .stats-section {
-          padding: 60px 0;
-          background: #ffffff;
+          padding: 70px 0;
+          background: #FFF4E5; /* LIGHT ORANGE BG */
           display: flex;
           justify-content: center;
         }
 
         .stats-container {
           width: 100%;
-          max-width: 1200px;
+          max-width: 1300px;
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 40px;
-          padding: 0 20px;
+          padding: 0 25px;
         }
 
         .stat-card {
-          padding: 25px 10px;
-          background: #fff;
-          border-radius: 12px;
+          background: #ffffff;
+          padding: 28px 18px;
+          border-radius: 14px;
           display: flex;
           gap: 18px;
           align-items: center;
           transition: 0.3s ease;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
           opacity: 0;
           transform: translateY(20px);
           animation: fadeInUp 1s forwards;
         }
 
         .stat-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 6px 22px rgba(0,0,0,0.12);
+          transform: translateY(-8px);
+          box-shadow: 0 8px 30px rgba(0,0,0,0.18);
         }
 
         @keyframes fadeInUp {
@@ -102,21 +103,21 @@ const StatsCounter = () => {
         }
 
         .stat-icon {
-          font-size: 42px;
-          color: #0bb394;
+          font-size: 46px;
+          color: #ff7b29; /* Orange icon */
           opacity: 0;
           animation: iconPop 1s ease forwards;
         }
 
         @keyframes iconPop {
-          0% { opacity: 0; transform: scale(0.5); }
+          0% { opacity: 0; transform: scale(0.6); }
           100% { opacity: 1; transform: scale(1); }
         }
 
         .stat-value {
-          font-size: 30px;
+          font-size: 32px;
           font-weight: 700;
-          color: #0bb394;
+          color: #ff7b29;
           margin: 0;
         }
 
@@ -127,22 +128,62 @@ const StatsCounter = () => {
           margin-top: -3px;
         }
 
-        /* Responsive */
+        /* ---------- RESPONSIVE ---------- */
+
+        /* Tablets */
         @media (max-width: 992px) {
           .stats-container {
             grid-template-columns: repeat(2, 1fr);
             gap: 30px;
           }
+          .stat-card {
+            padding: 25px 15px;
+          }
+          .stat-value {
+            font-size: 28px;
+          }
+          .stat-icon {
+            font-size: 40px;
+          }
         }
 
+        /* Mobile Large */
+        @media (max-width: 768px) {
+          .stats-container {
+            gap: 22px;
+          }
+          .stat-card {
+            flex-direction: row;
+            text-align: left;
+          }
+        }
+
+        /* Small phones */
         @media (max-width: 600px) {
           .stats-container {
             grid-template-columns: 1fr;
-            gap: 25px;
           }
           .stat-card {
             flex-direction: column;
             text-align: center;
+            gap: 12px;
+            padding: 20px 15px;
+          }
+          .stat-icon {
+            font-size: 38px;
+          }
+          .stat-value {
+            font-size: 26px;
+          }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 400px) {
+          .stat-value {
+            font-size: 24px;
+          }
+          .stat-icon {
+            font-size: 35px;
           }
         }
         `}

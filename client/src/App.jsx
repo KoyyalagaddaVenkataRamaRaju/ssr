@@ -22,6 +22,8 @@ import AttendanceSidebar from './components/AttendanceSidebar';
 import AdminRegisterBatchPage from './pages/AdminRegisterBatchPage';
 import AdminFeeManager from './pages/AdminFeeManager';
 import StudentFeeDashboard from './pages/StudentFeeDashboard';
+import AboutUs from './pages/AboutUs';
+import VisionMission from './components/VisionMission';
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -54,6 +56,8 @@ function App() {
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/placements" element={<Placements/>}/>
+          <Route path='/about' element={<AboutUs/>}/>
+          <Route path='/about/vision-mission' element={<VisionMission/>}/>
 
           <Route
             path="/student/dashboard"
