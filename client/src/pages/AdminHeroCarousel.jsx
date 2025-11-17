@@ -17,23 +17,30 @@ const AdminHeroCarousel = () => {
     isActive: true,
   });
 
-  const API_URL = import.meta.env.VITE_API_URL ;
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  // ✅ Fetch slides with 1s skeleton delay
+  // ======================================================
+  //  ✅ FIXED: MOVED fetchSlides OUTSIDE useEffect
+  // ======================================================
+  const fetchSlides = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/hero-carousel/slides`);
+      const data = await response.json();
+
+      if (data.success) {
+        setSlides(data.data);
+      } else {
+        showAlert("danger", data.message);
+      }
+    } catch (error) {
+      showAlert("danger", "Error fetching slides: " + error.message);
+    }
+  };
+
+  // Load slides on page load
   useEffect(() => {
     let alive = true;
-    const fetchSlides = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/hero-carousel/slides`);
-        const data = await response.json();
-        if (alive) {
-          if (data.success) setSlides(data.data);
-          else showAlert("danger", data.message);
-        }
-      } catch (error) {
-        showAlert("danger", "Error fetching slides: " + error.message);
-      }
-    };
+
     fetchSlides();
 
     const timer = setTimeout(() => alive && setLoading(false), 1000);
@@ -48,12 +55,14 @@ const AdminHeroCarousel = () => {
     setTimeout(() => setAlert(null), 4000);
   };
 
+  // Image change
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setSelectedImage(file);
     if (file) setPreview(URL.createObjectURL(file));
   };
 
+  // Form change
   const handleInputChange = (e) => {
     const { name, type, checked, value } = e.target;
     setFormData((prev) => ({
@@ -62,6 +71,7 @@ const AdminHeroCarousel = () => {
     }));
   };
 
+  // Add / Update Slide
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -70,6 +80,7 @@ const AdminHeroCarousel = () => {
       const form = new FormData();
       form.append("order", formData.order);
       form.append("isActive", formData.isActive);
+
       if (selectedImage) form.append("image", selectedImage);
 
       const url = editingSlide
@@ -83,7 +94,7 @@ const AdminHeroCarousel = () => {
 
       if (data.success) {
         showAlert("success", data.message);
-        fetchSlides();
+        await fetchSlides();
         handleCloseModal();
       } else {
         showAlert("danger", data.message);
@@ -95,18 +106,25 @@ const AdminHeroCarousel = () => {
     }
   };
 
+  // Delete Slide
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this slide?")) return;
+
     try {
       setLoading(true);
+
       const response = await fetch(`${API_URL}/api/hero-carousel/slides/${id}`, {
         method: "DELETE",
       });
+
       const data = await response.json();
+
       if (data.success) {
         showAlert("success", data.message);
-        fetchSlides();
-      } else showAlert("danger", data.message);
+        await fetchSlides(); // FIXED
+      } else {
+        showAlert("danger", data.message);
+      }
     } catch (error) {
       showAlert("danger", "Error deleting slide: " + error.message);
     } finally {
@@ -114,6 +132,7 @@ const AdminHeroCarousel = () => {
     }
   };
 
+  // Edit Slide
   const handleEdit = (slide) => {
     setEditingSlide(slide);
     setFormData({
@@ -124,6 +143,7 @@ const AdminHeroCarousel = () => {
     setShowModal(true);
   };
 
+  // Close Modal
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingSlide(null);
@@ -165,25 +185,12 @@ const AdminHeroCarousel = () => {
           transition: margin-left 0.36s ease;
         }
 
-        .page-header {
-          margin-bottom: 1.5rem;
-        }
-
         .page-title {
           font-size: 24px;
           font-weight: 700;
           color: #4a148c;
-          display: flex;
-          align-items: center;
-          gap: 10px;
         }
 
-        .page-subtitle {
-          color: #666;
-          margin-top: 4px;
-        }
-
-        /* Skeleton shimmer */
         .skeleton {
           background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
           background-size: 200% 100%;
@@ -194,88 +201,58 @@ const AdminHeroCarousel = () => {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
-
-        /* Modal styling */
-        .custom-modal .modal-dialog {
-          transition: transform 0.25s ease-out;
-          transform: scale(1);
-        }
-
-        .custom-modal .modal-content {
-          border-radius: 16px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        }
-
-        @media (max-width: 768px) {
-          .main-content { padding: 1rem; }
-        }
         `}
       </style>
 
       <div className="carousel-page">
         <Sidebar onToggle={setSidebarOpen} />
+
         <div
           className="main-content"
           style={{
             marginLeft: sidebarOpen ? "var(--sidebar-width)" : "var(--sidebar-collapsed)",
           }}
         >
-          {/* ✅ Header */}
-          <div className="page-header d-flex justify-content-between align-items-center flex-wrap">
+          {/* HEADER */}
+          <div className="d-flex justify-content-between align-items-center mb-4">
             {loading ? (
-              <>
-                <div className="skeleton" style={{ height: 30, width: 220, marginBottom: 10 }}></div>
-                <div className="skeleton" style={{ height: 36, width: 140 }}></div>
-              </>
+              <div className="skeleton" style={{ height: 30, width: 220 }}></div>
             ) : (
-              <>
-                <div>
-                  <h1 className="page-title">Manage Hero Carousel</h1>
-                  <p className="page-subtitle">
-                    Add, edit, or remove carousel images for your website home page
-                  </p>
-                </div>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                  + Add New Image
-                </button>
-              </>
+              <h1 className="page-title">Manage Hero Carousel</h1>
+            )}
+
+            {!loading && (
+              <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                + Add New
+              </button>
             )}
           </div>
 
-          {/* ✅ Alerts */}
+          {/* ALERT */}
           {alert && (
-            <div
-              className={`alert alert-${alert.type} d-flex align-items-center justify-content-between`}
-              role="alert"
-            >
-              <span>{alert.message}</span>
+            <div className={`alert alert-${alert.type}`} role="alert">
+              {alert.message}
             </div>
           )}
 
-          {/* ✅ Loading skeleton */}
+          {/* LOADING SKELETON */}
           {loading ? (
             <>
-              <div className="skeleton" style={{ height: 200, marginBottom: 16 }}></div>
-              <div className="skeleton" style={{ height: 200, marginBottom: 16 }}></div>
-              <div className="skeleton" style={{ height: 200, marginBottom: 16 }}></div>
+              <div className="skeleton" style={{ height: 200, marginBottom: 12 }}></div>
+              <div className="skeleton" style={{ height: 200, marginBottom: 12 }}></div>
             </>
           ) : (
             <div className="row g-3">
               {slides.length === 0 ? (
-                <p className="text-center text-muted">No images found.</p>
+                <p className="text-center text-muted">No slides uploaded.</p>
               ) : (
                 slides.map((slide) => (
                   <div className="col-md-3 col-sm-6" key={slide._id}>
-                    <div className="card shadow-sm border-0">
+                    <div className="card shadow-sm">
                       <img
                         src={`${API_URL}${slide.imageUrl}`}
-                        alt="carousel"
                         className="card-img-top"
-                        style={{
-                          height: "180px",
-                          objectFit: "cover",
-                          borderRadius: "10px",
-                        }}
+                        style={{ height: "180px", objectFit: "cover" }}
                       />
                       <div className="card-body text-center">
                         <p className="mb-1">
@@ -288,18 +265,20 @@ const AdminHeroCarousel = () => {
                         >
                           {slide.isActive ? "Active" : "Inactive"}
                         </span>
+
                         <div className="mt-3 d-flex justify-content-center gap-2">
                           <button
-                            className="btn btn-sm btn-warning"
+                            className="btn btn-warning btn-sm"
                             onClick={() => handleEdit(slide)}
                           >
-                            <i className="bi bi-pencil me-1"></i> Edit
+                            Edit
                           </button>
+
                           <button
-                            className="btn btn-sm btn-danger"
+                            className="btn btn-danger btn-sm"
                             onClick={() => handleDelete(slide._id)}
                           >
-                            <i className="bi bi-trash me-1"></i> Delete
+                            Delete
                           </button>
                         </div>
                       </div>
@@ -310,58 +289,50 @@ const AdminHeroCarousel = () => {
             </div>
           )}
 
-          {/* ✅ Modal */}
+          {/* MODAL */}
           {showModal && (
-            <div
-              className="modal fade show d-block custom-modal"
-              tabIndex="-1"
-              style={{ background: "rgba(0,0,0,0.5)" }}
-            >
+            <div className="modal fade show d-block" style={{ background: "rgba(0,0,0,0.4)" }}>
               <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
+
                   <div className="modal-header">
                     <h5 className="modal-title">
-                      {editingSlide ? "Edit Slide" : "Add New Slide"}
+                      {editingSlide ? "Edit Slide" : "Add Slide"}
                     </h5>
                     <button className="btn-close" onClick={handleCloseModal}></button>
                   </div>
+
                   <form onSubmit={handleSubmit}>
                     <div className="modal-body">
-                      <div className="mb-3">
-                        <label className="form-label">Select Image</label>
-                        <input
-                          type="file"
-                          className="form-control"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          required={!editingSlide}
-                        />
-                      </div>
+                      <label className="form-label">Select Image</label>
+                      <input
+                        type="file"
+                        className="form-control"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        required={!editingSlide}
+                      />
 
                       {preview && (
-                        <div className="mb-3 text-center">
-                          <img
-                            src={preview}
-                            alt="Preview"
-                            className="img-fluid rounded"
-                            style={{ maxHeight: "250px", objectFit: "cover" }}
-                          />
-                        </div>
+                        <img
+                          src={preview}
+                          className="img-fluid rounded mt-3"
+                          style={{ maxHeight: "250px", objectFit: "cover" }}
+                        />
                       )}
 
-                      <div className="mb-3">
+                      <div className="mt-3">
                         <label className="form-label">Order</label>
                         <input
                           type="number"
                           name="order"
+                          className="form-control"
                           value={formData.order}
                           onChange={handleInputChange}
-                          className="form-control"
-                          min="0"
                         />
                       </div>
 
-                      <div className="form-check form-switch mb-3">
+                      <div className="form-check form-switch mt-3">
                         <input
                           className="form-check-input"
                           type="checkbox"
@@ -374,31 +345,22 @@ const AdminHeroCarousel = () => {
                         </label>
                       </div>
                     </div>
+
                     <div className="modal-footer">
-                      <button
-                        className="btn btn-secondary"
-                        type="button"
-                        onClick={handleCloseModal}
-                      >
+                      <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
                         Cancel
                       </button>
-                      <button
-                        type="submit"
-                        className="btn btn-primary"
-                        disabled={loading}
-                      >
-                        {loading
-                          ? "Saving..."
-                          : editingSlide
-                          ? "Update"
-                          : "Add"}
+                      <button type="submit" className="btn btn-primary">
+                        {loading ? "Saving..." : editingSlide ? "Update" : "Add"}
                       </button>
                     </div>
+
                   </form>
                 </div>
               </div>
             </div>
           )}
+
         </div>
       </div>
     </>

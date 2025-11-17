@@ -1,343 +1,314 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [hoveredLink, setHoveredLink] = useState(null);
-  const navigate = useNavigate(); // ✅ For navigation
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleLoginClick = () => {
-    navigate('/login'); // ✅ Redirect to login page
-  };
-
-  const styles = {
-    topBar: {
-      backgroundColor: '#7A54B1',
-      padding: '10px 0',
-      fontSize: '12px',
-      color: '#ffffff',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    topBarContent: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    contactInfo: {
-      display: 'flex',
-      gap: '20px',
-      alignItems: 'center',
-    },
-    loginBtn: {
-      backgroundColor: '#ffffff',
-      color: '#7A54B1',
-      border: 'none',
-      padding: '6px 20px',
-      borderRadius: '4px',
-      fontSize: '13px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-    },
-    applyBtn: {
-      backgroundColor: '#ffffff',
-      color: '#7A54B1',
-      padding: '6px 20px',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-    },
-    navbar: {
-      backgroundColor: '#ffffff',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-      padding: '0',
-      position: 'sticky',
-      top: 0,
-      zIndex: 1000,
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    brand: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '15px',
-      textDecoration: 'none',
-      color: '#333',
-    },
-    logo: {
-      height: '55px',
-      width: '55px',
-    },
-    brandText: {
-      margin: 0,
-      fontSize: '22px',
-      fontWeight: '700',
-      color: '#7A54B1',
-      letterSpacing: '0.5px',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    brandSubtext: {
-      margin: 0,
-      fontSize: '11px',
-      color: '#666',
-      fontWeight: '400',
-      letterSpacing: '0.3px',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    navMenu: {
-      listStyle: 'none',
-      display: 'flex',
-      gap: '0px',
-      margin: 0,
-      padding: 0,
-      alignItems: 'center',
-    },
-    navItem: {
-      position: 'relative',
-    },
-    navLink: {
-      textDecoration: 'none',
-      color: '#2c3e50',
-      padding: '25px 20px',
-      display: 'block',
-      fontSize: '15px',
-      fontWeight: '500',
-      transition: 'all 0.3s ease',
-      borderBottom: '3px solid transparent',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      letterSpacing: '0.3px',
-    },
-    dropdown: {
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      backgroundColor: '#ffffff',
-      minWidth: '260px',
-      boxShadow: '0 10px 30px rgba(122, 84, 177, 0.15)',
-      opacity: 0,
-      visibility: 'hidden',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      zIndex: 1000,
-      borderTop: '4px solid #7A54B1',
-      borderRadius: '0 0 8px 8px',
-      paddingTop: '8px',
-      paddingBottom: '8px',
-      transform: 'translateY(-10px)',
-    },
-    dropdownActive: {
-      opacity: 1,
-      visibility: 'visible',
-      transform: 'translateY(0)',
-    },
-    dropdownItem: {
-      padding: 0,
-      margin: '2px 0',
-      borderBottom: 'none',
-    },
-    dropdownLink: {
-      textDecoration: 'none',
-      color: '#333',
-      fontSize: '14px',
-      display: 'flex',
-      alignItems: 'center',
-      padding: '13px 20px',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      fontWeight: '500',
-      borderRadius: '4px',
-      position: 'relative',
-    },
-  };
+  const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
 
   const menuItems = [
-    { title: 'Home', link: '/' },
+    { title: "Home", link: "/" },
     {
-      title: 'Academics',
-      dropdown: [
-        'Undergraduate Programs',
-        'Postgraduate Programs',
-        'Doctoral Programs',
-        'Departments',
-        'Faculty',
-      ],
+      title: "About",
+      dropdown: ["About Us", "Vision & Mission", "Chairman Message"],
     },
     {
-      title: 'Admissions',
-      dropdown: [
-        'How to Apply',
-        'Eligibility',
-        'Fee Structure',
-        'Scholarships',
-        'Important Dates',
-      ],
+      title: "Academics",
+      dropdown: ["UG Programs", "PG Programs", "Departments", "Faculty"],
     },
     {
-      title: 'Research',
-      dropdown: [
-        'Research Centers',
-        'Publications',
-        'Projects',
-        'Research Facilities',
-      ],
+      title: "Admissions",
+      dropdown: ["How to Apply", "Eligibility", "Fee Structure", "Scholarships"],
     },
     {
-      title: 'Placements',
-      dropdown: [
-        'Placement Cell',
-        'Recruiters',
-        'Placement Records',
-        'Training Programs',
-      ],
+      title: "Research",
+      dropdown: ["Research Centers", "Publications", "Projects"],
     },
     {
-      title: 'Statutory',
-      dropdown: [
-        'IQAC',
-        'NAAC',
-        'NBA',
-        'Committees',
-        'Mandatory Disclosures',
-      ],
+      title: "Placements",
+      dropdown: ["Placement Cell", "Training", "Recruiters", "Records"],
     },
-    { title: 'Contact Us', link: '/contact' },
+    {
+      title: "Statutory",
+      dropdown: ["IQAC", "NAAC", "NBA", "Committees"],
+    },
+    { title: "Contact Us", link: "/contact" },
   ];
 
   return (
     <>
       <style>
         {`
-          .nav-link-hover:hover {
-            color: #7A54B1 !important;
-            border-bottom-color: #7A5 4B1 !important;
+        /* ---------------- TOP BAR ---------------- */
+        .top-bar {
+          width: 100%;
+          background: #7A54B1;
+          color: white;
+          padding: 6px 15px;
+          font-size: 12px;
+        }
+
+        .top-bar-inner {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          max-width: 100%;
+        }
+
+        .top-left {
+          display: flex;
+          gap: 18px;
+          align-items: center;
+        }
+
+        .top-right button {
+          background: #fff;
+          color: #7A54B1;
+          border: none;
+          padding: 5px 15px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: 0.2s;
+        }
+
+        .top-right button:hover {
+          background: #f2f2f2;
+        }
+
+        @media(max-width: 600px) {
+          .top-left span {
+            display: none;
           }
-          .dropdown-link-hover {
+        }
+
+        /* ---------------- MAIN NAVBAR ---------------- */
+        .navbar-ssr {
+          width: 100%;
+          padding: 8px 0;
+          background: white;
+          box-shadow: 0px 3px 8px rgba(0,0,0,0.08);
+          position: sticky;
+          top: 0;
+          z-index: 999;
+        }
+
+        .nav-inner {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0 12px !important;
+        }
+
+        /* LOGO */
+        .brand-box {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          text-decoration: none;
+        }
+
+        .brand-circle {
+          width: 45px;
+          height: 45px;
+          background: #7A54B1;
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 22px;
+          font-weight: 700;
+        }
+
+        .brand-title {
+          font-size: 18px;
+          margin: 0;
+          font-weight: 700;
+          color: #7A54B1;
+        }
+
+        .brand-sub {
+          font-size: 11px;
+          margin: 0;
+          color: #555;
+        }
+
+        /* DESKTOP MENU */
+        .nav-menu {
+          display: flex;
+          gap: 22px;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          align-items: center;
+        }
+
+        .nav-item {
+          position: relative;
+        }
+
+        .nav-link {
+          text-decoration: none;
+          font-size: 15px;
+          color: #333;
+          font-weight: 500;
+          padding: 10px 0;
+          cursor: pointer;
+          transition: 0.3s;
+        }
+
+        .nav-link:hover {
+          color: #7A54B1;
+        }
+
+        /* DROPDOWN */
+        .dropdown-box {
+          position: absolute;
+          top: 115%;
+          left: 0;
+          width: 200px;
+          background: white;
+          border-radius: 6px;
+          padding: 8px 0;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+          transition: 0.3s ease;
+          border-top: 3px solid #7A54B1;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(12px);
+        }
+
+        .dropdown-active {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .dropdown-link {
+          display: block;
+          padding: 10px 15px;
+          font-size: 14px;
+          color: #444;
+          text-decoration: none;
+        }
+
+        .dropdown-link:hover {
+          background: rgba(122,84,177,0.1);
+          color: #7A54B1;
+        }
+
+        /* --------------- MOBILE --------------- */
+        .mobile-toggle {
+          display: none;
+          font-size: 26px;
+          color: #7A54B1;
+          cursor: pointer;
+        }
+
+        @media (max-width: 992px) {
+          .mobile-toggle {
+            display: block;
+          }
+
+          .nav-menu {
+            display: none;
+            flex-direction: column;
+            background: white;
+            width: 100%;
+            padding: 12px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            border-radius: 0 0 8px 8px;
+            margin-top: 10px;
+          }
+
+          .nav-menu.active {
+            display: flex;
+          }
+
+          .nav-item {
+            width: 100%;
+            padding-left: 18px;
+          }
+
+          .dropdown-box {
             position: relative;
+            box-shadow: none;
+            width: 100%;
+            border-top: none;
           }
-          .dropdown-link-hover::before {
-            content: '';
-            position: absolute;
-            left: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 2px;
-            background-color: #7A54B1;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-          .dropdown-link-hover:hover {
-            background: linear-gradient(90deg, rgba(122, 84, 177, 0.08) 0%, rgba(122, 84, 177, 0.02) 100%);
-            color: #7A54B1 !important;
-            padding-left: 28px !important;
-            transform: translateX(3px);
-            box-shadow: inset 3px 0 0 #7A54B1;
-          }
-          .dropdown-link-hover:hover::before {
-            width: 4px;
-          }
-          .login-btn-hover:hover {
-            background-color: #f0f0f0 !important;
-            transform: translateY(-1px);
-          }
+        }
         `}
       </style>
 
-      <div style={styles.topBar}>
-        <div className="container">
-          <div style={styles.topBarContent}>
-            <div style={styles.contactInfo}>
-              <span>📞 +91.....00000</span>
-              <span>✉️ info@collage.edu.in</span>
-            </div>
-            <div style={{gap:'30px', display: 'flex'}}>
-            <button
-             style={styles.applyBtn}
-              className="login-btn-hover"
-              onClick={() => alert('Application functionality coming soon!')} 
-            >
-              Apply Now
-            </button>
-            <button
-              style={styles.loginBtn}
-              className="login-btn-hover"
-              onClick={handleLoginClick} // ✅ navigate to login
-            >
-              Login
-            </button>
-            </div>
+      {/* ---------------- TOP BAR ---------------- */}
+      <div className="top-bar">
+        <div className="top-bar-inner">
+
+          <div className="top-left">
+            <span>📞 +91 98765 43210</span>
+            <span>✉️ info@ssrcollege.edu</span>
           </div>
+
+          <div className="top-right">
+            <button>Apply Now</button> &nbsp;
+            <button>Login</button>
+          </div>
+
         </div>
       </div>
 
-      <nav style={styles.navbar}>
-        <div className="container">
-          <div className="row align-items-center">
-            <div className="col-lg-3 col-md-12">
-              <a href="/" style={styles.brand}>
-                <div style={styles.logo}>
-                  <svg viewBox="0 0 50 50" fill="#7A54B1">
-                    <circle cx="25" cy="25" r="23" fill="#7A54B1" />
-                    <text x="25" y="33" fontSize="22" fill="white" textAnchor="middle" fontWeight="bold" fontFamily="Arial">S</text>
-                  </svg>
-                </div>
-                <div>
-                  <h1 style={styles.brandText}>SSR</h1>
-                  <p style={styles.brandSubtext}>Degree College</p>
-                </div>
-              </a>
-            </div>
+      {/* ---------------- MAIN NAVBAR ---------------- */}
+      <div className="navbar-ssr">
+        <div className="nav-inner">
 
-            <div className="col-lg-9 col-md-12">
-              <div className="d-flex justify-content-end align-items-center">
-                <ul style={styles.navMenu}>
-                  {menuItems.map((item, index) => (
-                    <li
-                      key={index}
-                      style={styles.navItem}
-                      onMouseEnter={() => {
-                        if (item.dropdown) setActiveDropdown(index);
-                        setHoveredLink(index);
-                      }}
-                      onMouseLeave={() => {
-                        setActiveDropdown(null);
-                        setHoveredLink(null);
-                      }}
-                    >
-                      <a
-                        href={item.link || '#'}
-                        style={{
-                          ...styles.navLink,
-                          color: hoveredLink === index ? '#7A54B1' : '#2c3e50',
-                          borderBottomColor: hoveredLink === index ? '#7A54B1' : 'transparent',
-                        }}
-                        className="nav-link-hover"
-                      >
-                        {item.title}
-                        {item.dropdown && ' ▾'}
+          {/* LOGO */}
+          <Link to="/" className="brand-box">
+            <div className="brand-circle">S</div>
+            <div>
+              <p className="brand-title">SSR</p>
+              <p className="brand-sub">Degree College</p>
+            </div>
+          </Link>
+
+          {/* MOBILE ICON */}
+          <div className="mobile-toggle" onClick={toggleMobileMenu}>☰</div>
+
+          {/* MENU */}
+          <ul className={`nav-menu ${mobileOpen ? "active" : ""}`}>
+            {menuItems.map((item, index) => (
+              <li
+                key={index}
+                className="nav-item"
+                onMouseEnter={() => setDropdownOpen(index)}
+                onMouseLeave={() => setDropdownOpen(null)}
+              >
+                <span className="nav-link">
+                  {item.title} {item.dropdown && "▾"}
+                </span>
+
+                {item.dropdown && (
+                  <div
+                    className={`dropdown-box ${
+                      dropdownOpen === index ? "dropdown-active" : ""
+                    }`}
+                  >
+                    {item.dropdown.map((sub, sIndex) => (
+                      <a key={sIndex} href="#" className="dropdown-link">
+                        {sub}
                       </a>
+                    ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
 
-                      {item.dropdown && (
-                        <ul
-                          style={{
-                            ...styles.dropdown,
-                            ...(activeDropdown === index ? styles.dropdownActive : {}),
-                          }}
-                        >
-                          {item.dropdown.map((subItem, subIndex) => (
-                            <li key={subIndex} style={styles.dropdownItem}>
-                              <a href="#" style={styles.dropdownLink} className="dropdown-link-hover">
-                                {subItem}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
-      </nav>
+      </div>
     </>
   );
 };
