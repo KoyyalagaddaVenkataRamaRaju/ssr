@@ -1,12 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { getAllDepartments } from "../services/departmentService";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileDropdown, setMobileDropdown] = useState(null);
+  const [departments, setDepartments] = useState([]);
 
   const location = useLocation();
+
+  useEffect(() => {
+    loadDepartments();
+  }, []);
+
+  const loadDepartments = async () => {
+    try {
+      const res = await getAllDepartments();
+      setDepartments(res.data || []);
+    } catch (error) {
+      console.log("Error fetching departments:", error);
+    }
+  };
 
   const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
   const toggleMobileDropdown = (index) =>
@@ -18,6 +33,7 @@ const Navbar = () => {
       title: "About",
       dropdown: ["About Us", "Vision & Mission", "Chairman Message"],
     },
+    { title: "Departments", dynamic: true },
     {
       title: "Academics",
       dropdown: ["UG Programs", "PG Programs", "Departments", "Faculty"],
@@ -34,10 +50,6 @@ const Navbar = () => {
       title: "Placements",
       dropdown: ["Placement Cell", "Training", "Recruiters", "Records"],
     },
-    {
-      title: "Statutory",
-      dropdown: ["IQAC", "NAAC", "NBA", "Committees"],
-    },
     { title: "Contact Us", link: "/contact" },
   ];
 
@@ -53,93 +65,124 @@ const Navbar = () => {
   return (
     <>
       <style>{`
-        .active-link {
-          color: #ff7b29 !important;
-          font-weight: 600;
-        }
-        .active-dropdown {
-          color: #ff7b29 !important;
-          background: rgba(255, 123, 41, 0.12);
-        }
+      body{
+      overflow-x:hidden !important;
+      }
 
-        .mobile-menu .active-link {
+
+        /* -------------------- ACTIVE STATE (DESKTOP) -------------------- */
+        .active-link { color: #ff7b29 !important; font-weight: 600; }
+        .active-dropdown { color: #ff7b29 !important; background: rgba(255,123,41,0.12); }
+
+        /* -------------------- MOBILE ACTIVE STATES -------------------- */
+        .active-mobile {
           color: #ff7b29 !important;
+          font-weight: 700;
+        }
+        .mobile-subitem.active-mobile {
+          color: #ff7b29 !important;
+          background: rgba(255,123,41,0.12);
+          font-weight: 600;
         }
 
         @media (max-width: 992px) {
-          .mobile-toggle {
-            display: block !important;
-          }
-          .nav-menu {
-            display: none !important;
-          }
-          .top-bar {
-            display: none !important;
-          }
+          .mobile-toggle { display: block !important; }
+          .nav-menu { display: none !important; }
+          .top-bar { display: none !important; }
         }
 
+        /* -------------------- MOBILE MENU OVERLAY -------------------- */
+        .menu-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.45);
+          z-index: 2900;
+          opacity: 0;
+          pointer-events: none;
+          transition: 0.3s ease;
+        }
+        .menu-overlay.show {
+          opacity: 1;
+          pointer-events: all;
+        }
+
+        /* -------------------- MOBILE SLIDE MENU -------------------- */
         .mobile-menu {
           position: fixed;
           top: 0;
           left: 0;
           height: 100vh;
-          width: 85%;
-          max-width: 420px;
+          width: 82%;
+          max-width: 400px;
           background: #fff;
           transform: translateX(-100%);
-          transition: transform 0.28s ease;
+          transition: transform .3s ease;
           padding: 20px;
-          overflow-y: auto;
           z-index: 3000;
-          box-shadow: 2px 0 20px rgba(0,0,0,0.12);
+          overflow-y: auto;
+          box-shadow: 3px 0 18px rgba(0,0,0,0.2);
         }
-        .mobile-menu.open {
-          transform: translateX(0);
+        .mobile-menu.open { transform: translateX(0); }
+
+        .mobile-header {
+          display:flex;
+          justify-content: space-between;
+          align-items:center;
+          margin-bottom:15px;
+          padding-bottom:10px;
+          border-bottom:1px solid #eee;
+        }
+
+        .mobile-close-btn {
+          background:#7A54B1;
+          color:white;
+          border:none;
+          padding:6px 12px;
+          border-radius:6px;
+          font-size:18px;
+          cursor:pointer;
         }
 
         .mobile-item {
           display:flex;
           justify-content:space-between;
           align-items:center;
-          padding:14px 0;
+          padding:15px 0;
+          border-bottom:1px solid #f0f0f0;
           font-size:17px;
           font-weight:600;
+        }
+
+        .mobile-submenu {
+          background:#fafafa;
+          border-radius:6px;
+          margin-bottom:10px;
+          overflow:hidden;
+        }
+
+        .mobile-subitem {
+          padding:12px 16px;
+          display:block;
+          text-decoration:none;
+          color:#444;
           border-bottom:1px solid #eee;
+          font-size:15px;
         }
 
         .mobile-cta {
-          margin-top: 12px;
-          display: flex;
-          gap: 10px;
+          display:flex;
+          gap:10px;
+          margin: 15px 0;
         }
-
         .mobile-cta-btn {
-          flex: 1;
+          flex:1;
           background:#7A54B1;
           color:white;
-          border:none;
-          padding:8px 0;
+          padding:10px 0;
           border-radius:6px;
-          font-size:15px;
           text-align:center;
-          cursor:pointer;
-          text-decoration:none;
-          display:block;
-        }
-
-        .mobile-cta-btn:hover {
-          background:#643e94;
-        }
-
-        .plus-icon { font-size:20px; color:#7A54B1; cursor:pointer; }
-        .mobile-submenu { background:#fafafa; }
-        .mobile-subitem {
-          padding:12px 0 12px 16px;
-          border-bottom:1px solid #e8e8e8;
           font-size:15px;
           text-decoration:none;
-          display:block;
-          color:#333;
         }
       `}</style>
 
@@ -150,14 +193,11 @@ const Navbar = () => {
           background: "#7A54B1",
           color: "white",
           padding: "12px 15px",
-          fontSize: "12px",
+          fontSize: 12,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", gap: 18 }}>
-            <span>📞 +91 98765 43210</span>
-            <span>✉️ info@ssrcollege.edu</span>
-          </div>
+          <span>📞 +91 98765 43210 | ✉️ info@ssrcollege.edu</span>
 
           <div>
             <Link to="/apply" style={{ background: "#fff", color: "#7A54B1", padding: "5px 15px", borderRadius: 4, textDecoration:"none" }}>
@@ -184,7 +224,10 @@ const Navbar = () => {
           zIndex: 999,
         }}
       >
-        <div className="nav-inner" style={{ display: "flex", justifyContent: "space-between", padding: "0 12px" }}>
+        <div className="nav-inner"
+          style={{ display: "flex", justifyContent: "space-between", padding: "0 12px" }}
+        >
+          {/* LOGO */}
           <Link to="/" style={{ display: "flex", gap: 10, textDecoration: "none" }}>
             <div style={{
               width: 45, height: 45, background: "#7A54B1", borderRadius: "50%",
@@ -198,13 +241,14 @@ const Navbar = () => {
             </div>
           </Link>
 
-          <div className="mobile-toggle"
+          {/* MOBILE ICON */}
+          <div
+            className="mobile-toggle"
             onClick={toggleMobileMenu}
             style={{ display: "none", fontSize: 26, cursor: "pointer", color: "#7A54B1" }}
-          >
-            ☰
-          </div>
+          >☰</div>
 
+          {/* DESKTOP MENU */}
           <ul className="nav-menu" style={{ display: "flex", gap: 22 }}>
             {menuItems.map((item, index) => (
               <li key={index}
@@ -217,20 +261,18 @@ const Navbar = () => {
                     to={item.link}
                     className={`nav-link ${location.pathname === item.link ? "active-link" : ""}`}
                     style={{ textDecoration: "none", color: "#333" }}
-                  >
-                    {item.title}
-                  </Link>
+                  >{item.title}</Link>
                 ) : (
-                  <span>{item.title} ▾</span>
+                  <span style={{ cursor: "pointer" }}>{item.title} ▾</span>
                 )}
 
-                {item.dropdown && (
+                {(item.dropdown || item.dynamic) && (
                   <div
                     style={{
                       position: "absolute",
                       top: "115%",
                       background: "white",
-                      width: 200,
+                      width: 220,
                       borderRadius: 6,
                       padding: "8px 0",
                       borderTop: "3px solid #7A54B1",
@@ -241,19 +283,48 @@ const Navbar = () => {
                       transition: "0.3s",
                     }}
                   >
-                    {item.dropdown.map((sub, sIdx) => {
-                      const route = getRouteForDropdown(item.title, sub);
-                      return (
+                    {item.dropdown &&
+                      item.dropdown.map((sub, sIdx) => {
+                        const route = getRouteForDropdown(item.title, sub);
+                        return (
+                          <Link
+                            key={sIdx}
+                            to={route}
+                            style={{
+                              padding: "10px 15px",
+                              display: "block",
+                              textDecoration: "none",
+                              color: "#333",
+                            }}
+                            className={`dropdown-link ${
+                              location.pathname === route ? "active-dropdown" : ""
+                            }`}
+                          >
+                            {sub}
+                          </Link>
+                        );
+                      })}
+
+                    {item.dynamic &&
+                      departments.map((dep) => (
                         <Link
-                          key={sIdx}
-                          to={route}
-                          className={`dropdown-link ${location.pathname === route ? "active-dropdown" : ""}`}
-                          style={{ padding: "10px 15px", display: "block", textDecoration: "none", color: "#333" }}
+                          key={dep._id}
+                          to={`/departments/${dep._id}`}
+                          style={{
+                            padding: "10px 15px",
+                            display: "block",
+                            textDecoration: "none",
+                            color: "#333",
+                          }}
+                          className={`dropdown-link ${
+                            location.pathname === `/departments/${dep._id}`
+                              ? "active-dropdown"
+                              : ""
+                          }`}
                         >
-                          {sub}
+                          {dep.departmentName}
                         </Link>
-                      );
-                    })}
+                      ))}
                   </div>
                 )}
               </li>
@@ -262,105 +333,114 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* ---------- MOBILE SLIDE MENU ---------- */}
-      <div className={`mobile-menu ${mobileOpen ? "open" : ""}`}>
+      {/* OVERLAY */}
+      <div
+        className={`menu-overlay ${mobileOpen ? "show" : ""}`}
+        onClick={() => setMobileOpen(false)}
+      ></div>
 
-        {/* MOBILE HEADER */}
+      {/* MOBILE MENU */}
+      <div className={`mobile-menu ${mobileOpen ? "open" : ""}`}>
         <div className="mobile-header">
           <div style={{ display: "flex", gap: 10 }}>
             <div style={{
-              width: 42,
-              height: 42,
-              background: "#7A54B1",
-              borderRadius: "50%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "white",
-              fontWeight: 700
+              width: 42, height: 42, background: "#7A54B1",
+              borderRadius: "50%", display: "flex", justifyContent: "center",
+              alignItems: "center", color: "white", fontWeight: 700
             }}>S</div>
 
             <strong style={{ color: "#7A54B1" }}>SSR</strong>
           </div>
 
-          <button
-            onClick={() => setMobileOpen(false)}
-            style={{ background: "#7A54B1", color: "white", padding: "6px 10px", borderRadius: 4, border: "none" }}
-          >
+          <button className="mobile-close-btn" onClick={() => setMobileOpen(false)}>
             ✕
           </button>
         </div>
 
-        {/* MOBILE TOP CONTACT */}
-        <div className="mobile-top-info">
-          📞 +91 98765 43210 <br />
-          ✉️ info@ssrcollege.edu
-        </div>
-
-        {/* FIXED APPLY + LOGIN FOR MOBILE */}
+        {/* CTA Buttons */}
         <div className="mobile-cta">
-          <Link
-            to="/apply"
-            onClick={() => setMobileOpen(false)}
-            className="mobile-cta-btn"
-          >
+          <Link to="/apply" className="mobile-cta-btn" onClick={() => setMobileOpen(false)}>
             Apply Now
           </Link>
-
-          <Link
-            to="/login"
-            onClick={() => setMobileOpen(false)}
-            className="mobile-cta-btn"
-          >
+          <Link to="/login" className="mobile-cta-btn" onClick={() => setMobileOpen(false)}>
             Login
           </Link>
         </div>
 
-        {/* MENU LIST */}
-        {menuItems.map((item, index) => (
-          <div key={index}>
-            <div className="mobile-item">
-              {item.link ? (
-                <Link
-                  to={item.link}
-                  onClick={() => setMobileOpen(false)}
-                  className={location.pathname === item.link ? "active-link" : ""}
-                >
-                  {item.title}
-                </Link>
-              ) : (
-                <span>{item.title}</span>
-              )}
+        {/* MOBILE MENU LIST */}
+        {menuItems.map((item, index) => {
+          const mainActive =
+            item.link && location.pathname === item.link ? "active-mobile" : "";
 
-              {item.dropdown && (
-                <span className="plus-icon" onClick={() => toggleMobileDropdown(index)}>
-                  {mobileDropdown === index ? "–" : "+"}
-                </span>
+          return (
+            <div key={index}>
+              <div className="mobile-item">
+
+                {item.link ? (
+                  <Link
+                    to={item.link}
+                    onClick={() => setMobileOpen(false)}
+                    className={mainActive}
+                  >
+                    {item.title}
+                  </Link>
+                ) : (
+                  <span>{item.title}</span>
+                )}
+
+                {(item.dropdown || item.dynamic) && (
+                  <span
+                    className="plus-icon"
+                    onClick={() => toggleMobileDropdown(index)}
+                  >
+                    {mobileDropdown === index ? "–" : "+"}
+                  </span>
+                )}
+              </div>
+
+              {(item.dropdown || item.dynamic) && mobileDropdown === index && (
+                <div className="mobile-submenu">
+
+                  {/* Static submenu */}
+                  {item.dropdown &&
+                    item.dropdown.map((sub) => {
+                      const route = getRouteForDropdown(item.title, sub);
+                      return (
+                        <Link
+                          key={sub}
+                          to={route}
+                          onClick={() => setMobileOpen(false)}
+                          className={`mobile-subitem ${
+                            location.pathname === route ? "active-mobile" : ""
+                          }`}
+                        >
+                          {sub}
+                        </Link>
+                      );
+                    })}
+
+                  {/* Dynamic Departments */}
+                  {item.dynamic &&
+                    departments.map((dep) => {
+                      const depRoute = `/departments/${dep._id}`;
+                      return (
+                        <Link
+                          key={dep._id}
+                          to={depRoute}
+                          onClick={() => setMobileOpen(false)}
+                          className={`mobile-subitem ${
+                            location.pathname === depRoute ? "active-mobile" : ""
+                          }`}
+                        >
+                          {dep.departmentName}
+                        </Link>
+                      );
+                    })}
+                </div>
               )}
             </div>
-
-            {item.dropdown && mobileDropdown === index && (
-              <div className="mobile-submenu">
-                {item.dropdown.map((sub, sIdx) => {
-                  const route = getRouteForDropdown(item.title, sub);
-
-                  return (
-                    <Link
-                      key={sIdx}
-                      to={route}
-                      onClick={() => setMobileOpen(false)}
-                      className={`mobile-subitem ${
-                        location.pathname === route ? "active-link" : ""
-                      }`}
-                    >
-                      {sub}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </>
   );

@@ -45,7 +45,7 @@ const HomePage = () => {
       {/* HERO SECTION */}
       {loadingHero ? (
         <div className="container py-5">
-          <div className="skeleton" style={{ height: 320 }} />
+          <div  style={{ height: 320 }} />
         </div>
       ) : (
         <HeroSection slides={slides} />

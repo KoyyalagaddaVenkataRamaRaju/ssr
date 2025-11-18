@@ -24,6 +24,8 @@ import AdminFeeManager from './pages/AdminFeeManager';
 import StudentFeeDashboard from './pages/StudentFeeDashboard';
 import AboutUs from './pages/AboutUs';
 import VisionMission from './components/VisionMission';
+import ChairmanMessage from './components/ChairmanMessage';
+import Department from './pages/DepartmentPage';
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -58,6 +60,9 @@ function App() {
           <Route path="/placements" element={<Placements/>}/>
           <Route path='/about' element={<AboutUs/>}/>
           <Route path='/about/vision-mission' element={<VisionMission/>}/>
+          <Route path='/about/chairman-message' element={<ChairmanMessage/>}/>
+          <Route path="/departments/:id" element={<Department />} />
+
 
           <Route
             path="/student/dashboard"

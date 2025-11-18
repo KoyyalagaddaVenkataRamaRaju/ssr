@@ -116,7 +116,7 @@ const HomeWelcomeSection = () => {
           {/* RIGHT COLUMN */}
           <div className="col-lg-6 text-center">
             <img
-              src="/images/nirf-certificate.jpg"  /* Replace with your SSR related image */
+              src="https://content.jdmagicbox.com/comp/machilipatnam/r8/9999p8672.8672.161001121858.x5r8/catalogue/s-s-r-degree-college-jagannadhapuram-machilipatnam-colleges-gbp74u3.jpg?imwidth=463.3333333333333"  /* Replace with your SSR related image */
               alt="SSR College Recognition"
               className="welcome-image"
             />

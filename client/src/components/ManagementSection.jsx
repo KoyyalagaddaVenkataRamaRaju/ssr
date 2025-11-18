@@ -161,7 +161,7 @@ const ManagementSection = () => {
 
         <div className="row mb-5">
           <div className="col-md-6 d-flex about-box">
-            <img src="/images/ssr-logo.png" className="about-logo" />
+            <img src="https://content.jdmagicbox.com/comp/machilipatnam/r8/9999p8672.8672.161001121858.x5r8/catalogue/s-s-r-degree-college-jagannadhapuram-machilipatnam-colleges-mm6trhn.jpg?imwidth=310" className="about-logo" />
 
             <p className="about-text">
               The SSR Educational Society is committed to empowering rural and
