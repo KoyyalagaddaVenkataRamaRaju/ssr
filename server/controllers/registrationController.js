@@ -1,4 +1,39 @@
 import User from '../models/User.js';
+import Fee from '../models/Fee.js';
+import StudentFee from '../models/StudentFee.js';
+import mongoose from 'mongoose';
+
+
+const assignFeesToNewStudent = async (student) => {
+  try {
+    const fees = await Fee.find({
+      department: student.department,
+      batch: student.batch
+    });
+
+    if (!fees.length) return;
+
+    const studentFees = fees.map(fee => ({
+      studentId: student._id,
+      studentName: student.name,
+      department: student.department,
+      batch: student.batch,
+      semester: fee.semester,
+      academicYear: fee.academicYear,
+      originalAmount: fee.amount,
+      discount: 0,
+      finalAmount: fee.amount,
+      feeId: fee._id
+    }));
+
+    await StudentFee.insertMany(studentFees);
+  } catch (error) {
+    console.error("Error assigning fees to new student:", error.message);
+  }
+};
+
+
+
 
 export const adminRegisterUser = async (req, res) => {
   try {
@@ -49,6 +84,12 @@ export const adminRegisterUser = async (req, res) => {
     }
 
     const user = await User.create(userData);
+
+// Auto assign fees if student
+if (user.role === 'student') {
+  await assignFeesToNewStudent(user);
+}
+
 
     res.status(201).json({
       success: true,
@@ -111,6 +152,8 @@ export const teacherRegisterStudent = async (req, res) => {
       createdBy: req.user.id,
       isActive: true,
     });
+
+    await assignFeesToNewStudent(student);
 
     res.status(201).json({
       success: true,

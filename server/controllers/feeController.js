@@ -1,185 +1,153 @@
-import Fee from "../models/Fee.js";
-import User from "../models/User.js";
-import Batch from "../models/Batch.js";
+import mongoose from 'mongoose';
+import Fee from '../models/Fee.js';
+import StudentFee from '../models/StudentFee.js';
+import User from '../models/User.js';
 
-/**
- * @desc Create new fee
- * @route POST /api/fees
- */
+// Create Fee
 export const createFee = async (req, res) => {
   try {
-    const {
-      batch,
-      department,
-      semester,
-      academicYear,
-      feeName,
-      totalAmount,
-      breakdown,
-    } = req.body;
+    const { department, batch, semester, academicYear, amount } = req.body;
+    
 
-    // Get all students in this department & batch
-    const students = await User.find({
-      role: "student",
-      department,
-      batch,
-      isActive: true,
-    }).select("_id");
+    const deptId = new mongoose.Types.ObjectId(department);
+    const batchId = new mongoose.Types.ObjectId(batch);
+    const semId = new mongoose.Types.ObjectId(semester);
 
-    const assigned = students.map((s) => ({
-      student: s._id,
-      amountAfterDiscount: totalAmount,
-    }));
-
+    // Create Fee record
     const fee = await Fee.create({
-      batch,
-      department,
-      semester,
+      department: deptId,
+      batch: batchId,
+      semester: semId,
       academicYear,
-      feeName,
-      totalAmount,
-      breakdown,
-      createdBy: req.user?._id, // from middleware
-      assignedToStudents: assigned,
+      amount
     });
 
-    res.status(201).json({ success: true, fee });
+    // Fetch students belonging to department + batch
+    const students = await User.find({
+      department: deptId,
+      batch: batchId,
+      role: 'student'
+    });
+
+    
+
+    const studentFees = students.map(student => ({
+      studentId: student._id,
+      studentName: student.name,
+      department: deptId,
+      batch: batchId,
+      semester: semId,
+      academicYear,
+      originalAmount: amount,
+      discount: 0,
+      finalAmount: amount,
+      feeId: fee._id
+    }));
+
+    await StudentFee.insertMany(studentFees);
+
+    res.status(201).json({
+      success: true,
+      message: 'Fee created successfully',
+      fee,
+      studentsAssigned: students.length
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Failed to create fee", error });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @desc Get all fees
- * @route GET /api/fees
- */
+// Get all fees
 export const getAllFees = async (req, res) => {
   try {
     const fees = await Fee.find()
-      .populate("batch", "batchName")
-      .populate("department", "departmentName")
-      .populate("semester", "semesterName semesterNumber")
-      .populate("createdBy", "name email");
+      .populate('department batch semester')
+      .sort({ createdAt: -1 });
 
     res.json({ success: true, fees });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch fees" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @desc Get single fee with students
- * @route GET /api/fees/:id
- */
-export const getFeeById = async (req, res) => {
-  try {
-    const fee = await Fee.findById(req.params.id)
-      .populate({
-        path: "assignedToStudents.student",
-        select: "name email enrollmentId",
-      })
-      .populate("batch department semester");
-
-    if (!fee)
-      return res.status(404).json({ success: false, message: "Fee not found" });
-
-    res.json({ success: true, fee });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching fee" });
-  }
-};
-
-/**
- * @desc Update fee details
- * @route PUT /api/fees/:id
- */
-export const updateFee = async (req, res) => {
-  try {
-    const fee = await Fee.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!fee)
-      return res.status(404).json({ success: false, message: "Fee not found" });
-    res.json({ success: true, fee });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error updating fee" });
-  }
-};
-
-/**
- * @desc Delete fee
- * @route DELETE /api/fees/:id
- */
+// Delete a fee
 export const deleteFee = async (req, res) => {
   try {
-    const fee = await Fee.findById(req.params.id);
-    if (!fee)
-      return res.status(404).json({ success: false, message: "Fee not found" });
+    await Fee.findByIdAndDelete(req.params.id);
+    await StudentFee.deleteMany({ feeId: req.params.id });
 
-    await fee.deleteOne();
-    res.json({ success: true, message: "Fee deleted successfully" });
+    res.json({ success: true, message: 'Fee deleted successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error deleting fee" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @desc Apply discount to student
- * @route PATCH /api/fees/:feeId/discount/:studentId
- */
+// Get student fees with query filters
+export const getStudentFees = async (req, res) => {
+  try {
+    const { search, department, batch, semester } = req.query;
+
+    const query = {};
+    if (search) query.studentName = { $regex: search, $options: 'i' };
+    if (department) query.department = department;
+    if (batch) query.batch = batch;
+    if (semester) query.semester = semester;
+
+    const studentFees = await StudentFee.find(query)
+      .populate('studentId department batch semester feeId')
+      .sort({ studentName: 1 });
+
+    res.json({ success: true, studentFees });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Update student fee (amount + discount)
+export const updateStudentFee = async (req, res) => {
+  try {
+    const { originalAmount, discount } = req.body;
+
+    const finalAmount = originalAmount - discount;
+
+    const studentFee = await StudentFee.findByIdAndUpdate(
+      req.params.id,
+      {
+        originalAmount,
+        discount,
+        finalAmount,
+        updatedAt: Date.now()
+      },
+      { new: true }
+    );
+
+    res.json({ success: true, studentFee });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Apply discount
 export const applyDiscount = async (req, res) => {
   try {
-    const { feeId, studentId } = req.params;
     const { discount } = req.body;
 
-    const fee = await Fee.findById(feeId);
-    if (!fee) return res.status(404).json({ message: "Fee not found" });
+    const studentFee = await StudentFee.findById(req.params.id);
+    if (!studentFee) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student fee not found'
+      });
+    }
 
-    const studentEntry = fee.assignedToStudents.find(
-      (s) => s.student.toString() === studentId
-    );
+    studentFee.discount = discount;
+    studentFee.finalAmount = studentFee.originalAmount - discount;
+    studentFee.updatedAt = Date.now();
 
-    if (!studentEntry)
-      return res.status(404).json({ message: "Student not found in fee" });
+    await studentFee.save();
 
-    studentEntry.discount = discount;
-    studentEntry.amountAfterDiscount = fee.totalAmount - discount;
-    await fee.save();
-
-    res.json({ success: true, message: "Discount applied", fee });
+    res.json({ success: true, studentFee });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error applying discount" });
-  }
-};
-
-/**
- * @desc Mark student fee as paid
- * @route PATCH /api/fees/:feeId/pay/:studentId
- */
-export const markFeePaid = async (req, res) => {
-  try {
-    const { feeId, studentId } = req.params;
-    const { paymentMode, transactionId } = req.body;
-
-    const fee = await Fee.findById(feeId);
-    if (!fee) return res.status(404).json({ message: "Fee not found" });
-
-    const studentEntry = fee.assignedToStudents.find(
-      (s) => s.student.toString() === studentId
-    );
-    if (!studentEntry)
-      return res.status(404).json({ message: "Student not found in fee" });
-
-    studentEntry.isPaid = true;
-    studentEntry.paymentMode = paymentMode;
-    studentEntry.paymentDate = new Date();
-    studentEntry.transactionId = transactionId;
-
-    await fee.save();
-
-    res.json({ success: true, message: "Payment marked successfully", fee });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error updating payment" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };

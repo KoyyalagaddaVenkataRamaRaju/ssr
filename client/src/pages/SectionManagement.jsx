@@ -115,6 +115,8 @@ const SectionManagement = () => {
         academicYear: formData.academicYear
       };
 
+      console.log(sectionData)
+
        const response = await createSection(sectionData);
 
       const data = await response.data;
@@ -246,7 +248,7 @@ const SectionManagement = () => {
               >
                 <option value="">Select Department</option>
                 {departments.map(dept => (
-                  <option key={dept._id} value={dept.batchId}>
+                  <option key={dept._id} value={dept._id}>
                     {dept.departmentName}
                   </option>
                 ))}

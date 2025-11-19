@@ -1,12 +1,25 @@
 import Section from '../models/Section.js';
+import Batch from '../models/Batch.js';
+import mongoose from 'mongoose';
 
 export const createSection = async (req, res) => {
   try {
     const { sectionName, department, batch, year, academicYear, capacity } = req.body;
 
+    // resolve batch: accept either ObjectId or batchName (friendly)
+    let batchId = batch;
+    if (!mongoose.Types.ObjectId.isValid(batchId)) {
+      // try to find batch by batchName
+      const batchDoc = await Batch.findOne({ batchName: batchId });
+      if (!batchDoc) {
+        return res.status(400).json({ success: false, error: `Invalid batch: ${batch}` });
+      }
+      batchId = batchDoc._id;
+    }
+
     const existingSection = await Section.findOne({
       department,
-      batch,
+      batch: batchId,
       sectionName,
       academicYear
     });
@@ -21,7 +34,7 @@ export const createSection = async (req, res) => {
     const section = new Section({
       sectionName,
       department,
-      batch,
+      batch: batchId,
       year,
       academicYear,
       capacity: capacity || 60
@@ -43,7 +56,19 @@ export const createMultipleSections = async (req, res) => {
   try {
     const { department, batch, year, academicYear, numberOfSections, capacity } = req.body;
 
+    // resolve batch if a name was passed
+    let batchId = batch;
+    if (!mongoose.Types.ObjectId.isValid(batchId)) {
+      const batchDoc = await Batch.findOne({ batchName: batchId });
+      if (!batchDoc) {
+        return res.status(400).json({ success: false, error: `Invalid batch: ${batch}` });
+      }
+      batchId = batchDoc._id;
+    }
+    
+
     if (!numberOfSections || numberOfSections < 1 || numberOfSections > 6) {
+      
       return res.status(400).json({
         success: false,
         error: 'Number of sections must be between 1 and 6'
@@ -55,7 +80,7 @@ export const createMultipleSections = async (req, res) => {
 
     const existingSections = await Section.find({
       department,
-      batch,
+      batch: batchId,
       sectionName: { $in: sectionsToCreate },
       academicYear
     });
@@ -71,14 +96,14 @@ export const createMultipleSections = async (req, res) => {
     const sectionsData = sectionsToCreate.map(sectionName => ({
       sectionName,
       department,
-      batch,
+      batch: batchId,
       year,
       academicYear,
       capacity: capacity || 60
     }));
-
+     
     const createdSections = await Section.insertMany(sectionsData);
-
+  
     const populatedSections = await Section.find({ _id: { $in: createdSections.map(s => s._id) } })
       .populate('department', 'departmentName')
       .populate('batch', 'batchName')

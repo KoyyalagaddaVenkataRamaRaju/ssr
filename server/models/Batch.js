@@ -13,6 +13,9 @@ const batchSchema = new mongoose.Schema(
       }
     ],
 
+    // Academic years covered by this batch (e.g. ['2025-2026','2026-2027','2027-2028'])
+    academicYears: [{ type: String }],
+
     startDate: { type: Date },
     endDate: { type: Date }
   },

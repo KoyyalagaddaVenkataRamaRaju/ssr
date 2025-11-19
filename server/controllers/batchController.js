@@ -1,5 +1,6 @@
 import Batch from '../models/Batch.js';
 import Department from '../models/Departement.js';
+import Semester from '../models/Semester.js';
 
 // ===================== CREATE BATCH =====================
 export const createBatch = async (req, res) => {
@@ -32,18 +33,32 @@ export const createBatch = async (req, res) => {
       };
     });
 
+    // Force exactly 3 academic years for the batch.
+    // If batchName contains start-end (e.g. 2025-2028), use the start year; otherwise use current year.
     let startDate = null, endDate = null;
+    let academicYears = [];
+    let startYear;
     if (batchName.includes('-')) {
-      const [startYear, endYear] = batchName.split('-').map(Number);
-      startDate = new Date(startYear, 0, 1);
-      endDate = new Date(endYear, 11, 31);
+      const parts = batchName.split('-').map(Number);
+      startYear = parts[0];
+    } else {
+      startYear = new Date().getFullYear();
     }
+    // Build exactly 3 academic year strings starting from startYear
+    for (let i = 0; i < 3; i++) {
+      const sy = startYear + i;
+      const ey = sy + 1;
+      academicYears.push(`${sy}-${ey}`);
+    }
+    startDate = new Date(startYear, 0, 1);
+    endDate = new Date(startYear + 2, 11, 31);
 
     const batch = await Batch.create({
       batchName,
       departments: departmentsForBatch,
       startDate,
       endDate,
+      academicYears,
     });
 
 await Department.updateMany(
@@ -58,11 +73,87 @@ await Department.updateMany(
   }
 );
 
+    // Create Semester documents for each department and academic year
+    let createdSemesters = [];
+    try {
+      const semesterDocs = [];
+      // For each department in this batch, create semesters for each academic year
+      for (const dept of departmentsForBatch) {
+        const departmentId = dept.departmentId; // ObjectId
+        // We'll create 2 semesters per academic year
+        for (let ayIndex = 0; ayIndex < academicYears.length; ayIndex++) {
+          const academicYearStr = academicYears[ayIndex]; // e.g. '2025-2026'
+          // parse start year
+          const startYear = parseInt(academicYearStr.split('-')[0], 10);
+
+          // Semester 1 of academic year: semesterNumber = ayIndex*2 + 1
+          const sem1Number = ayIndex * 2 + 1;
+          const sem2Number = ayIndex * 2 + 2;
+
+          const yearForSem1 = Math.ceil(sem1Number / 2);
+          const yearForSem2 = Math.ceil(sem2Number / 2);
+
+          // Define semester date ranges: first sem Jul-Dec, second Jan-Jun
+          const sem1Start = new Date(startYear, 6, 1); // July 1
+          const sem1End = new Date(startYear, 11, 31); // Dec 31
+          const sem2Start = new Date(startYear + 1, 0, 1); // Jan 1
+          const sem2End = new Date(startYear + 1, 5, 30); // Jun 30
+
+          semesterDocs.push({
+            semesterName: `Semester ${sem1Number}`,
+            semesterNumber: sem1Number,
+            academicYear: academicYearStr,
+            department: departmentId,
+            year: yearForSem1,
+            startDate: sem1Start,
+            endDate: sem1End,
+            isActive: false,
+            isCurrent: false,
+          });
+
+          semesterDocs.push({
+            semesterName: `Semester ${sem2Number}`,
+            semesterNumber: sem2Number,
+            academicYear: academicYearStr,
+            department: departmentId,
+            year: yearForSem2,
+            startDate: sem2Start,
+            endDate: sem2End,
+            isActive: false,
+            isCurrent: false,
+          });
+        }
+      }
+
+      if (semesterDocs.length > 0) {
+        // insertMany with ordered:false to continue on duplicates
+        await Semester.insertMany(semesterDocs, { ordered: false }).catch((err) => {
+          // ignore duplicate key errors, log others
+          if (err && err.writeErrors) {
+            const other = err.writeErrors.filter(e => e.code !== 11000);
+            if (other.length) console.error('Semester insert errors:', other);
+          } else if (err.code && err.code !== 11000) {
+            console.error('Semester insert error:', err);
+          }
+        });
+
+        // Fetch semesters we care about (may include pre-existing ones for same years)
+        createdSemesters = await Semester.find({
+          department: { $in: deptIds },
+          academicYear: { $in: academicYears }
+        }).sort({ department: 1, academicYear: 1, semesterNumber: 1 });
+      }
+    } catch (semErr) {
+      console.error('Error creating semesters for batch:', semErr);
+    }
 
     return res.status(201).json({
       success: true,
       message: 'Batch created successfully',
-      data: batch,
+      data: {
+        batch,
+        semesters: createdSemesters,
+      },
     });
   } catch (error) {
     console.error('Error creating batch:', error);

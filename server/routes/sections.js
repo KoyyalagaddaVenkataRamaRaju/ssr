@@ -8,11 +8,11 @@ import {
   updateSection,
   deleteSection
 } from '../controllers/sectionController.js';
-import { protect, authorize } from '../middleware/auth.js';
+import { protect, authorize,admin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.post('/', protect, authorize('admin'), createMultipleSections);
+router.post('/', protect, admin, createMultipleSections);
 
 router.get('/', protect, getSections);
 router.get('/batch/:batchId', protect, getSectionsByBatch);

@@ -19,7 +19,7 @@ import attendanceRoutes from './routes/attendance.js';
 import batchRoutes from './routes/batch.js';
 import semesterRoutes from './routes/semester.js';
 import feeRoutes from "./routes/feeRoutes.js";
-import studentRoutes from "./routes/studentRoutes.js";
+
 import sectionRoutes from './routes/sections.js';
 
 
@@ -67,7 +67,7 @@ app.use('/api', registrationRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/hero-carousel', heroCarouselRoutes);
 app.use("/api/fees", feeRoutes);
-app.use("/api/student", studentRoutes);
+
 app.get("/api/placements", (req, res) => {
   const data = [
     {
@@ -95,6 +95,7 @@ app.use('/api/timetable', timetableRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/batches', batchRoutes);
 app.use('/api/semesters', semesterRoutes);
+
 app.use('/api/sections', sectionRoutes);
 // 404 route for unknown endpoints
 app.use((req, res, next) => {

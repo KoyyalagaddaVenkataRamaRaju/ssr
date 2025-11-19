@@ -20,7 +20,7 @@ import Placements from "./components/Placements";
 import DepartmentPage from './pages/AdminRegisterBatchPage';
 import AttendanceSidebar from './components/AttendanceSidebar';
 import AdminRegisterBatchPage from './pages/AdminRegisterBatchPage';
-import AdminFeeManager from './pages/AdminFeeManager';
+import FeeManagement from './pages/AdminFeeManagement';
 import StudentFeeDashboard from './pages/StudentFeeDashboard';
 
 const RootRedirect = () => {
@@ -121,7 +121,7 @@ function App() {
           path='/admin/fees'
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminFeeManager/>
+              <FeeManagement/>
             </ProtectedRoute>
           }
           />

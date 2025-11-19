@@ -11,21 +11,19 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token'); // Retrieve token from localStorage
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-export const fetchTeachersByDepartment = async (departmentId) => {
-  console.log(departmentId)
+
+export const createFee = async (feeData) => {
   try {
-    const response = await api.get(`/api/admin/users?role=teacher&department=${departmentId}`);
+    const response = await api.post('/api/fees/', feeData);
     console.log(response.data)
     return response.data;
   } catch (error) {
@@ -34,10 +32,12 @@ export const fetchTeachersByDepartment = async (departmentId) => {
 };
 
 
-export const fetchBatchesByDepartment = async (departmentId) => {
+
+
+export const fetchSemsterByDepartment = async (departmentId) => {
   console.log(departmentId)
   try {
-    const response = await api.get(`/api/batches?department=${departmentId}`);
+    const response = await api.get(`/api/semesters?department=${departmentId}`);
     console.log(response.data)
     return response.data;
   } catch (error) {
@@ -45,13 +45,21 @@ export const fetchBatchesByDepartment = async (departmentId) => {
   }
 };
 
-export const fetchSectionsByDepartment = async (departmentId) => {
+
+
+
+
+
+export const fetchStudentFee = async () => {
+
   try {
-    const response = await api.get(`/api/sections?department=${departmentId}`);
+    const response = await api.get(`/api/fees/students`);
+    console.log(response.data)
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };
   }
 };
 
-export default api;
+
+export default api

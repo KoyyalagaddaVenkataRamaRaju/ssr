@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { teacherAllocationService } from '../services/teacherAllocationService.js';
 import { subjectService } from '../services/subjectService.js';
 import axios from 'axios';
-import {fetchTeachersByDepartment,fetchBatchesByDepartment} from '../services/teacherAllocationService.jsx';
+import {fetchTeachersByDepartment,fetchBatchesByDepartment, fetchSectionsByDepartment} from '../services/teacherAllocationService.jsx';
 import { fetchDepartment} from '../services/attendanceService.jsx';
 const TeacherAllocation = () => {
   const [teachers, setTeachers] = useState([]);
@@ -11,6 +11,7 @@ const TeacherAllocation = () => {
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState(null);
   const [batches, setBatches] = useState([]);
+  const [sections, setSections] = useState([]);
   const [allocations, setAllocations] = useState([]);
   const [formData, setFormData] = useState({
     teacher: '',
@@ -108,7 +109,6 @@ api.interceptors.request.use(
   const fetchBatches = async (departmentId) => {
     try {
       const response = await fetchBatchesByDepartment(departmentId);
-      console.log(response.data);
       if (response.success) {
         setBatches(response.data);
       } else {
@@ -121,12 +121,27 @@ api.interceptors.request.use(
     }
   };
 
+  const fetchSections = async (departmentId) => {
+    try {
+      const response = await fetchSectionsByDepartment(departmentId);
+      if (response && response.success) {
+        setSections(response.data);
+      } else if (Array.isArray(response)) {
+        setSections(response);
+      }
+    } catch (err) {
+      console.error('Failed to fetch sections:', err);
+      setSections([]);
+    }
+  };
+
   const handleDepartmentChange = (e) => {
     const departmentId = e.target.value;
     setFormData({ ...formData, department: departmentId });
     if (departmentId) {
       fetchTeachers(departmentId);
       fetchBatches(departmentId);
+      fetchSections(departmentId);
       if (formData.year) {
         fetchSubjectsByDepartment(departmentId, formData.year);
       }
@@ -297,10 +312,20 @@ api.interceptors.request.use(
                 required
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
               >
-                <option value="A">Section A</option>
-                <option value="B">Section B</option>
-                <option value="C">Section C</option>
-                <option value="D">Section D</option>
+                {sections && sections.length > 0 ? (
+                  <>
+                    <option value="">Select Section</option>
+                    {sections.map(sec => (
+                      <option key={sec._id || sec.sectionName} value={sec.sectionName || sec._id}>
+                        {sec.sectionName || sec.section}
+                      </option>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                   <option value="A">Create sections before selecting</option>
+                  </>
+                )}
               </select>
             </div>
 
