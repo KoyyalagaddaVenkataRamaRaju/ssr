@@ -1,327 +1,447 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { getAllDepartments } from "../services/departmentService";
 
 const Navbar = () => {
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [hoveredLink, setHoveredLink] = useState(null);
-  const navigate = useNavigate(); // ✅ For navigation
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileDropdown, setMobileDropdown] = useState(null);
+  const [departments, setDepartments] = useState([]);
 
-  const handleLoginClick = () => {
-    navigate('/login'); // ✅ Redirect to login page
+  const location = useLocation();
+
+  useEffect(() => {
+    loadDepartments();
+  }, []);
+
+  const loadDepartments = async () => {
+    try {
+      const res = await getAllDepartments();
+      setDepartments(res.data || []);
+    } catch (error) {
+      console.log("Error fetching departments:", error);
+    }
   };
 
-  const styles = {
-    topBar: {
-      backgroundColor: '#7A54B1',
-      padding: '10px 0',
-      fontSize: '12px',
-      color: '#ffffff',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    topBarContent: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    contactInfo: {
-      display: 'flex',
-      gap: '25px',
-      alignItems: 'center',
-    },
-    loginBtn: {
-      backgroundColor: '#ffffff',
-      color: '#7A54B1',
-      border: 'none',
-      padding: '6px 20px',
-      borderRadius: '4px',
-      fontSize: '13px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-    },
-    navbar: {
-      backgroundColor: '#ffffff',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-      padding: '0',
-      position: 'sticky',
-      top: 0,
-      zIndex: 1000,
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    brand: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '15px',
-      padding: '18px 0',
-      textDecoration: 'none',
-      color: '#333',
-    },
-    logo: {
-      height: '55px',
-      width: '55px',
-    },
-    brandText: {
-      margin: 0,
-      fontSize: '22px',
-      fontWeight: '700',
-      color: '#7A54B1',
-      letterSpacing: '0.5px',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    brandSubtext: {
-      margin: 0,
-      fontSize: '11px',
-      color: '#666',
-      fontWeight: '400',
-      letterSpacing: '0.3px',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    navMenu: {
-      listStyle: 'none',
-      display: 'flex',
-      gap: '0px',
-      margin: 0,
-      padding: 0,
-      alignItems: 'center',
-    },
-    navItem: {
-      position: 'relative',
-    },
-    navLink: {
-      textDecoration: 'none',
-      color: '#2c3e50',
-      padding: '25px 20px',
-      display: 'block',
-      fontSize: '15px',
-      fontWeight: '500',
-      transition: 'all 0.3s ease',
-      borderBottom: '3px solid transparent',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      letterSpacing: '0.3px',
-    },
-    dropdown: {
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      backgroundColor: '#ffffff',
-      minWidth: '260px',
-      boxShadow: '0 10px 30px rgba(122, 84, 177, 0.15)',
-      opacity: 0,
-      visibility: 'hidden',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      zIndex: 1000,
-      borderTop: '4px solid #7A54B1',
-      borderRadius: '0 0 8px 8px',
-      paddingTop: '8px',
-      paddingBottom: '8px',
-      transform: 'translateY(-10px)',
-    },
-    dropdownActive: {
-      opacity: 1,
-      visibility: 'visible',
-      transform: 'translateY(0)',
-    },
-    dropdownItem: {
-      padding: 0,
-      margin: '2px 0',
-      borderBottom: 'none',
-    },
-    dropdownLink: {
-      textDecoration: 'none',
-      color: '#333',
-      fontSize: '14px',
-      display: 'flex',
-      alignItems: 'center',
-      padding: '13px 20px',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      fontWeight: '500',
-      borderRadius: '4px',
-      position: 'relative',
-    },
-  };
+  const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
+  const toggleMobileDropdown = (index) =>
+    setMobileDropdown(mobileDropdown === index ? null : index);
 
   const menuItems = [
-    { title: 'Home', link: '/' },
+    { title: "Home", link: "/" },
     {
-      title: 'Academics',
-      dropdown: [
-        'Undergraduate Programs',
-        'Postgraduate Programs',
-        'Doctoral Programs',
-        'Departments',
-        'Faculty',
-      ],
+      title: "About",
+      dropdown: ["About Us", "Vision & Mission", "Chairman Message"],
+    },
+    { title: "Departments", dynamic: true },
+    {
+      title: "Academics",
+      dropdown: ["UG Programs", "PG Programs", "Departments", "Faculty"],
     },
     {
-      title: 'Admissions',
-      dropdown: [
-        'How to Apply',
-        'Eligibility',
-        'Fee Structure',
-        'Scholarships',
-        'Important Dates',
-      ],
+      title: "Admissions",
+      dropdown: ["How to Apply", "Eligibility", "Fee Structure", "Scholarships"],
     },
     {
-      title: 'Research',
-      dropdown: [
-        'Research Centers',
-        'Publications',
-        'Projects',
-        'Research Facilities',
-      ],
+      title: "Research",
+      dropdown: ["Research Centers", "Publications", "Projects"],
     },
     {
-      title: 'Placements',
-      dropdown: [
-        'Placement Cell',
-        'Recruiters',
-        'Placement Records',
-        'Training Programs',
-      ],
+      title: "Placements",
+      dropdown: ["Placement Cell", "Training", "Recruiters", "Records"],
     },
-    {
-      title: 'Statutory',
-      dropdown: [
-        'IQAC',
-        'NAAC',
-        'NBA',
-        'Committees',
-        'Mandatory Disclosures',
-      ],
-    },
-    { title: 'Contact Us', link: '/contact' },
+    { title: "Contact Us", link: "/contact" },
   ];
+
+  const getRouteForDropdown = (main, sub) => {
+    if (main === "About") {
+      if (sub === "About Us") return "/about";
+      if (sub === "Vision & Mission") return "/about/vision-mission";
+      if (sub === "Chairman Message") return "/about/chairman-message";
+    }
+    return "#";
+  };
 
   return (
     <>
-      <style>
-        {`
-          .nav-link-hover:hover {
-            color: #7A54B1 !important;
-            border-bottom-color: #7A54B1 !important;
-          }
-          .dropdown-link-hover {
-            position: relative;
-          }
-          .dropdown-link-hover::before {
-            content: '';
-            position: absolute;
-            left: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 2px;
-            background-color: #7A54B1;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-          .dropdown-link-hover:hover {
-            background: linear-gradient(90deg, rgba(122, 84, 177, 0.08) 0%, rgba(122, 84, 177, 0.02) 100%);
-            color: #7A54B1 !important;
-            padding-left: 28px !important;
-            transform: translateX(3px);
-            box-shadow: inset 3px 0 0 #7A54B1;
-          }
-          .dropdown-link-hover:hover::before {
-            width: 4px;
-          }
-          .login-btn-hover:hover {
-            background-color: #f0f0f0 !important;
-            transform: translateY(-1px);
-          }
-        `}
-      </style>
+      <style>{`
+      body{
+      overflow-x:hidden !important;
+      }
 
-      <div style={styles.topBar}>
-        <div className="container">
-          <div style={styles.topBarContent}>
-            <div style={styles.contactInfo}>
-              <span>📞 +91.....00000</span>
-              <span>✉️ info@collage.edu.in</span>
-            </div>
-            <button
-              style={styles.loginBtn}
-              className="login-btn-hover"
-              onClick={handleLoginClick} // ✅ navigate to login
-            >
+
+        /* -------------------- ACTIVE STATE (DESKTOP) -------------------- */
+        .active-link { color: #ff7b29 !important; font-weight: 600; }
+        .active-dropdown { color: #ff7b29 !important; background: rgba(255,123,41,0.12); }
+
+        /* -------------------- MOBILE ACTIVE STATES -------------------- */
+        .active-mobile {
+          color: #ff7b29 !important;
+          font-weight: 700;
+        }
+        .mobile-subitem.active-mobile {
+          color: #ff7b29 !important;
+          background: rgba(255,123,41,0.12);
+          font-weight: 600;
+        }
+
+        @media (max-width: 992px) {
+          .mobile-toggle { display: block !important; }
+          .nav-menu { display: none !important; }
+          .top-bar { display: none !important; }
+        }
+
+        /* -------------------- MOBILE MENU OVERLAY -------------------- */
+        .menu-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.45);
+          z-index: 2900;
+          opacity: 0;
+          pointer-events: none;
+          transition: 0.3s ease;
+        }
+        .menu-overlay.show {
+          opacity: 1;
+          pointer-events: all;
+        }
+
+        /* -------------------- MOBILE SLIDE MENU -------------------- */
+        .mobile-menu {
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100vh;
+          width: 82%;
+          max-width: 400px;
+          background: #fff;
+          transform: translateX(-100%);
+          transition: transform .3s ease;
+          padding: 20px;
+          z-index: 3000;
+          overflow-y: auto;
+          box-shadow: 3px 0 18px rgba(0,0,0,0.2);
+        }
+        .mobile-menu.open { transform: translateX(0); }
+
+        .mobile-header {
+          display:flex;
+          justify-content: space-between;
+          align-items:center;
+          margin-bottom:15px;
+          padding-bottom:10px;
+          border-bottom:1px solid #eee;
+        }
+
+        .mobile-close-btn {
+          background:#7A54B1;
+          color:white;
+          border:none;
+          padding:6px 12px;
+          border-radius:6px;
+          font-size:18px;
+          cursor:pointer;
+        }
+
+        .mobile-item {
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          padding:15px 0;
+          border-bottom:1px solid #f0f0f0;
+          font-size:17px;
+          font-weight:600;
+        }
+
+        .mobile-submenu {
+          background:#fafafa;
+          border-radius:6px;
+          margin-bottom:10px;
+          overflow:hidden;
+        }
+
+        .mobile-subitem {
+          padding:12px 16px;
+          display:block;
+          text-decoration:none;
+          color:#444;
+          border-bottom:1px solid #eee;
+          font-size:15px;
+        }
+
+        .mobile-cta {
+          display:flex;
+          gap:10px;
+          margin: 15px 0;
+        }
+        .mobile-cta-btn {
+          flex:1;
+          background:#7A54B1;
+          color:white;
+          padding:10px 0;
+          border-radius:6px;
+          text-align:center;
+          font-size:15px;
+          text-decoration:none;
+        }
+      `}</style>
+
+      {/* TOP BAR */}
+      <div
+        className="top-bar"
+        style={{
+          background: "#7A54B1",
+          color: "white",
+          padding: "12px 15px",
+          fontSize: 12,
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span>📞 +91 98765 43210 | ✉️ info@ssrcollege.edu</span>
+
+          <div>
+            <Link to="/apply" style={{ background: "#fff", color: "#7A54B1", padding: "5px 15px", borderRadius: 4, textDecoration:"none" }}>
+              Apply Now
+            </Link>
+            &nbsp;
+            <Link to="/login" style={{ background: "#fff", color: "#7A54B1", padding: "5px 15px", borderRadius: 4, textDecoration:"none" }}>
               Login
-            </button>
+            </Link>
           </div>
         </div>
       </div>
 
-      <nav style={styles.navbar}>
-        <div className="container">
-          <div className="row align-items-center">
-            <div className="col-lg-3 col-md-12">
-              <a href="/" style={styles.brand}>
-                <div style={styles.logo}>
-                  <svg viewBox="0 0 50 50" fill="#7A54B1">
-                    <circle cx="25" cy="25" r="23" fill="#7A54B1" />
-                    <text x="25" y="33" fontSize="22" fill="white" textAnchor="middle" fontWeight="bold" fontFamily="Arial">P</text>
-                  </svg>
-                </div>
-                <div>
-                  <h1 style={styles.brandText}>Pranav</h1>
-                  <p style={styles.brandSubtext}>Degree College</p>
-                </div>
-              </a>
+      {/* DESKTOP NAVBAR */}
+      <div
+        className="navbar-ssr"
+        style={{
+          width: "100%",
+          background: "white",
+          padding: "8px 0",
+          boxShadow: "0 3px 8px rgba(0,0,0,0.08)",
+          position: "sticky",
+          top: 0,
+          zIndex: 999,
+        }}
+      >
+        <div className="nav-inner"
+          style={{ display: "flex", justifyContent: "space-between", padding: "0 12px" }}
+        >
+          {/* LOGO */}
+          <Link to="/" style={{ display: "flex", gap: 10, textDecoration: "none" }}>
+            <div style={{
+              width: 45, height: 45, background: "#7A54B1", borderRadius: "50%",
+              display: "flex", justifyContent: "center", alignItems: "center",
+              color: "white", fontWeight: 700, fontSize: 22
+            }}>S</div>
+
+            <div>
+              <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#7A54B1" }}>SSR</p>
+              <p style={{ margin: 0, fontSize: 11, color: "#555" }}>Degree College</p>
             </div>
+          </Link>
 
-            <div className="col-lg-9 col-md-12">
-              <div className="d-flex justify-content-end align-items-center">
-                <ul style={styles.navMenu}>
-                  {menuItems.map((item, index) => (
-                    <li
-                      key={index}
-                      style={styles.navItem}
-                      onMouseEnter={() => {
-                        if (item.dropdown) setActiveDropdown(index);
-                        setHoveredLink(index);
-                      }}
-                      onMouseLeave={() => {
-                        setActiveDropdown(null);
-                        setHoveredLink(null);
-                      }}
-                    >
-                      <a
-                        href={item.link || '#'}
-                        style={{
-                          ...styles.navLink,
-                          color: hoveredLink === index ? '#7A54B1' : '#2c3e50',
-                          borderBottomColor: hoveredLink === index ? '#7A54B1' : 'transparent',
-                        }}
-                        className="nav-link-hover"
-                      >
-                        {item.title}
-                        {item.dropdown && ' ▾'}
-                      </a>
+          {/* MOBILE ICON */}
+          <div
+            className="mobile-toggle"
+            onClick={toggleMobileMenu}
+            style={{ display: "none", fontSize: 26, cursor: "pointer", color: "#7A54B1" }}
+          >☰</div>
 
-                      {item.dropdown && (
-                        <ul
+          {/* DESKTOP MENU */}
+          <ul className="nav-menu" style={{ display: "flex", gap: 22 }}>
+            {menuItems.map((item, index) => (
+              <li key={index}
+                onMouseEnter={() => setDropdownOpen(index)}
+                onMouseLeave={() => setDropdownOpen(null)}
+                style={{ position: "relative" }}
+              >
+                {item.link ? (
+                  <Link
+                    to={item.link}
+                    className={`nav-link ${location.pathname === item.link ? "active-link" : ""}`}
+                    style={{ textDecoration: "none", color: "#333" }}
+                  >{item.title}</Link>
+                ) : (
+                  <span style={{ cursor: "pointer" }}>{item.title} ▾</span>
+                )}
+
+                {(item.dropdown || item.dynamic) && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "115%",
+                      background: "white",
+                      width: 220,
+                      borderRadius: 6,
+                      padding: "8px 0",
+                      borderTop: "3px solid #7A54B1",
+                      boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
+                      opacity: dropdownOpen === index ? 1 : 0,
+                      visibility: dropdownOpen === index ? "visible" : "hidden",
+                      transform: dropdownOpen === index ? "translateY(0)" : "translateY(12px)",
+                      transition: "0.3s",
+                    }}
+                  >
+                    {item.dropdown &&
+                      item.dropdown.map((sub, sIdx) => {
+                        const route = getRouteForDropdown(item.title, sub);
+                        return (
+                          <Link
+                            key={sIdx}
+                            to={route}
+                            style={{
+                              padding: "10px 15px",
+                              display: "block",
+                              textDecoration: "none",
+                              color: "#333",
+                            }}
+                            className={`dropdown-link ${
+                              location.pathname === route ? "active-dropdown" : ""
+                            }`}
+                          >
+                            {sub}
+                          </Link>
+                        );
+                      })}
+
+                    {item.dynamic &&
+                      departments.map((dep) => (
+                        <Link
+                          key={dep._id}
+                          to={`/departments/${dep._id}`}
                           style={{
-                            ...styles.dropdown,
-                            ...(activeDropdown === index ? styles.dropdownActive : {}),
+                            padding: "10px 15px",
+                            display: "block",
+                            textDecoration: "none",
+                            color: "#333",
                           }}
+                          className={`dropdown-link ${
+                            location.pathname === `/departments/${dep._id}`
+                              ? "active-dropdown"
+                              : ""
+                          }`}
                         >
-                          {item.dropdown.map((subItem, subIndex) => (
-                            <li key={subIndex} style={styles.dropdownItem}>
-                              <a href="#" style={styles.dropdownLink} className="dropdown-link-hover">
-                                {subItem}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
+                          {dep.departmentName}
+                        </Link>
+                      ))}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
-      </nav>
+      </div>
+
+      {/* OVERLAY */}
+      <div
+        className={`menu-overlay ${mobileOpen ? "show" : ""}`}
+        onClick={() => setMobileOpen(false)}
+      ></div>
+
+      {/* MOBILE MENU */}
+      <div className={`mobile-menu ${mobileOpen ? "open" : ""}`}>
+        <div className="mobile-header">
+          <div style={{ display: "flex", gap: 10 }}>
+            <div style={{
+              width: 42, height: 42, background: "#7A54B1",
+              borderRadius: "50%", display: "flex", justifyContent: "center",
+              alignItems: "center", color: "white", fontWeight: 700
+            }}>S</div>
+
+            <strong style={{ color: "#7A54B1" }}>SSR</strong>
+          </div>
+
+          <button className="mobile-close-btn" onClick={() => setMobileOpen(false)}>
+            ✕
+          </button>
+        </div>
+
+        {/* CTA Buttons */}
+        <div className="mobile-cta">
+          <Link to="/apply" className="mobile-cta-btn" onClick={() => setMobileOpen(false)}>
+            Apply Now
+          </Link>
+          <Link to="/login" className="mobile-cta-btn" onClick={() => setMobileOpen(false)}>
+            Login
+          </Link>
+        </div>
+
+        {/* MOBILE MENU LIST */}
+        {menuItems.map((item, index) => {
+          const mainActive =
+            item.link && location.pathname === item.link ? "active-mobile" : "";
+
+          return (
+            <div key={index}>
+              <div className="mobile-item">
+
+                {item.link ? (
+                  <Link
+                    to={item.link}
+                    onClick={() => setMobileOpen(false)}
+                    className={mainActive}
+                  >
+                    {item.title}
+                  </Link>
+                ) : (
+                  <span>{item.title}</span>
+                )}
+
+                {(item.dropdown || item.dynamic) && (
+                  <span
+                    className="plus-icon"
+                    onClick={() => toggleMobileDropdown(index)}
+                  >
+                    {mobileDropdown === index ? "–" : "+"}
+                  </span>
+                )}
+              </div>
+
+              {(item.dropdown || item.dynamic) && mobileDropdown === index && (
+                <div className="mobile-submenu">
+
+                  {/* Static submenu */}
+                  {item.dropdown &&
+                    item.dropdown.map((sub) => {
+                      const route = getRouteForDropdown(item.title, sub);
+                      return (
+                        <Link
+                          key={sub}
+                          to={route}
+                          onClick={() => setMobileOpen(false)}
+                          className={`mobile-subitem ${
+                            location.pathname === route ? "active-mobile" : ""
+                          }`}
+                        >
+                          {sub}
+                        </Link>
+                      );
+                    })}
+
+                  {/* Dynamic Departments */}
+                  {item.dynamic &&
+                    departments.map((dep) => {
+                      const depRoute = `/departments/${dep._id}`;
+                      return (
+                        <Link
+                          key={dep._id}
+                          to={depRoute}
+                          onClick={() => setMobileOpen(false)}
+                          className={`mobile-subitem ${
+                            location.pathname === depRoute ? "active-mobile" : ""
+                          }`}
+                        >
+                          {dep.departmentName}
+                        </Link>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 };
