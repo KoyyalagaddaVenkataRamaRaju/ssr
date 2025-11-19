@@ -36,39 +36,37 @@ const Sidebar = ({ onToggle }) => {
     ];
 
     switch (user?.role) {
-      case 'principal':
+      case "principal":
         return [
           ...commonItems,
-          { name: 'Overview', icon: FileText, path: '#' },
-          { name: 'Staff Management', icon: Users, path: '#' },
-          { name: 'Reports', icon: FileText, path: '#' },
-          { name: 'Settings', icon: Settings, path: '#' },
+          { name: "Overview", icon: FileText, path: "#" },
+          { name: "Staff Management", icon: Users, path: "#" },
+          { name: "Reports", icon: FileText, path: "#" },
+          { name: "Settings", icon: Settings, path: "#" },
         ];
-      case 'admin':
+      case "admin":
         return [
           ...commonItems,
-          { name: 'Register User', icon: UserPlus, path: '/admin/register-user' },
-          { name: 'Manage Users', icon: Users, path: '/admin/manage-users' },
-          { name: 'Register Department', icon: PlusSquare, path: '/admin/register-department' }, // Added Department Registration
-          { name: 'Register Batches', icon: BookOpen, path: '/batches' },
-          {name:'Fees',icon: CopySlash,path:'/admin/fees'},
-          {name:'studentfee',icon:BadgeDollarSign,path:'/admin/studentfees'},
-          {name:'HomeCarousel',icon:Image,path:'/admin/hero-carousel'},
-          { name: 'Reports', icon: FileText, path: '#' },
-          { name: 'Settings', icon: Settings, path: '#' },
-           {name:'Attendance ',icon:FileText,path:'/teacher/attendance'}
+          { name: "Register User", icon: UserPlus, path: "/admin/register-user" },
+          { name: "Manage Users", icon: Users, path: "/admin/manage-users" },
+          { name: "Register Department", icon: PlusSquare, path: "/admin/register-department" },
+          { name: "Register Batches", icon: BookOpen, path: "/admin/batches" },
+          { name: "Fees", icon: CopySlash, path: "/admin/fees" },
+          { name: "Student Fee", icon: BadgeDollarSign, path: "/admin/studentfees" },
+          { name: "HomeCarousel", icon: Image, path: "/admin/hero-carousel" },
+          { name: "Recruiters", icon: Image, path: "/admin/recruiters" },
+          { name: "Reports", icon: FileText, path: "#" },
+          { name: "Settings", icon: Settings, path: "#" },
+          { name: "Attendance", icon: FileText, path: "/teacher/attendance" },
         ];
-      case 'teacher':
-        const teacherItems = [
+      case "teacher":
+        return [
           ...commonItems,
-          { name: 'My Classes', icon: BookOpen, path: '#' },
-          { name: 'Students', icon: Users, path: '#' },
-          { name: 'Attendance', icon: Calendar, path: '' },
-          { name: 'Grades', icon: FileText, path: '#' },
-
-    
+          { name: "My Classes", icon: BookOpen, path: "#" },
+          { name: "Students", icon: Users, path: "#" },
+          { name: "Attendance", icon: Calendar, path: "#" },
+          { name: "Grades", icon: FileText, path: "#" },
         ];
-
       default:
         return commonItems;
     }
@@ -78,27 +76,32 @@ const Sidebar = ({ onToggle }) => {
 
   return (
     <>
-      <style>
-        {`
+      <style>{`
         :root {
           --sidebar-width: 250px;
           --sidebar-collapsed: 80px;
+
+          /* Material 3 Colors */
+          --bg-main: #f1f5f9;
+          --card-bg: #ffffff;
+          --text-dark: #334155;
+          --accent: #0ea5e9;
+          --accent-light: #e0f7ff;
         }
 
-        /* ✅ FIXED FULL HEIGHT SIDEBAR */
         .sidebar-container {
           position: fixed;
           top: 0;
           left: 0;
           height: 100vh;
           width: var(--sidebar-width);
-          background: linear-gradient(180deg, #5e35b1, #1e88e5);
-          color: white;
+          background: var(--bg-main);
+          color: var(--text-dark);
           display: flex;
           flex-direction: column;
-          transition: width 0.4s ease-in-out;
+          transition: width 0.35s ease-in-out;
           z-index: 1050;
-          box-shadow: 4px 0 18px rgba(0, 0, 0, 0.15);
+          box-shadow: 5px 0 25px rgba(0, 0, 0, 0.05);
           overflow: hidden;
         }
 
@@ -106,159 +109,115 @@ const Sidebar = ({ onToggle }) => {
           width: var(--sidebar-collapsed);
         }
 
-        /* Scroll only inner navigation */
-        .sidebar-scrollable {
-          flex-grow: 1;
-          overflow-y: auto;
-          overflow-x: hidden;
-          padding-right: 4px;
-        }
-
-        .sidebar-scrollable::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .sidebar-scrollable::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 6px;
-        }
-
-        .sidebar-scrollable::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.5);
-        }
-
-        /* HEADER SECTION */
+        /* HEADER */
         .sidebar-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 1rem;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          transition: all 0.3s ease;
+          background: var(--card-bg);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
         .sidebar-header.closed {
           flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          border-bottom: none;
+          gap: 8px;
         }
 
         .sidebar-logo {
-          color: #ffeb3b;
+          color: var(--accent);
         }
 
         .sidebar-title {
           font-weight: 700;
-          font-size: 1.3rem;
+          font-size: 1.25rem;
           margin: 0;
-          transition: opacity 0.3s ease;
         }
 
-        .sidebar-container.closed .sidebar-title {
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        /* TOGGLE BUTTON */
         .toggle-btn {
-          background: linear-gradient(135deg, #512da8, #1e88e5);
+          background: var(--accent);
+          color: white;
           border: none;
-          color: #fff;
           width: 40px;
           height: 40px;
-          border-radius: 8px;
+          border-radius: 10px;
           display: flex;
-          align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+          align-items: center;
           cursor: pointer;
-          transition: all 0.3s ease;
+          box-shadow: 0 4px 12px rgba(14,165,233,0.35);
+          transition: 0.2s;
         }
 
         .toggle-btn:hover {
-          background: #673ab7;
-          transform: scale(1.05);
+          transform: scale(1.06);
+          background: #0284c7;
         }
 
-        .sidebar-header.closed .toggle-btn {
-          align-self: center;
-          margin-bottom: 0.3rem;
-        }
-
-        /* NAVIGATION LINKS */
-        .sidebar-nav {
-          display: flex;
-          flex-direction: column;
-          padding: 0.3rem 0.5rem;
+        /* NAVIGATION */
+        .sidebar-scrollable {
+          flex-grow: 1;
+          padding: 10px;
+          overflow-y: auto;
         }
 
         .nav-item {
           display: flex;
           align-items: center;
           gap: 12px;
-          color: #f3f3f3;
+          padding: 14px;
+          margin-bottom: 10px;
+          background: var(--card-bg);
+          border-radius: 14px;
+          font-weight: 600;
           text-decoration: none;
-          padding: 12px 14px;
-          border-radius: 10px;
-          transition: all 0.3s ease;
-          margin-bottom: 6px;
-          font-weight: 500;
+          color: var(--text-dark);
+          box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+          transition: all 0.25s ease;
         }
 
         .nav-item:hover {
-          background: rgba(255, 255, 255, 0.15);
-          transform: translateX(4px);
+          transform: translateY(-4px);
+          box-shadow: 0 8px 18px rgba(0,0,0,0.10);
         }
 
+        /* UPDATED: ACTIVE STYLE — NO LEFT BORDER */
         .nav-item.active {
-          background: linear-gradient(90deg, #ffd54f, #ffb300);
-          color: #222;
-          font-weight: 600;
+          background: var(--accent-light);
+          color: var(--accent);
+          box-shadow: 0 8px 20px rgba(14,165,233,0.18);
         }
 
         .nav-icon {
           min-width: 22px;
+          color: var(--accent);
         }
-
-        /* ✅ RESPONSIVE BEHAVIOR */
-        @media (max-width: 992px) {
-          .sidebar-container {
-            width: var(--sidebar-collapsed);
-          }
-
-          .sidebar-container.open {
-            width: var(--sidebar-width);
-          }
-        }
-        `}
-      </style>
+      `}</style>
 
       <div className={`sidebar-container ${!isOpen ? "closed" : ""}`}>
         {/* HEADER */}
         <div className={`sidebar-header ${!isOpen ? "closed" : ""}`}>
           {isOpen ? (
             <>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <GraduationCap className="sidebar-logo" size={35} />
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <GraduationCap className="sidebar-logo" size={34} />
                 <h2 className="sidebar-title">SSR</h2>
               </div>
-              <button className="toggle-btn" onClick={toggleSidebar} aria-label="Toggle Sidebar">
+              <button className="toggle-btn" onClick={toggleSidebar}>
                 <X size={20} />
               </button>
             </>
           ) : (
             <>
-              <button className="toggle-btn" onClick={toggleSidebar} aria-label="Toggle Sidebar">
+              <button className="toggle-btn" onClick={toggleSidebar}>
                 <Menu size={22} />
               </button>
-              <GraduationCap className="sidebar-logo" size={34} />
+              <GraduationCap className="sidebar-logo" size={32} />
             </>
           )}
         </div>
 
-        {/* SCROLLABLE NAVIGATION */}
+        {/* NAVIGATION */}
         <div className="sidebar-scrollable">
           <nav className="sidebar-nav">
             {navItems.map((item, i) => (

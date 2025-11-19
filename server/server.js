@@ -21,6 +21,7 @@ import semesterRoutes from './routes/semester.js';
 import feeRoutes from "./routes/feeRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import sectionRoutes from './routes/sections.js';
+import recruiterRoutes from "./routes/recruiterRoutes.js";
 
 
 
@@ -66,6 +67,7 @@ app.use('/api/user', userRoutes);
 app.use('/api', registrationRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/hero-carousel', heroCarouselRoutes);
+app.use("/api/recruiters", recruiterRoutes);
 app.use("/api/fees", feeRoutes);
 app.use("/api/student", studentRoutes);
 app.get("/api/placements", (req, res) => {

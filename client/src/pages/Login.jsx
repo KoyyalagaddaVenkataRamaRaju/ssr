@@ -58,7 +58,7 @@ const Login = () => {
 
   return (
     <>
- 
+      <Navbar />
 
       {/* ===========================
           ⭐ NEW 5-STAR UI STYLING

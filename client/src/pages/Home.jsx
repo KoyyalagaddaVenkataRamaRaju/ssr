@@ -14,6 +14,7 @@ import NewsScroller from "../components/NewsScroller";
 import ManagementSection from "../components/ManagementSection";
 import StatsCounter from "../components/StatsCounter";
 import StudentsJourney from "../components/StudentsJourney";
+import RecruitersSection from "../components/RecruitersSection";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -55,6 +56,7 @@ const HomePage = () => {
       <ManagementSection/>
       <StatsCounter/>
       <StudentsJourney/>
+      <RecruitersSection/>
 
 
       <Footer />

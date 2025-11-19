@@ -26,6 +26,7 @@ import AboutUs from './pages/AboutUs';
 import VisionMission from './components/VisionMission';
 import ChairmanMessage from './components/ChairmanMessage';
 import Department from './pages/DepartmentPage';
+import AdminRecruiters from './pages/AdminRecruiters';
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -144,7 +145,7 @@ function App() {
           />
 
           <Route
-            path="/batches"
+            path="/admin/batches"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminRegisterBatchPage />
@@ -178,6 +179,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminHeroCarousel/>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin/recruiters'
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminRecruiters/>
               </ProtectedRoute>
             }
           />
