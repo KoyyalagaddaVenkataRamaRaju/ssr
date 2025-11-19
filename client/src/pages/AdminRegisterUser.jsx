@@ -25,8 +25,13 @@ const AdminRegisterUser = () => {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [recentUsers, setRecentUsers] = useState([]);
-  const [departments, setDepartments] = useState([]); // State for departments
-   const [batches, setBatches] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [batches, setBatches] = useState([]);
+  const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // 🕐 Initial Load
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1000);
     fetchRecentUsers();
@@ -54,12 +59,11 @@ const AdminRegisterUser = () => {
 
    const fetchBatches = async (departmentId) => {
       try {
-        const response = await fetchBatchesByDepartment(departmentId);
-        console.log(response.data);
+          const response = await fetchBatchesByDepartment(departmentId);
         if (response.success) {
           setBatches(response.data);
         } else {
-          setError(response.message || 'Failed to fetch batches.');
+            setError(response.message || 'Failed to fetch batches.');
         }
       } catch (err) {
         setError('Failed to fetch batches. Please try again.');
@@ -67,18 +71,33 @@ const AdminRegisterUser = () => {
         setLoading(false);
       }
     };
+
+      const fetchSections = async (departmentId) => {
+        try {
+          const response = await fetchSectionsByDepartment(departmentId);
+          if (response && response.success) {
+            setSections(response.data);
+          } else if (Array.isArray(response)) {
+            setSections(response);
+          }
+        } catch (err) {
+          console.error('Failed to fetch sections:', err);
+          setSections([]);
+        }
+      };
   
  const handleDepartmentChange = (e) => {
     const departmentId = e.target.value;
-    console.log(departmentId)
-    console.log('Selected Department ID:', departmentId);
+  // Department changed
     setFormData({
       ...formData,
       department: departmentId,
       batch: "",
     });
     if (departmentId) {
+      console.group("section"+departmentId)
       fetchBatches(departmentId);
+      fetchSections(departmentId);
     }
   };
 
@@ -117,6 +136,7 @@ const AdminRegisterUser = () => {
           password: '',
           role: 'student',
           department: '',
+          batch: '',
           section: '',
           phone: '',
           enrollmentId: '',
@@ -447,79 +467,46 @@ const AdminRegisterUser = () => {
                   </select>
                 </div>
 
-              {formData.role === 'student' && (
-  <div className="form-group">
-    <label htmlFor="section" className="form-label">
-      Section
-    </label>
-    <select
-      id="section"
-      name="section"
-      className="form-input"
-      value={formData.section}
-      onChange={handleChange}
-    >
-      <option value="">Select Section</option>
-      <option value="A">A</option>
-      <option value="B">B</option>
-      <option value="C">C</option>
-      <option value="D">D</option>
-    </select>
-  </div>
+
+
+
+           
+              
+
+            
+
+                            {formData.role === 'student' && (
+<div>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Section
+              </label>
+              <select
+                value={formData.section}
+                onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                required
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                {sections && sections.length > 0 ? (
+                  <>
+                    <option value="">Select Section</option>
+                    {sections.map(sec => (
+                      <option key={sec._id || sec.sectionName} value={sec.sectionName || sec._id}>
+                        {sec.sectionName || sec.section}
+                      </option>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                   <option value="A">Select departement</option>
+                  </>
+                )}
+              </select>
+            </div>
 )}
 
 
-            <div className="form-section">
-              <h3 className="section-title">Additional Details</h3>
 
-              <div className="form-group">
-                <label htmlFor="department" className="form-label">
-                  Department
-                </label>
-                <select
-                  id="department"
-                  name="department"
-                  className="form-input"
-                  value={formData.department}
-                  onChange={handleDepartmentChange}
-                >
-                  <option value="">Select Department</option>
-                  {departments.map((department) => (
-                    <option key={department._id} value={department._id}>
-                      {department.departmentName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-
-                <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                Batch
-              </label>
-              <select
-                name="batch"
-                value={formData.batch}
-                onChange={handleChange}
-                disabled={!formData.department}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid #ccc',
-                  opacity: !formData.department ? 0.5 : 1
-                }}
-              >
-                <option value="">Select Batch</option>
-                
-                {batches.map(batch => (
-                  <option key={batch._id} value={batch._id}>
-                    {batch.batchName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+               
               <div className="form-group">
                 <label htmlFor="phone" className="form-label">
                   Phone Number
