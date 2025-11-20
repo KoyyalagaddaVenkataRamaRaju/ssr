@@ -12,8 +12,11 @@ const RecruitersSection = () => {
       });
   }, []);
 
-  // Duplicate list for infinite loop
-  const scrollingLogos = [...logos, ...logos];
+  // Show only ACTIVE logos
+  const activeLogos = logos.filter((l) => l.isActive === true);
+
+  // Duplicate for infinite scroll
+  const scrollingLogos = [...activeLogos, ...activeLogos];
 
   return (
     <>
@@ -57,12 +60,10 @@ const RecruitersSection = () => {
           will-change: transform;
         }
 
-        /* Pause when hover */
         .slider:hover .slide-track {
           animation-play-state: paused;
         }
 
-        /* 3D LOGO STYLE */
         .logo-img {
           height: 85px;
           object-fit: contain;
@@ -76,13 +77,11 @@ const RecruitersSection = () => {
           filter: drop-shadow(0 10px 22px rgba(0,0,0,0.25));
         }
 
-        /* ANIMATION KEYFRAME */
         @keyframes scroll {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
 
-        /* RESPONSIVENESS */
         @media (max-width: 1024px) {
           .slide-track { gap: 55px; }
           .logo-img { height: 70px; }
@@ -111,7 +110,7 @@ const RecruitersSection = () => {
             {scrollingLogos.map((logo, index) => (
               <img
                 key={index}
-                src={`${API_URL}${logo.imageUrl}`}
+                src={logo.imageUrl}
                 alt={logo.companyName}
                 className="logo-img"
               />
