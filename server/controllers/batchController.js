@@ -261,6 +261,7 @@ export const getDepartmentsByBatch = async (req, res) => {
 export const getDepartmentById = async (req, res) => {
   try {
     const { departmentId } = req.query;
+    
     if (!departmentId) {
       return res.status(400).json({ success: false, message: 'Department ID is required' });
     }

@@ -55,16 +55,17 @@ const Sidebar = ({ onToggle }) => {
           { name: "Student Fee", icon: BadgeDollarSign, path: "/admin/studentfees" },
           { name: "HomeCarousel", icon: Image, path: "/admin/hero-carousel" },
           { name: "Recruiters", icon: Image, path: "/admin/recruiters" },
-          { name: "Reports", icon: FileText, path: "#" },
+          { name: "Reports", icon: FileText, path: "/admin/reports" },
           { name: "Settings", icon: Settings, path: "#" },
-          { name: "Attendance", icon: FileText, path: "/teacher/attendance" },
+          { name: "Attendance", icon: FileText, path: "/admin/attendance" },
         ];
       case "teacher":
         return [
           ...commonItems,
           { name: "My Classes", icon: BookOpen, path: "#" },
           { name: "Students", icon: Users, path: "#" },
-          { name: "Attendance", icon: Calendar, path: "#" },
+          { name: "Attendance", icon: Calendar, path: "/teacher/attendance/" },
+          { name: "Attendance Reports", icon: Calendar, path: "/admin/reports" },
           { name: "Grades", icon: FileText, path: "#" },
         ];
       default:

@@ -1,5 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useState ,useEffect} from 'react';
+import React from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -27,6 +29,13 @@ import VisionMission from './components/VisionMission';
 import ChairmanMessage from './components/ChairmanMessage';
 import Department from './pages/DepartmentPage';
 import AdminRecruiters from './pages/AdminRecruiters';
+import AttendanceReport from './pages/AttendanceReport';
+import TakeAttendance from './pages/TakeAttendance';
+import { getCurrentUserId } from './services/authService';
+
+
+
+
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -50,6 +59,14 @@ const RootRedirect = () => {
 };
 
 function App() {
+  const [teacherId, setTeacherId] = useState("");
+
+useEffect(() => {
+  const id = getCurrentUserId();
+  setTeacherId(id);
+  console.log("Fetched Teacher ID:", id);
+}, []);
+
   return (
     <AuthProvider>
       <Router>
@@ -79,6 +96,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["teacher"]}>
                 <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+            <Route
+            path="/teacher/attendance/"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <TakeAttendance teacherId={teacherId}/>
               </ProtectedRoute>
             }
           />
@@ -118,6 +143,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+           <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute allowedRoles={["admin","teacher"]}>
+                <AttendanceReport/>
+              </ProtectedRoute>
+            }
+          />
+
+
 
           <Route
             path="/admin/register-department"
@@ -166,7 +202,7 @@ function App() {
 
 
            <Route
-            path="/teacher/attendance"
+            path="/admin/attendance"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AttendanceSidebar />
