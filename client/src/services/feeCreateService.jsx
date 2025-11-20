@@ -46,8 +46,28 @@ export const fetchSemsterByDepartment = async (departmentId) => {
 };
 
 
+export const handleFeeEdit=async (id,editData) => {
+  try{
+    const response = await api.put(`/api/fees/student/${id}`,editData);
+    console.log(response.data)
+    return response.data;
+  }
+  catch(error){
+    throw error.response?.data || { message: 'Network error' }
+}
+};
 
-
+export const handlesSaveDiscount = async (id, discountAmount) => {
+  try {
+    const response = await api.patch(`/api/fees/student/${id}/discount`, {
+      discount: discountAmount
+    });
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: "Network error" };
+  }
+};
 
 
 export const fetchStudentFee = async () => {

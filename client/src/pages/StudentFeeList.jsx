@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Edit2, Save, X, DollarSign } from 'lucide-react';
-import { fetchStudentFee } from '../services/feeCreateService';
+import { fetchStudentFee ,handleFeeEdit,handlesSaveDiscount} from '../services/feeCreateService';
+
 
 export default function StudentFeeList() {
   const [studentFees, setStudentFees] = useState([]);
@@ -48,16 +49,10 @@ export default function StudentFeeList() {
 
   const handleSaveEdit = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/fees/student/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editData)
-      });
-
-      const data = await response.json();
-      if (data.success) {
+      const response = await handleFeeEdit(id, editData);
+      console.log(response)
+      const data =  response;
+      if (response.success) {
         setStudentFees(prev =>
           prev.map(fee => (fee._id === id ? data.studentFee : fee))
         );
@@ -80,16 +75,11 @@ export default function StudentFeeList() {
 
   const handleSaveDiscount = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/fees/student/${id}/discount`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ discount: discountAmount })
-      });
+      const response = await handlesSaveDiscount(id, discountAmount);
 
-      const data = await response.json();
-      if (data.success) {
+
+      const data = response;
+      if (response.success) {
         setStudentFees(prev =>
           prev.map(fee => (fee._id === id ? data.studentFee : fee))
         );
