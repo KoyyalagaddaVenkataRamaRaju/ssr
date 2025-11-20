@@ -94,6 +94,11 @@ export const getUser = () => {
   return user ? JSON.parse(user) : null;
 };
 
+export const getCurrentUserId = () => {
+  const u = getUser();
+  return u?._id || u?.id || null;
+};
+
 export const removeUser = () => {
   localStorage.removeItem('user');
 };
