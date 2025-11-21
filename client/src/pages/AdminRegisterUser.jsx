@@ -506,7 +506,6 @@ const AdminRegisterUser = () => {
 
 
 
-               
               <div className="form-group">
                 <label htmlFor="phone" className="form-label">
                   Phone Number

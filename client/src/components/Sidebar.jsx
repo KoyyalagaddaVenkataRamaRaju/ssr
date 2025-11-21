@@ -66,6 +66,7 @@ const Sidebar = ({ onToggle }) => {
           { name: "Students", icon: Users, path: "/teacher/students" },
           { name: "Attendance", icon: Calendar, path: "/teacher/attendance/" },
           { name: "Attendance Reports", icon: Calendar, path: "/admin/reports" },
+          {name:"Register student", icon: UserPlus, path: "/teacher/register-student"},
           { name: "Grades", icon: FileText, path: "#" },
         ];
       default:

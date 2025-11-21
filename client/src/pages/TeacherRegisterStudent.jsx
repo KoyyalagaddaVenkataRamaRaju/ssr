@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, CheckCircle, AlertCircle, Lock, Loader2 } from 'lucide-react';
 import { teacherRegisterStudent, getMyStudents } from '../services/authService';
-import { getAllBatchesbyTeacher, getBatchById } from '../services/batchService';
+import { fetchBatchesByDepartment, fetchSectionsByDepartment } from '../services/teacherAllocationService.jsx';
+
 import { getAllDepartments } from '../services/departmentService';
 import { useAuth } from '../context/AuthContext';
 import Card from '../components/Card';
@@ -16,6 +17,7 @@ const TeacherRegisterStudent = () => {
     password: '',
     department: '',
     batch: '',
+    section: '',
     phone: '',
     enrollmentId: '',
   });
@@ -27,6 +29,8 @@ const TeacherRegisterStudent = () => {
   const [batches, setBatches] = useState([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [fetchingStudents, setFetchingStudents] = useState(false);
+  const [sections, setSections] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (user && user.canRegisterStudents) {
@@ -38,51 +42,72 @@ const TeacherRegisterStudent = () => {
   }, [user]);
 
   const fetchInitialData = async () => {
-    fetchBatches();
+ 
     fetchDepartments();
     fetchMyStudents();
   };
 
-  const fetchDepartments = async () => {
+const fetchDepartments = async () => {
     try {
       const response = await getAllDepartments();
-      if (response && response.success) {
-        setDepartments(response.data);
-      } else {
-        setDepartments([]);
-      }
+      if (response.success) setDepartments(response.data);
     } catch (error) {
-      console.error('Failed to fetch departments:', error);
-      setDepartments([]);
+      console.error("Error fetching departments:", error);
     }
   };
 
-  const fetchBatches = async () => {
-    try {
-      const response = await getAllBatchesbyTeacher();
-      if (response.success) setBatches(response.data);
-      else setBatches([]);
-    } catch (error) {
-      console.error('Error fetching batches:', error);
-      setBatches([]);
+   const fetchBatches = async (departmentId) => {
+      try {
+          const response = await fetchBatchesByDepartment(departmentId);
+        if (response.success) {
+          setBatches(response.data);
+        } else {
+            setError(response.message || 'Failed to fetch batches.');
+        }
+      } catch (err) {
+        setError('Failed to fetch batches. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+      const fetchSections = async (departmentId) => {
+        try {
+          const response = await fetchSectionsByDepartment(departmentId);
+          if (response && response.success) {
+            setSections(response.data);
+          } else if (Array.isArray(response)) {
+            setSections(response);
+          }
+        } catch (err) {
+          console.error('Failed to fetch sections:', err);
+          setSections([]);
+        }
+      };
+  
+ const handleDepartmentChange = (e) => {
+    const departmentId = e.target.value;
+  // Department changed
+    setFormData({
+      ...formData,
+      department: departmentId,
+      batch: "",
+      section: "",
+    });
+    if (departmentId) {
+      console.group("section"+departmentId)
+      fetchBatches(departmentId);
+      fetchSections(departmentId);
     }
   };
 
-  const fetchDepartmentsByBatch = async (batchId) => {
-    try {
-      const response = await getBatchById(batchId);
-      if (response?.success && Array.isArray(response.data?.departments)) {
-        setDepartments(response.data.departments.map((d) => ({
-          _id: d.departmentId?._id || d.departmentId,
-          departmentName: d.departmentName,
-        })));
-      } else {
-        setDepartments([]);
-      }
-    } catch (error) {
-      console.error('Error fetching departments by batch:', error);
-      setDepartments([]);
-    }
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+    setMessage({ type: "", text: "" });
   };
 
   const fetchMyStudents = async () => {
@@ -98,25 +123,15 @@ const TeacherRegisterStudent = () => {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setMessage({ type: '', text: '' });
-
-    if (name === 'batch') {
-      setFormData({ ...formData, batch: value, department: '' });
-      fetchDepartmentsByBatch(value);
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
+ 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
 
-    const { name, email, password, department, batch } = formData;
+    const { name, email, password,section, department, batch } = formData;
 
-    if (!name || !email || !password || !department || !batch) {
+    if (!name || !email || !password || !department || !batch || !section) {
       setMessage({ type: 'error', text: 'Please fill in all required fields.' });
       return;
     }
@@ -143,6 +158,7 @@ const TeacherRegisterStudent = () => {
           password: '',
           department: '',
           batch: '',
+          section: '',
           phone: '',
           enrollmentId: '',
         });
@@ -190,52 +206,131 @@ const TeacherRegisterStudent = () => {
           <div className="form-section">
             <h3 className="section-title">Student Information</h3>
 
-            {['name', 'email', 'password', 'phone', 'enrollmentId'].map((field) => (
-              <div key={field} className="form-group">
-                <label>
-                  {field === 'password'
-                    ? 'Password'
-                    : field === 'enrollmentId'
-                    ? 'Enrollment ID'
-                    : field.charAt(0).toUpperCase() + field.slice(1)}
-                  {['name', 'email', 'password'].includes(field) && <span className="required">*</span>}
-                </label>
-                <input
-                  type={field === 'password' ? 'password' : field === 'email' ? 'email' : 'text'}
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder={`Enter ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
-                />
-              </div>
-            ))}
+<div className="form-group">
+  <label>Name <span className="required">*</span></label>
+  <input
+    type="text"
+    name="name"
+    value={formData.name}
+    onChange={handleChange}
+    className="form-input"
+    placeholder="Enter name"
+  />
+</div>
 
-            <div className="form-group">
-              <label>Batch <span className="required">*</span></label>
-              <select name="batch" value={formData.batch} onChange={handleChange} className="form-input">
-                <option value="">Select Batch</option>
-                {batches.map((batch) => (
-                  <option key={batch._id} value={batch._id}>{batch.batchName}</option>
-                ))}
-              </select>
-            </div>
+{/* EMAIL */}
+<div className="form-group">
+  <label>Email <span className="required">*</span></label>
+  <input
+    type="email"
+    name="email"
+    value={formData.email}
+    onChange={handleChange}
+    className="form-input"
+    placeholder="Enter email"
+  />
+</div>
 
-            <div className="form-group">
-              <label>Department <span className="required">*</span></label>
+{/* PASSWORD */}
+<div className="form-group">
+  <label>Password <span className="required">*</span></label>
+  <input
+    type="password"
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    className="form-input"
+    placeholder="Enter password"
+  />
+</div>
+
+
+                <div className="form-group">
+                  <label className="form-label">Department</label>
+                  <select
+                    name="department"
+                    className="form-input"
+                    value={formData.department}
+                    onChange={handleDepartmentChange}
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map((dep) => (
+                      <option key={dep._id} value={dep._id}>
+                        {dep.departmentName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Batch</label>
+                  <select
+                    name="batch"
+                    className="form-input"
+                    value={formData.batch}
+                    onChange={handleChange}
+                    disabled={!formData.department}
+                  >
+                    <option value="">Select Batch</option>
+                    {batches.map((batch) => (
+                      <option key={batch._id} value={batch._id}>
+                        {batch.batchName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Section
+              </label>
               <select
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                className="form-input"
-                disabled={!departments.length}
+                value={formData.section}
+                onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                required
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
               >
-                <option value="">Select Department</option>
-                {departments.map((dept) => (
-                  <option key={dept._id} value={dept._id}>{dept.departmentName}</option>
-                ))}
+                {sections && sections.length > 0 ? (
+                  <>
+                    <option value="">Select Section</option>
+                    {sections.map(sec => (
+                      <option key={sec._id || sec.sectionName} value={sec.sectionName || sec._id}>
+                        {sec.sectionName || sec.section}
+                      </option>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                   <option value="A">Select departement</option>
+                  </>
+                )}
               </select>
             </div>
+            {/* PHONE */}
+<div className="form-group">
+  <label>Phone</label>
+  <input
+    type="text"
+    name="phone"
+    value={formData.phone}
+    onChange={handleChange}
+    className="form-input"
+    placeholder="Enter phone"
+  />
+</div>
+
+{/* ENROLLMENT ID */}
+<div className="form-group">
+  <label>Enrollment ID</label>
+  <input
+    type="text"
+    name="enrollmentId"
+    value={formData.enrollmentId}
+    onChange={handleChange}
+    className="form-input"
+    placeholder="Enter enrollment ID"
+  />
+</div>
+
           </div>
 
           {message.text && (
