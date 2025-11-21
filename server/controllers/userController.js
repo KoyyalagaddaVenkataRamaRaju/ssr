@@ -67,7 +67,7 @@ export const getUsers = async (req, res) => {
     const filter = {};
     if (role) filter.role = role;
     if (batch) filter.batch = batch;
-    if (section) filter.section = section;
+    if (section) filter.section = section; console.log(section)
     if (department) filter.department = department;
 
     if (search) {

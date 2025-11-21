@@ -47,3 +47,25 @@ export const  fetchSectionsbyDepartementandBatchandYear= async (departmentId,bat
     throw error.response?.data || { message: 'Network error' };
   }
 };
+
+export const fetchStudentsbyBatchandSection= async (batchId,sectionName) => {
+  try {
+    const response = await api.get(`/api/user?role=student&batch=${batchId}&section=${sectionName}`);   
+    console.log(response.data)
+    return response.data;
+
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+}
+
+export const  fetchSectionsandBatchandYear= async (batchId,academicYear) => {
+  
+  try {
+    const response = await api.get(`/api/sections/?batch=${batchId}&academicYear=${academicYear}`);
+    console.log(response.data)
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};

@@ -72,5 +72,14 @@ export const createTimetable = async (timetableData) => {
   }
 };
 
+export const teacherClasses = async (teacherId,departmentId,batchId,academicYear) => {
+  try {
+    const response = await api.get(`/api/timetable?teacher=${teacherId}&department=${departmentId}&batch=${batchId}&academicYear=${academicYear}`);  
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  } 
+}
+
 export default api; 
 

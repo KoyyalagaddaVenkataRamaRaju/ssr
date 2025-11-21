@@ -44,10 +44,22 @@ export const fetchTeachersByDepartment = async (departmentId) => {
 };
 
 
+export const fetchTeacherByDepartment = async (departmentId) => {
+  console.log(departmentId)
+  try {
+    const response = await api.get(`/api/user?role=teacher&department=${departmentId}`);
+    console.log(response.data)
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+
 export const getAllDepartments = async () => {
   try {
     const response = await api.get('/api/departments');
-    console.log(response.data)
+    
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };

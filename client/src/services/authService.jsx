@@ -99,6 +99,12 @@ export const getCurrentUserId = () => {
   return u?._id || u?.id || null;
 };
 
+export const getCurrentUserBranch = () => {
+  const u = getUser();
+  
+  return u?.department  || null;
+};
+
 export const removeUser = () => {
   localStorage.removeItem('user');
 };
@@ -135,6 +141,19 @@ export const getAllUsers = async (filters = {}) => {
     const queryParams = new URLSearchParams(filters).toString();
     console.log(queryParams);
     const response = await api.get(`/api/admin/users?${queryParams}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+
+export const getAllUsersForTeacher = async (filters = {}) => {
+  try {
+    const queryParams = new URLSearchParams(filters).toString();
+    console.log(queryParams);
+    const response = await api.get(`/api/user?${queryParams}`);
+    console.log(response.data);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Network error' };

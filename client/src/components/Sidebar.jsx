@@ -62,8 +62,8 @@ const Sidebar = ({ onToggle }) => {
       case "teacher":
         return [
           ...commonItems,
-          { name: "My Classes", icon: BookOpen, path: "#" },
-          { name: "Students", icon: Users, path: "#" },
+          { name: "My Classes", icon: BookOpen, path: "/teacher/classes" },
+          { name: "Students", icon: Users, path: "/teacher/students" },
           { name: "Attendance", icon: Calendar, path: "/teacher/attendance/" },
           { name: "Attendance Reports", icon: Calendar, path: "/admin/reports" },
           { name: "Grades", icon: FileText, path: "#" },

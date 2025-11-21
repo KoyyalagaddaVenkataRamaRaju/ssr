@@ -32,8 +32,8 @@ import AdminRecruiters from './pages/AdminRecruiters';
 import AttendanceReport from './pages/AttendanceReport';
 import TakeAttendance from './pages/TakeAttendance';
 import { getCurrentUserId } from './services/authService';
-
-
+import TeacherBranchStudents from './pages/SectionStudents';
+import TeacherClasses from './pages/TeacherClasses';
 
 
 
@@ -96,6 +96,23 @@ useEffect(() => {
             element={
               <ProtectedRoute allowedRoles={["teacher"]}>
                 <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/teacher/students"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <TeacherBranchStudents />
+              </ProtectedRoute>
+            }
+          />
+ <Route
+            path="/teacher/classes"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <TeacherClasses />
               </ProtectedRoute>
             }
           />
