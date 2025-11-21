@@ -23,6 +23,7 @@ import Home from "./pages/Home";
 import ContactUs from "./pages/ContactUs";
 import AdminHeroCarousel from "./pages/AdminHeroCarousel";
 import Placements from "./components/Placements";
+<<<<<<< HEAD
 import DepartmentPage from "./pages/AdminRegisterBatchPage";
 import AttendanceSidebar from "./components/AttendanceSidebar";
 import AdminRegisterBatchPage from "./pages/AdminRegisterBatchPage";
@@ -38,6 +39,25 @@ import TakeAttendance from "./pages/TakeAttendance";
 import { getCurrentUserId } from "./services/authService";
 import TeacherBranchStudents from "./pages/SectionStudents";
 import TeacherClasses from "./pages/TeacherClasses";
+=======
+import DepartmentPage from './pages/AdminRegisterBatchPage';
+import AttendanceSidebar from './components/AttendanceSidebar';
+import AdminRegisterBatchPage from './pages/AdminRegisterBatchPage';
+import FeeManagement from './pages/AdminFeeManagement';
+import StudentFeeDashboard from './pages/StudentFeeDashboard';
+import AboutUs from './pages/AboutUs';
+import VisionMission from './components/VisionMission';
+import ChairmanMessage from './components/ChairmanMessage';
+import Department from './pages/DepartmentPage';
+import AdminRecruiters from './pages/AdminRecruiters';
+import AttendanceReport from './pages/AttendanceReport';
+import TakeAttendance from './pages/TakeAttendance';
+import { getCurrentUserId } from './services/authService';
+import TeacherBranchStudents from './pages/SectionStudents';
+import TeacherClasses from './pages/TeacherClasses';
+import TeacherProfile from './pages/TeacherProfile';
+
+>>>>>>> 888a5c9c490be7fd0fc8a5bc311933ccffee951f
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -97,6 +117,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["teacher"]}>
                 <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/teacher/profile"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <TeacherProfile/>
               </ProtectedRoute>
             }
           />
