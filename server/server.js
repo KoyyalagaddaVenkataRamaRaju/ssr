@@ -21,9 +21,12 @@ import attendanceRoutes from './routes/attendance.js';
 import batchRoutes from './routes/batch.js';
 import semesterRoutes from './routes/semester.js';
 import feeRoutes from "./routes/feeRoutes.js";
+import facultyRoutes from './routes/facultyRoutes.js';
 
 import sectionRoutes from './routes/sections.js';
 import recruiterRoutes from "./routes/recruiterRoutes.js";
+
+
 
 
 
@@ -53,6 +56,8 @@ if (!fs.existsSync(heroUploadPath)) {
 }
 
 // Serve uploaded images statically
+
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Root route
@@ -71,7 +76,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/hero-carousel', heroCarouselRoutes);
 app.use("/api/recruiters", recruiterRoutes);
 app.use("/api/fees", feeRoutes);
-
+app.use("/api/teacher", facultyRoutes); 
 app.get("/api/placements", (req, res) => {
   const data = [
     {

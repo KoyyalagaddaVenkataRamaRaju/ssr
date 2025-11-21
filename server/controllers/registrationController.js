@@ -85,7 +85,29 @@ export const adminRegisterUser = async (req, res) => {
     }
 
     const user = await User.create(userData);
-
+if (user.role === 'teacher') {
+  await FacultyProfile.create({
+    user: user._id,
+    fullName: user.name,
+    designation: "Faculty",
+    department: user.department,
+    email: user.email,
+    phone: user.phone,
+    employeeId: user.employeeId,
+    experienceYears: 0,
+    about: "",
+    qualifications: [],
+    subjects: [],
+    researchInterests: [],
+    publications: [],
+    achievements: [],
+    linkedin: "",
+    github: "",
+    twitter: "",
+    website: "",
+    profileImage: "",
+  });
+}
 // Auto assign fees if student
 if (user.role === 'student') {
   await assignFeesToNewStudent(user);

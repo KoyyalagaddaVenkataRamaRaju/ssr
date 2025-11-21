@@ -68,6 +68,7 @@ const Sidebar = ({ onToggle }) => {
           { name: "Attendance Reports", icon: Calendar, path: "/admin/reports" },
           {name:"Register student", icon: UserPlus, path: "/teacher/register-student"},
           { name: "Grades", icon: FileText, path: "#" },
+          { name: "Profile", icon: GraduationCap, path: "/teacher/profile" },
         ];
       default:
         return commonItems;

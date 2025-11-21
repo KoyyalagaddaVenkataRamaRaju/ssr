@@ -34,7 +34,7 @@ import TakeAttendance from './pages/TakeAttendance';
 import { getCurrentUserId } from './services/authService';
 import TeacherBranchStudents from './pages/SectionStudents';
 import TeacherClasses from './pages/TeacherClasses';
-
+import TeacherProfile from './pages/TeacherProfile';
 
 
 const RootRedirect = () => {
@@ -96,6 +96,14 @@ useEffect(() => {
             element={
               <ProtectedRoute allowedRoles={["teacher"]}>
                 <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/teacher/profile"
+            element={
+              <ProtectedRoute allowedRoles={["teacher"]}>
+                <TeacherProfile/>
               </ProtectedRoute>
             }
           />
