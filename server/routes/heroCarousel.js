@@ -1,94 +1,137 @@
-import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import HeroCarousel from '../models/HeroCarousel.js';
-import { fileURLToPath } from 'url';
+import express from "express";
+import HeroCarousel from "../models/HeroCarousel.js";
+import { createUploader, cloudinary } from "../config/cloudinary.js";
 
 const router = express.Router();
 
-// Resolve __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Cloudinary uploader (folder = hero_slides)
+const uploadHero = createUploader("hero_slides");
 
-// Ensure folder exists
-const heroUploadPath = path.join(__dirname, '../uploads/hero');
-if (!fs.existsSync(heroUploadPath)) {
-  fs.mkdirSync(heroUploadPath, { recursive: true });
-}
-
-// Multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, heroUploadPath),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
-});
-
-const upload = multer({ storage });
-
-// POST — Add Slide
-router.post('/slides', upload.single('image'), async (req, res) => {
+/* =====================================================
+   POST — Add Slide
+===================================================== */
+router.post("/slides", uploadHero.single("image"), async (req, res) => {
   try {
-    if (!req.file)
-      return res.status(400).json({ success: false, message: 'Please upload an image' });
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload an image",
+      });
+    }
 
-    const slide = new HeroCarousel({
-      imageUrl: `/uploads/hero/${req.file.filename}`,
-      order: parseInt(req.body.order) || 0,
-      isActive: req.body.isActive === 'true' || req.body.isActive === true,
+    // req.file structure from Cloudinary:
+    // req.file.path → Cloudinary URL
+    // req.file.filename → public_id (folder/unique_name)
+
+    const slide = await HeroCarousel.create({
+      imageUrl: req.file.path,
+      cloudinaryId: req.file.filename, // ⭐ SAVE REAL PUBLIC_ID
+      order: Number(req.body.order) || 0,
+      isActive: req.body.isActive === "true" || req.body.isActive === true,
     });
 
-    await slide.save();
-
-    res.status(201).json({ success: true, message: 'Slide added', data: slide });
+    res.status(201).json({
+      success: true,
+      message: "Slide added successfully",
+      data: slide,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("❌ POST Slide Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 });
 
-// GET — All Slides
-router.get('/slides', async (req, res) => {
+/* =====================================================
+   GET — All Slides
+===================================================== */
+router.get("/slides", async (req, res) => {
   try {
     const slides = await HeroCarousel.find().sort({ order: 1 });
     res.json({ success: true, data: slides });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("❌ GET Slides Error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// PUT — Update Slide
-router.put('/slides/:id', upload.single('image'), async (req, res) => {
+/* =====================================================
+   PUT — Update Slide
+===================================================== */
+router.put("/slides/:id", uploadHero.single("image"), async (req, res) => {
   try {
+    const slide = await HeroCarousel.findById(req.params.id);
+
+    if (!slide) {
+      return res.status(404).json({
+        success: false,
+        message: "Slide not found",
+      });
+    }
+
     const updateData = {
-      order: parseInt(req.body.order) || 0,
-      isActive: req.body.isActive === 'true' || req.body.isActive === true,
+      order: Number(req.body.order) || slide.order,
+      isActive: req.body.isActive === "true" || req.body.isActive === true,
     };
 
-    if (req.file) updateData.imageUrl = `/uploads/hero/${req.file.filename}`;
+    // If new image uploaded
+    if (req.file) {
+      // Delete old image from Cloudinary
+      if (slide.cloudinaryId) {
+        await cloudinary.uploader.destroy(slide.cloudinaryId);
+      }
 
-    const updated = await HeroCarousel.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
+      updateData.imageUrl = req.file.path;
+      updateData.cloudinaryId = req.file.filename; // ⭐ NEW PUBLIC_ID
+    }
+
+    const updatedSlide = await HeroCarousel.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Slide updated successfully",
+      data: updatedSlide,
     });
-
-    if (!updated)
-      return res.status(404).json({ success: false, message: 'Slide not found' });
-
-    res.json({ success: true, message: 'Slide updated', data: updated });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("❌ UPDATE Slide Error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// DELETE — Slide
-router.delete('/slides/:id', async (req, res) => {
+/* =====================================================
+   DELETE — Slide
+===================================================== */
+router.delete("/slides/:id", async (req, res) => {
   try {
-    const deleted = await HeroCarousel.findByIdAndDelete(req.params.id);
+    const slide = await HeroCarousel.findById(req.params.id);
 
-    if (!deleted)
-      return res.status(404).json({ success: false, message: 'Slide not found' });
+    if (!slide) {
+      return res.status(404).json({
+        success: false,
+        message: "Slide not found",
+      });
+    }
 
-    res.json({ success: true, message: 'Slide deleted' });
+    // Delete image from Cloudinary
+    if (slide.cloudinaryId) {
+      await cloudinary.uploader.destroy(slide.cloudinaryId);
+    }
+
+    await slide.deleteOne();
+
+    res.json({
+      success: true,
+      message: "Slide deleted successfully",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("❌ DELETE Slide Error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 

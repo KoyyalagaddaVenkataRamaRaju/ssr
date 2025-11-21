@@ -1,48 +1,50 @@
 import express from "express";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
 import RecruiterLogo from "../models/RecruiterLogo.js";
-import { fileURLToPath } from "url";
+import { upload, cloudinary } from "../config/cloudinary.js"
 
 const router = express.Router();
 
-// Fix dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+/* =============================================
+   Helper - Extract Cloudinary public_id
+============================================= */
+const getPublicId = (url) => {
+  if (!url) return null;
 
-// Upload folder
-const uploadPath = path.join(__dirname, "../uploads/recruiters");
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-}
+  const parts = url.split("/");
+  const filename = parts.pop();      // abc123.jpg
+  const folder = parts.pop();        // recruiters
 
-// Storage engine
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadPath),
-  filename: (req, file, cb) =>
-    cb(null, Date.now() + path.extname(file.originalname)),
-});
-
-const upload = multer({ storage });
+  return `${folder}/${filename.split(".")[0]}`; // recruiters/abc123
+};
 
 /* =============================================
    POST - Add Logo
 ============================================= */
 router.post("/", upload.single("image"), async (req, res) => {
   try {
-    if (!req.file)
-      return res.status(400).json({ success: false, message: "Upload an image" });
+    console.log("➡️ DEBUG req.body:", req.body);
+    console.log("➡️ DEBUG req.file:", req.file);
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Upload an image" });
+    }
 
     const newLogo = await RecruiterLogo.create({
       companyName: req.body.companyName,
-      imageUrl: `/uploads/recruiters/${req.file.filename}`,
-      order: req.body.order || 0,
+      imageUrl: req.file.path, // Cloudinary URL
+      order: Number(req.body.order) || 0,
       isActive: req.body.isActive === "true",
     });
 
-    res.status(201).json({ success: true, message: "Logo added", data: newLogo });
+    res.status(201).json({
+      success: true,
+      message: "Logo added",
+      data: newLogo,
+    });
   } catch (err) {
+    console.error("❌ Server Error:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -64,25 +66,36 @@ router.get("/", async (req, res) => {
 ============================================= */
 router.put("/:id", upload.single("image"), async (req, res) => {
   try {
+    const logo = await RecruiterLogo.findById(req.params.id);
+
+    if (!logo)
+      return res.status(404).json({ success: false, message: "Not found" });
+
     const updateData = {
       companyName: req.body.companyName,
-      order: req.body.order || 0,
+      order: Number(req.body.order) || 0,
       isActive: req.body.isActive === "true",
     };
 
+    // If uploading a new image
     if (req.file) {
-      updateData.imageUrl = `/uploads/recruiters/${req.file.filename}`;
+      const publicId = getPublicId(logo.imageUrl);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
+
+      updateData.imageUrl = req.file.path; // New cloudinary URL
     }
 
-    const updated = await RecruiterLogo.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-    });
-
-    if (!updated)
-      return res.status(404).json({ success: false, message: "Not found" });
+    const updated = await RecruiterLogo.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
 
     res.json({ success: true, message: "Updated", data: updated });
   } catch (err) {
+    console.error("❌ Update Error:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -93,11 +106,18 @@ router.put("/:id", upload.single("image"), async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const deleted = await RecruiterLogo.findByIdAndDelete(req.params.id);
+
     if (!deleted)
       return res.status(404).json({ success: false, message: "Not found" });
 
+    const publicId = getPublicId(deleted.imageUrl);
+    if (publicId) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+
     res.json({ success: true, message: "Logo deleted" });
   } catch (err) {
+    console.error("❌ Delete Error:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
