@@ -342,6 +342,7 @@ const ChairmanMessage = () => {
       )}
     </>
   );
+  
 };
 
 export default ChairmanMessage;
