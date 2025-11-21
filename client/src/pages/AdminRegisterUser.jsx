@@ -19,6 +19,7 @@ const AdminRegisterUser = () => {
     enrollmentId: "",
     employeeId: "",
     canRegisterStudents: false,
+    joiningYear: '',
   });
 
   const [loading, setLoading] = useState(true);
@@ -142,6 +143,7 @@ const AdminRegisterUser = () => {
           enrollmentId: '',
           employeeId: '',
           canRegisterStudents: false,
+          joiningYear: "",   
         });
         fetchRecentUsers();
       }
@@ -154,6 +156,7 @@ const AdminRegisterUser = () => {
       setSubmitting(false);
     }
   };
+  
 
   return (
     <>
@@ -448,7 +451,7 @@ const AdminRegisterUser = () => {
                     ))}
                   </select>
                 </div>
-
+ {formData.role === 'student' &&(
                 <div className="form-group">
                   <label className="form-label">Batch</label>
                   <select
@@ -468,7 +471,27 @@ const AdminRegisterUser = () => {
                 </div>
 
 
+                  )}
+{formData.role === 'teacher' && (
+    <>
+      <div className="form-group">
+  <label htmlFor="joiningYear" className="form-label">Joining Year</label>
+  <input
+    type="number"
+    id="joiningYear"
+    name="joiningYear"
+    className="form-input"
+    placeholder="Enter joining year"
+    value={formData.joiningYear}
+    onChange={handleChange}
+    min="1990"
+    max={new Date().getFullYear()}
+    required
+  />
+</div>
 
+    </>
+)}
 
            
               

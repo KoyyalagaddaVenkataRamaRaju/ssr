@@ -37,7 +37,7 @@ const assignFeesToNewStudent = async (student) => {
 
 export const adminRegisterUser = async (req, res) => {
   try {
-    const { name, email, password, role, department, phone, enrollmentId, employeeId, canRegisterStudents, section, batch } = req.body;
+    const { name, email, password, role, department, phone, enrollmentId,  joiningYear,employeeId, canRegisterStudents, section, batch } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({
@@ -80,6 +80,7 @@ export const adminRegisterUser = async (req, res) => {
     }
     if (role === 'teacher') {
       if (employeeId) userData.employeeId = employeeId;
+      if (joiningYear) userData.joiningYear = joiningYear;
       userData.canRegisterStudents = canRegisterStudents === true;
     }
 

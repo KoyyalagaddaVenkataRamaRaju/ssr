@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    joiningYear: {
+      type: Number,
+      trim: true,
+      required: function() { return this.role === 'teacher'; }
+    },
     section: {
       type: String,
       trim: true,
