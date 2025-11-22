@@ -20,34 +20,45 @@ cloudinary.config({
 });
 
 /* =========================================================================
-   DEFAULT UPLOADER for Recruiter Logos → saves inside folder "recruiters"
+   DEFAULT UPLOADER (recruiters) — keep as is
 ========================================================================= */
 const recruiterStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "recruiters",
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
-  },
+    allowed_formats: ["jpg", "jpeg", "png", "webp"]
+  }
 });
 
 const upload = multer({ storage: recruiterStorage });
 
 /* =========================================================================
-   Reusable uploader generator → createUploader("folder_name")
-   Example: uploadHero = createUploader("hero_slides")
+   NEW — Perfect Reusable Uploader for ANY folder
+   This fixes:
+   ✔ public_id issue
+   ✔ secure_url issue
+   ✔ multer crashing issues
 ========================================================================= */
 export function createUploader(folderName) {
   const storage = new CloudinaryStorage({
     cloudinary,
-    params: {
+    params: async (req, file) => ({
       folder: folderName,
-      allowed_formats: ["jpg", "jpeg", "png", "webp"],
-      unique_filename: true,
       resource_type: "image",
+      allowed_formats: ["jpg", "jpeg", "png", "webp"],
+      use_filename: false,
+      unique_filename: true,
+    })
+  });
+
+  const uploader = multer({
+    storage,
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB
     },
   });
 
-  return multer({ storage });
+  return uploader;
 }
 
 export { cloudinary, upload };

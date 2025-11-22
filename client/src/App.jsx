@@ -39,6 +39,7 @@ import { getCurrentUserId } from './services/authService';
 import TeacherBranchStudents from './pages/SectionStudents';
 import TeacherClasses from './pages/TeacherClasses';
 import TeacherProfile from './pages/TeacherProfile';
+import AdminGallery from "./pages/AdminGallery";
 
 
 const RootRedirect = () => {
@@ -255,6 +256,14 @@ function App() {
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminRecruiters />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/gallery"
+            element={
+              
+                <AdminGallery/>
+              
             }
           />
 
