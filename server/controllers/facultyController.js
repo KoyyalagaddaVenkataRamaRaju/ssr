@@ -101,7 +101,7 @@ export const updateFacultyProfile = async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
-    const profile = await FacultyProfile.findByIdAndUpdate(id, updateData, {
+    const profile = await FacultyProfile.findOneAndUpdate({user:id}, updateData, {
       new: true,
       runValidators: true,
     }).populate('user department');
