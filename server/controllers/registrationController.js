@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import Fee from '../models/Fee.js';
 import StudentFee from '../models/StudentFee.js';
 import mongoose from 'mongoose';
+import FacultyProfile from "../models/FacultyProfile.js";
 
 
 const assignFeesToNewStudent = async (student) => {
