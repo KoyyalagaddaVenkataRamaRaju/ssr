@@ -39,6 +39,13 @@ import { getCurrentUserId } from './services/authService';
 import TeacherBranchStudents from './pages/SectionStudents';
 import TeacherClasses from './pages/TeacherClasses';
 import TeacherProfile from './pages/TeacherProfile';
+import StudentAttendanceView from "./pages/StudentAttendanceView";
+import SubjectManagement from "./pages/SubjectManagement";
+import SemesterManagement from "./pages/SemesterManagement";
+import TeacherAllocation from "./pages/TeacherAllocation";
+import TimetablePreparation from "./pages/TimetablePreparation";
+import SectionManagement from "./pages/SectionManagement";
+
 
 
 const RootRedirect = () => {
@@ -63,11 +70,11 @@ const RootRedirect = () => {
 };
 
 function App() {
-  const [teacherId, setTeacherId] = useState("");
+  const [UserId, setUserId] = useState("");
 
   useEffect(() => {
     const id = getCurrentUserId();
-    setTeacherId(id);
+    setUserId(id);
     console.log("Fetched Teacher ID:", id);
   }, []);
 
@@ -131,7 +138,7 @@ function App() {
             path="/teacher/attendance/"
             element={
               <ProtectedRoute allowedRoles={["teacher"]}>
-                <TakeAttendance teacherId={teacherId} />
+                <TakeAttendance teacherId={UserId} />
               </ProtectedRoute>
             }
           />
@@ -168,6 +175,47 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminManageUsers />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/subject-creation"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <SubjectManagement />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/admin/semester-creation"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <SemesterManagement />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/admin/teacher-allocation"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <TeacherAllocation />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/admin/timetable-preparation"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <TimetablePreparation />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/admin/section-creation"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <SectionManagement />
               </ProtectedRoute>
             }
           />
@@ -254,6 +302,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminRecruiters />
+              </ProtectedRoute>
+            }
+          />
+             <Route
+            path="/student/attendance"
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <StudentAttendanceView   studentId={UserId} />
               </ProtectedRoute>
             }
           />

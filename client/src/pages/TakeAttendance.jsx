@@ -190,6 +190,7 @@ const TakeAttendance = ({ teacherId }) => {
           position: relative;
           min-height: 100vh;
         }
+        
         .main-loading-overlay {
           position: absolute;
           left: 0; top: 0;
@@ -457,7 +458,7 @@ const TakeAttendance = ({ teacherId }) => {
                         <button
                           type="submit"
                           className="btn btn-primary btn-compact"
-                          disabled={isLoading}
+                          
                         >
                           {isLoading ? "Submitting..." : "Submit Attendance"}
                         </button>

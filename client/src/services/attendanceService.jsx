@@ -110,6 +110,41 @@ export const attendenceofStudents = async (attendanceData) => {
 };
 
 
+export const fetchStudentInformation = async (studentId) => {
+  try {
+    const response = await api.get(`/api/user/${studentId}`);  
+    
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }   
+
+};
+
+
+
+export const fetchStudentAttendance = async (studentId, filters = {}) => {
+  try {
+    if (!studentId) {
+      throw { message: 'studentId is required' };
+    }
+
+    let url = `/api/attendance/student/${encodeURIComponent(studentId)}`;
+    const params = new URLSearchParams();
+
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+
+    const query = params.toString();
+    if (query) url += `?${query}`;
+
+    const response = await api.get(url);
+    return response.data; // same as first function
+  } catch (error) {
+    throw error.response?.data || { message: error.message || 'Network error' };
+  }
+};
+
 
 
 

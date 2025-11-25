@@ -44,6 +44,10 @@ const Sidebar = ({ onToggle }) => {
           { name: "Reports", icon: FileText, path: "#" },
           { name: "Settings", icon: Settings, path: "#" },
         ];
+      case "student":
+        return [
+          ...commonItems,
+         { name: "Attendance", icon: FileText, path: "/student/attendance" }, ];
       case "admin":
         return [
           ...commonItems,
@@ -55,9 +59,15 @@ const Sidebar = ({ onToggle }) => {
           { name: "Student Fee", icon: BadgeDollarSign, path: "/admin/studentfees" },
           { name: "HomeCarousel", icon: Image, path: "/admin/hero-carousel" },
           { name: "Recruiters", icon: Image, path: "/admin/recruiters" },
-          { name: "Reports", icon: FileText, path: "/admin/reports" },
+         
           { name: "Settings", icon: Settings, path: "#" },
           { name: "Attendance", icon: FileText, path: "/admin/attendance" },
+           { name: "Attendance Reports", icon: FileText, path: "/admin/reports" },
+          {name:"Subject Creation ", icon: BookOpen, path: "/admin/subject-creation"},
+          {name:"Semester Creation ", icon: BookOpen, path: "/admin/semester-creation"},
+          {name:"Teacher Allocation ", icon: Users, path: "/admin/teacher-allocation"},
+          {name:"Timetable Preparation ", icon: Calendar, path: "/admin/timetable-preparation"},
+          {name:"Section Creation ", icon: PlusSquare, path: "/admin/section-creation"},
         ];
       case "teacher":
         return [
