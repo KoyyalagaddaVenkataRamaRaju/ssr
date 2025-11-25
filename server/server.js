@@ -22,9 +22,10 @@ import batchRoutes from './routes/batch.js';
 import semesterRoutes from './routes/semester.js';
 import feeRoutes from "./routes/feeRoutes.js";
 import facultyRoutes from './routes/facultyRoutes.js';
-
 import sectionRoutes from './routes/sections.js';
 import recruiterRoutes from "./routes/recruiterRoutes.js";
+import galleryRoutes from "./routes/galleryRoutes.js";
+
 
 
 
@@ -77,6 +78,7 @@ app.use('/api/hero-carousel', heroCarouselRoutes);
 app.use("/api/recruiters", recruiterRoutes);
 app.use("/api/fees", feeRoutes);
 app.use("/api/teacher", facultyRoutes); 
+app.use("/api/gallery", galleryRoutes);
 app.get("/api/placements", (req, res) => {
   const data = [
     {

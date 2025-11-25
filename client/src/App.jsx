@@ -39,6 +39,7 @@ import { getCurrentUserId } from './services/authService';
 import TeacherBranchStudents from './pages/SectionStudents';
 import TeacherClasses from './pages/TeacherClasses';
 import TeacherProfile from './pages/TeacherProfile';
+import AdminGallery from "./pages/AdminGallery";
 import StudentAttendanceView from "./pages/StudentAttendanceView";
 import SubjectManagement from "./pages/SubjectManagement";
 import SemesterManagement from "./pages/SemesterManagement";
@@ -303,6 +304,14 @@ function App() {
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminRecruiters />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/gallery"
+            element={
+              
+                <AdminGallery/>
+              
             }
           />
              <Route
