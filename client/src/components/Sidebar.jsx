@@ -60,12 +60,10 @@ const Sidebar = ({ onToggle }) => {
           { name: "Student Fee", icon: BadgeDollarSign, path: "/admin/studentfees" },
           { name: "HomeCarousel", icon: Image, path: "/admin/hero-carousel" },
           { name: "Recruiters", icon: Image, path: "/admin/recruiters" },
-<<<<<<< HEAD
-         
-=======
+
           { name: "Gallery", icon: Images, path: "/admin/gallery" },
           { name: "Reports", icon: FileText, path: "/admin/reports" },
->>>>>>> 52610f8bb76e924b7d0cce56484e0fc0872dda2f
+
           { name: "Settings", icon: Settings, path: "#" },
           { name: "Attendance", icon: FileText, path: "/admin/attendance" },
            { name: "Attendance Reports", icon: FileText, path: "/admin/reports" },
