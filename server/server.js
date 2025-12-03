@@ -25,7 +25,10 @@ import facultyRoutes from './routes/facultyRoutes.js';
 import sectionRoutes from './routes/sections.js';
 import recruiterRoutes from "./routes/recruiterRoutes.js";
 import galleryRoutes from "./routes/galleryRoutes.js";
-
+import foldersRouter from './routes/folders.js';
+import resumesRouter from './routes/resumes.js';
+import problemsRouter from './routes/problems.js';
+import studentRouter from './routes/studentRoutes.js';
 
 
 
@@ -61,6 +64,7 @@ if (!fs.existsSync(heroUploadPath)) {
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+
 // Root route
 app.get('/', (req, res) => {
   res.json({
@@ -79,6 +83,7 @@ app.use("/api/recruiters", recruiterRoutes);
 app.use("/api/fees", feeRoutes);
 app.use("/api/teacher", facultyRoutes); 
 app.use("/api/gallery", galleryRoutes);
+app.use('/api/student', studentRouter);
 app.get("/api/placements", (req, res) => {
   const data = [
     {
@@ -106,6 +111,10 @@ app.use('/api/timetable', timetableRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/batches', batchRoutes);
 app.use('/api/semesters', semesterRoutes);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/api/folders', foldersRouter);
+app.use('/api/resumes', resumesRouter);
+app.use('/api/problems', problemsRouter);
 
 app.use('/api/sections', sectionRoutes);
 // 404 route for unknown endpoints

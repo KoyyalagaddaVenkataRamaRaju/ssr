@@ -14,6 +14,7 @@ import {
   BadgeDollarSign,
   Menu,
   X,
+  Code,
   Images,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -48,7 +49,11 @@ const Sidebar = ({ onToggle }) => {
       case "student":
         return [
           ...commonItems,
-         { name: "Attendance", icon: FileText, path: "/student/attendance" }, ];
+         { name: "Attendance", icon: FileText, path: "/student/attendance" },
+         {name :"Resume Upload", icon: Image, path: "/student/resume-upload"},
+         {name :"Coding Problems", icon: Code, path: "/student/coding-problems"},
+          { name: "Profile", icon: GraduationCap, path: "/student/profile" },
+        ];
       case "admin":
         return [
           ...commonItems,

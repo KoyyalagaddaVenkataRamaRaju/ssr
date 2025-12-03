@@ -46,8 +46,9 @@ import SemesterManagement from "./pages/SemesterManagement";
 import TeacherAllocation from "./pages/TeacherAllocation";
 import TimetablePreparation from "./pages/TimetablePreparation";
 import SectionManagement from "./pages/SectionManagement";
-
-
+import ResumeUpload from "./pages/ResumeUpload";
+import CodingProblems from "./pages/CodingProblems";
+import StudentProfile from "./pages/StudentProfile";
 
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -322,6 +323,21 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/student/profile" element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <StudentProfile />  
+            </ProtectedRoute>
+          }/>
+          <Route path="/student/resume-upload" element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <ResumeUpload />  
+            </ProtectedRoute>
+          }/>
+          <Route path="/student/coding-problems" element={
+            <ProtectedRoute allowedRoles={["student"]}> 
+              <CodingProblems />
+            </ProtectedRoute>
+          }/>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -329,5 +345,12 @@ function App() {
     </AuthProvider>
   );
 }
+
+
+
+
+
+
+
 
 export default App;
