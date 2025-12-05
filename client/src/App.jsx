@@ -49,7 +49,7 @@ import SectionManagement from "./pages/SectionManagement";
 import ResumeUpload from "./pages/ResumeUpload";
 import CodingProblems from "./pages/CodingProblems";
 import StudentProfile from "./pages/StudentProfile";
-
+import AdmissionForm from "./pages/AdmissionForm";
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
 
@@ -77,7 +77,7 @@ function App() {
   useEffect(() => {
     const id = getCurrentUserId();
     setUserId(id);
-    console.log("Fetched Teacher ID:", id);
+    console.log("ID:", id);
   }, []);
 
   return (
@@ -93,6 +93,7 @@ function App() {
           <Route path="/about/vision-mission" element={<VisionMission />} />
           <Route path="/about/chairman-message" element={<ChairmanMessage />} />
           <Route path="/departments/:id" element={<Department />} />
+          <Route path="/admission-form" element={<AdmissionForm />} />
 
           <Route
             path="/student/dashboard"

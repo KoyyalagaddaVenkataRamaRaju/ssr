@@ -38,6 +38,7 @@ import studentRouter from './routes/studentRoutes.js';
 
 
 
+
 // Connect to MongoDB
 connectDB();
 
@@ -47,6 +48,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
+
 
 // Resolve __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
