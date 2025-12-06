@@ -29,6 +29,8 @@ import foldersRouter from './routes/folders.js';
 import resumesRouter from './routes/resumes.js';
 import problemsRouter from './routes/problems.js';
 import studentRouter from './routes/studentRoutes.js';
+import applicationRoutes from './routes/application.js';
+import fileUploadRoutes from './routes/files.js';
 
 
 
@@ -119,6 +121,8 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/folders', foldersRouter);
 app.use('/api/resumes', resumesRouter);
 app.use('/api/problems', problemsRouter);
+app.use('/api/files', fileUploadRoutes);
+app.use('/api/applications', applicationRoutes);
 
 app.use('/api/sections', sectionRoutes);
 // 404 route for unknown endpoints

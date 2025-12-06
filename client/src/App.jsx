@@ -50,6 +50,10 @@ import ResumeUpload from "./pages/ResumeUpload";
 import CodingProblems from "./pages/CodingProblems";
 import StudentProfile from "./pages/StudentProfile";
 import AdmissionForm from "./pages/AdmissionForm";
+import MultiStepForm from "./pages/AdmissonAplicationForm";
+import ApplicationSummary from "./pages/ApplicationSummary";
+import ApplicationDetails from "./pages/ApplicationDetails";
+import ApplicationListing from "./pages/ApplicationListing";
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
 
@@ -94,7 +98,10 @@ function App() {
           <Route path="/about/chairman-message" element={<ChairmanMessage />} />
           <Route path="/departments/:id" element={<Department />} />
           <Route path="/admission-form" element={<AdmissionForm />} />
-
+          <Route path="/multi-step-form" element={<MultiStepForm />} />
+          <Route path="/summary/:applicationId" element={<ApplicationSummary />} />
+          <Route path="/applications/:id" element={<ApplicationDetails />} />
+          <Route path="/applications" element={<ApplicationListing />} />
           <Route
             path="/student/dashboard"
             element={
