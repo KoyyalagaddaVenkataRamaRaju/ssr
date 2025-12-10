@@ -301,7 +301,7 @@ function App() {
 
           <Route
             path="/admin/hero-carousel"
-            element={
+             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminHeroCarousel />
               </ProtectedRoute>

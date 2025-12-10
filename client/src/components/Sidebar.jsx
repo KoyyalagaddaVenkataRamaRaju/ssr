@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   GraduationCap,
   Home,
@@ -16,6 +16,8 @@ import {
   X,
   Code,
   Images,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -25,6 +27,7 @@ const Sidebar = ({ onToggle }) => {
   const { user } = useAuth();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
+  const [openSections, setOpenSections] = useState({}); // for grouped items
 
   const toggleSidebar = () => {
     const next = !isOpen;
@@ -32,69 +35,289 @@ const Sidebar = ({ onToggle }) => {
     if (onToggle) onToggle(next);
   };
 
+  const toggleSection = (key) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  // make active match also nested paths like /admin/attendance/123
+  const isPathActive = (path) =>
+    location.pathname === path ||
+    location.pathname.startsWith(path + "/");
+
+  const isSectionActive = (section) =>
+    section.children?.some((child) => isPathActive(child.path));
+
+  // navItems: array of items
+  // item: { name, icon, path } OR { name, icon, children: [ ... ] }
   const getNavigationItems = () => {
-    const commonItems = [
-      { name: "Dashboard", icon: Home, path: `/${user?.role}/dashboard` },
-    ];
+    const commonDashboard = {
+      name: "Dashboard",
+      icon: Home,
+      path: `/${user?.role}/dashboard`,
+    };
 
     switch (user?.role) {
       case "principal":
         return [
-          ...commonItems,
-          { name: "Overview", icon: FileText, path: "#" },
-          { name: "Staff Management", icon: Users, path: "#" },
-          { name: "Reports", icon: FileText, path: "#" },
-          { name: "Settings", icon: Settings, path: "#" },
+          commonDashboard,
+          {
+            name: "Overview",
+            icon: FileText,
+            path: "#",
+          },
+          {
+            name: "Staff Management",
+            icon: Users,
+            path: "#",
+          },
+          {
+            name: "Reports",
+            icon: FileText,
+            path: "#",
+          },
+          {
+            name: "Settings",
+            icon: Settings,
+            path: "#",
+          },
         ];
+
       case "student":
         return [
-          ...commonItems,
-         { name: "Attendance", icon: FileText, path: "/student/attendance" },
-         {name :"Resume Upload", icon: Image, path: "/student/resume-upload"},
-         {name :"Coding Problems", icon: Code, path: "/student/coding-problems"},
-          { name: "Profile", icon: GraduationCap, path: "/student/profile" },
+          commonDashboard,
+          {
+            name: "Academics",
+            icon: BookOpen,
+            children: [
+              {
+                name: "Attendance",
+                icon: FileText,
+                path: "/student/attendance",
+              },
+              {
+                name: "Coding Problems",
+                icon: Code,
+                path: "/student/coding-problems",
+              },
+            ],
+          },
+          {
+            name: "Career",
+            icon: Image,
+            children: [
+              {
+                name: "Resume Upload",
+                icon: Image,
+                path: "/student/resume-upload",
+              },
+            ],
+          },
+          {
+            name: "Profile",
+            icon: GraduationCap,
+            path: "/student/profile",
+          },
         ];
+
       case "admin":
         return [
-          ...commonItems,
-          { name: "Register User", icon: UserPlus, path: "/admin/register-user" },
-          { name: "Manage Users", icon: Users, path: "/admin/manage-users" },
-          { name: "Register Department", icon: PlusSquare, path: "/admin/register-department" },
-          { name: "Register Batches", icon: BookOpen, path: "/admin/batches" },
-          { name: "Fees", icon: CopySlash, path: "/admin/fees" },
-          { name: "Student Fee", icon: BadgeDollarSign, path: "/admin/studentfees" },
-          { name: "HomeCarousel", icon: Image, path: "/admin/hero-carousel" },
-          { name: "Recruiters", icon: Image, path: "/admin/recruiters" },
-
-          { name: "Gallery", icon: Images, path: "/admin/gallery" },
-          { name: "Reports", icon: FileText, path: "/admin/reports" },
-
-          { name: "Settings", icon: Settings, path: "#" },
-          { name: "Attendance", icon: FileText, path: "/admin/attendance" },
-           { name: "Attendance Reports", icon: FileText, path: "/admin/reports" },
-          {name:"Subject Creation ", icon: BookOpen, path: "/admin/subject-creation"},
-          {name:"Semester Creation ", icon: BookOpen, path: "/admin/semester-creation"},
-          {name:"Teacher Allocation ", icon: Users, path: "/admin/teacher-allocation"},
-          {name:"Timetable Preparation ", icon: Calendar, path: "/admin/timetable-preparation"},
-          {name:"Section Creation ", icon: PlusSquare, path: "/admin/section-creation"},
+          commonDashboard,
+          {
+            name: "User Management",
+            icon: Users,
+            children: [
+              {
+                name: "Register User",
+                icon: UserPlus,
+                path: "/admin/register-user",
+              },
+              {
+                name: "Manage Users",
+                icon: Users,
+                path: "/admin/manage-users",
+              },
+            ],
+          },
+          {
+            name: "Academic Setup",
+            icon: BookOpen,
+            children: [
+              {
+                name: "Register Department",
+                icon: PlusSquare,
+                path: "/admin/register-department",
+              },
+              {
+                name: "Register Batches",
+                icon: BookOpen,
+                path: "/admin/batches",
+              },
+              {
+                name: "Subject Creation",
+                icon: BookOpen,
+                path: "/admin/subject-creation",
+              },
+              {
+                name: "Semester Creation",
+                icon: BookOpen,
+                path: "/admin/semester-creation",
+              },
+              {
+                name: "Teacher Allocation",
+                icon: Users,
+                path: "/admin/teacher-allocation",
+              },
+              {
+                name: "Timetable Preparation",
+                icon: Calendar,
+                path: "/admin/timetable-preparation",
+              },
+              {
+                name: "Section Creation",
+                icon: PlusSquare,
+                path: "/admin/section-creation",
+              },
+            ],
+          },
+          {
+            name: "Attendance",
+            icon: Calendar,
+            children: [
+              {
+                name: "Attendance",
+                icon: FileText,
+                path: "/admin/attendance",
+              },
+              {
+                name: "Attendance Reports",
+                icon: FileText,
+                path: "/admin/reports",
+              },
+            ],
+          },
+          {
+            name: "Finance",
+            icon: BadgeDollarSign,
+            children: [
+              {
+                name: "Fees",
+                icon: CopySlash,
+                path: "/admin/fees",
+              },
+              {
+                name: "Student Fee",
+                icon: BadgeDollarSign,
+                path: "/admin/studentfees",
+              },
+            ],
+          },
+          {
+            name: "Website & Media",
+            icon: Image,
+            children: [
+              {
+                name: "Home Carousel",
+                icon: Image,
+                path: "/admin/hero-carousel",
+              },
+              {
+                name: "Recruiters",
+                icon: Image,
+                path: "/admin/recruiters",
+              },
+              {
+                name: "Gallery",
+                icon: Images,
+                path: "/admin/gallery",
+              },
+            ],
+          },
+          {
+            name: "Reports",
+            icon: FileText,
+            path: "/admin/reports",
+          },
+          {
+            name: "Settings",
+            icon: Settings,
+            path: "#",
+          },
         ];
+
       case "teacher":
         return [
-          ...commonItems,
-          { name: "My Classes", icon: BookOpen, path: "/teacher/classes" },
-          { name: "Students", icon: Users, path: "/teacher/students" },
-          { name: "Attendance", icon: Calendar, path: "/teacher/attendance/" },
-          { name: "Attendance Reports", icon: Calendar, path: "/teacher/reports" },
-          {name:"Register student", icon: UserPlus, path: "/teacher/register-student"},
-          { name: "Grades", icon: FileText, path: "#" },
-          { name: "Profile", icon: GraduationCap, path: "/teacher/profile" },
+          commonDashboard,
+          {
+            name: "Classes & Students",
+            icon: BookOpen,
+            children: [
+              {
+                name: "My Classes",
+                icon: BookOpen,
+                path: "/teacher/classes",
+              },
+              {
+                name: "Students",
+                icon: Users,
+                path: "/teacher/students",
+              },
+              {
+                name: "Register Student",
+                icon: UserPlus,
+                path: "/teacher/register-student",
+              },
+            ],
+          },
+          {
+            name: "Attendance",
+            icon: Calendar,
+            children: [
+              {
+                name: "Attendance",
+                icon: Calendar,
+                path: "/teacher/attendance",
+              },
+              {
+                name: "Attendance Reports",
+                icon: Calendar,
+                path: "/teacher/reports",
+              },
+            ],
+          },
+          {
+            name: "Grades",
+            icon: FileText,
+            path: "#",
+          },
+          {
+            name: "Profile",
+            icon: GraduationCap,
+            path: "/teacher/profile",
+          },
         ];
+
       default:
-        return commonItems;
+        return [commonDashboard];
     }
   };
 
   const navItems = getNavigationItems();
+
+  // auto-open the section that contains the current active route
+  useEffect(() => {
+    const initial = {};
+    navItems.forEach((item, index) => {
+      if (item.children && isSectionActive(item)) {
+        const key = `${item.name}-${index}`;
+        initial[key] = true;
+      }
+    });
+    setOpenSections((prev) => ({ ...prev, ...initial }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   return (
     <>
@@ -183,9 +406,17 @@ const Sidebar = ({ onToggle }) => {
           overflow-y: auto;
         }
 
-        .nav-item {
+        .sidebar-nav {
+          padding: 0;
+          margin: 0;
+          list-style: none;
+        }
+
+        .nav-item,
+        .nav-section-header {
           display: flex;
           align-items: center;
+          justify-content: space-between;
           gap: 12px;
           padding: 14px;
           margin-bottom: 10px;
@@ -196,15 +427,17 @@ const Sidebar = ({ onToggle }) => {
           color: var(--text-dark);
           box-shadow: 0 3px 12px rgba(0,0,0,0.06);
           transition: all 0.25s ease;
+          cursor: pointer;
         }
 
-        .nav-item:hover {
+        .nav-item:hover,
+        .nav-section-header:hover {
           transform: translateY(-4px);
           box-shadow: 0 8px 18px rgba(0,0,0,0.10);
         }
 
-        /* UPDATED: ACTIVE STYLE — NO LEFT BORDER */
-        .nav-item.active {
+        .nav-item.active,
+        .nav-section-header.active {
           background: var(--accent-light);
           color: var(--accent);
           box-shadow: 0 8px 20px rgba(14,165,233,0.18);
@@ -213,6 +446,54 @@ const Sidebar = ({ onToggle }) => {
         .nav-icon {
           min-width: 22px;
           color: var(--accent);
+        }
+
+        .nav-label {
+          flex-grow: 1;
+          text-align: left;
+        }
+
+        .nav-chevron {
+          margin-left: auto;
+          flex-shrink: 0;
+        }
+
+        .nav-section {
+          margin-bottom: 6px;
+        }
+
+        .nav-subitems {
+          margin-left: 16px;
+          margin-top: 6px;
+        }
+
+        .nav-subitem {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          margin-bottom: 6px;
+          background: #f8fafc;
+          border-radius: 12px;
+          text-decoration: none;
+          color: var(--text-dark);
+          font-weight: 500;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+          transition: all 0.2s ease;
+        }
+
+        .nav-subitem:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 14px rgba(0,0,0,0.08);
+        }
+
+        .nav-subitem.active {
+          background: var(--accent-light);
+          color: var(--accent);
+        }
+
+        .nav-subicon {
+          min-width: 18px;
         }
       `}</style>
 
@@ -242,16 +523,88 @@ const Sidebar = ({ onToggle }) => {
         {/* NAVIGATION */}
         <div className="sidebar-scrollable">
           <nav className="sidebar-nav">
-            {navItems.map((item, i) => (
-              <Link
-                key={i}
-                to={item.path}
-                className={`nav-item ${location.pathname === item.path ? "active" : ""}`}
-              >
-                <item.icon className="nav-icon" size={20} />
-                {isOpen && <span>{item.name}</span>}
-              </Link>
-            ))}
+            {navItems.map((item, index) => {
+              const hasChildren =
+                Array.isArray(item.children) && item.children.length > 0;
+
+              // Simple single item
+              if (!hasChildren) {
+                const active = isPathActive(item.path);
+                return (
+                  <Link
+                    key={index}
+                    to={item.path}
+                    className={`nav-item ${active ? "active" : ""}`}
+                  >
+                    <item.icon className="nav-icon" size={20} />
+                    {isOpen && (
+                      <span className="nav-label">{item.name}</span>
+                    )}
+                  </Link>
+                );
+              }
+
+              // Section with children
+              const sectionKey = `${item.name}-${index}`;
+              const open = !!openSections[sectionKey];
+              const sectionActive = isSectionActive(item);
+
+              return (
+                <div className="nav-section" key={sectionKey}>
+                  <div
+                    className={`nav-section-header ${
+                      sectionActive ? "active" : ""
+                    }`}
+                    onClick={() => toggleSection(sectionKey)}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                      }}
+                    >
+                      <item.icon className="nav-icon" size={20} />
+                      {isOpen && (
+                        <span className="nav-label">{item.name}</span>
+                      )}
+                    </div>
+                    {isOpen && (
+                      <span className="nav-chevron">
+                        {open ? (
+                          <ChevronDown size={18} />
+                        ) : (
+                          <ChevronRight size={18} />
+                        )}
+                      </span>
+                    )}
+                  </div>
+
+                  {isOpen && open && (
+                    <div className="nav-subitems">
+                      {item.children.map((child, idx) => {
+                        const active = isPathActive(child.path);
+                        return (
+                          <Link
+                            key={idx}
+                            to={child.path}
+                            className={`nav-subitem ${
+                              active ? "active" : ""
+                            }`}
+                          >
+                            <child.icon
+                              className="nav-subicon"
+                              size={18}
+                            />
+                            <span>{child.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
         </div>
       </div>
