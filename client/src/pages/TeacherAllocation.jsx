@@ -17,12 +17,11 @@ const TeacherAllocation = () => {
   const [teachers, setTeachers] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [batches, setBatches] = useState([]);
   const [sections, setSections] = useState([]);
   const [allocations, setAllocations] = useState([]);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [formData, setFormData] = useState({
@@ -35,10 +34,28 @@ const TeacherAllocation = () => {
     academicYear: "2025-2026",
   });
 
+  useEffect(() => {
+    fetchAllocations();
+    fetchDepartments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-
-
-
+  // axios api instance (kept as in earlier pattern, not used directly here but retained)
+  const API_URL = import.meta.env.VITE_API_URL;
+  const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem("token");
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
 
   const fetchAllocations = async () => {
     try {
@@ -46,9 +63,8 @@ const TeacherAllocation = () => {
       if (data.success) {
         setAllocations(data.data);
       }
-    } catch (error) {
-      console.error("Error fetching allocations:", error);
-      setError("Failed to load allocations.");
+    } catch (err) {
+      console.error("Error fetching allocations:", err);
     }
   };
 
@@ -59,22 +75,25 @@ const TeacherAllocation = () => {
       if (response.success) {
         setDepartments(data);
       }
-    } catch (error) {
-      console.error("Error fetching departments:", error);
-      setError("Failed to load departments.");
+    } catch (err) {
+      console.error("Error fetching departments:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchTeachers = async (departmentId) => {
     try {
-      setLoading(true);
       const response = await fetchTeachersByDepartment(departmentId);
+      // some services return different shapes; follow existing usage
       if (response.success) {
+        // prefer response.users when present, fallback to response.data or response.data.users
         setTeachers(response.users || response.data || []);
       } else {
         setError(response.message || "Failed to fetch teachers.");
       }
     } catch (err) {
+      console.error("Failed to fetch teachers:", err);
       setError("Failed to fetch teachers. Please try again.");
     } finally {
       setLoading(false);
@@ -83,29 +102,24 @@ const TeacherAllocation = () => {
 
   const fetchSubjectsByDepartment = async (departmentId, year) => {
     try {
-      const data = await subjectService.getByDepartmentAndYear(
-        departmentId,
-        year
-      );
-      if (data.success) {
-        setSubjects(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching subjects:", error);
-      setError("Failed to load subjects.");
+      const data = await subjectService.getByDepartmentAndYear(departmentId, year);
+      if (data.success) setSubjects(data.data);
+    } catch (err) {
+      console.error("Error fetching subjects:", err);
     }
   };
 
   const fetchBatches = async (departmentId) => {
     try {
-      setLoading(true);
       const response = await fetchBatchesByDepartment(departmentId);
       if (response.success) {
-        setBatches(response.data);
+        // some responses put batches under response.data or response.data.batches
+        setBatches(response.data || response.data?.batches || []);
       } else {
         setError(response.message || "Failed to fetch batches.");
       }
     } catch (err) {
+      console.error("Failed to fetch batches:", err);
       setError("Failed to fetch batches. Please try again.");
     } finally {
       setLoading(false);
@@ -115,13 +129,13 @@ const TeacherAllocation = () => {
   const fetchSections = async (departmentId) => {
     try {
       const response = await fetchSectionsByDepartment(departmentId);
-      if (response && response.success) {
-        setSections(response.data);
-      } else if (Array.isArray(response)) {
-        setSections(response);
-      } else {
+      if (!response) {
         setSections([]);
+        return;
       }
+      if (response.success && response.data) setSections(response.data);
+      else if (Array.isArray(response)) setSections(response);
+      else setSections([]);
     } catch (err) {
       console.error("Failed to fetch sections:", err);
       setSections([]);
@@ -130,16 +144,12 @@ const TeacherAllocation = () => {
 
   const handleDepartmentChange = (e) => {
     const departmentId = e.target.value;
-    const updated = { ...formData, department: departmentId, teacher: "", batch: "", section: "A", subject: "" };
-    setFormData(updated);
-
+    setFormData({ ...formData, department: departmentId, batch: "", section: "A" });
     if (departmentId) {
       fetchTeachers(departmentId);
       fetchBatches(departmentId);
       fetchSections(departmentId);
-      if (updated.year) {
-        fetchSubjectsByDepartment(departmentId, updated.year);
-      }
+      if (formData.year) fetchSubjectsByDepartment(departmentId, formData.year);
     } else {
       setTeachers([]);
       setBatches([]);
@@ -149,13 +159,9 @@ const TeacherAllocation = () => {
   };
 
   const handleYearChange = (e) => {
-    const year = parseInt(e.target.value, 10);
-    const updated = { ...formData, year };
-    setFormData(updated);
-
-    if (updated.department && year) {
-      fetchSubjectsByDepartment(updated.department, year);
-    }
+    const year = e.target.value;
+    setFormData({ ...formData, year: parseInt(year) });
+    if (formData.department && year) fetchSubjectsByDepartment(formData.department, year);
   };
 
   const handleSubmit = async (e) => {
@@ -174,60 +180,76 @@ const TeacherAllocation = () => {
           year: 1,
           academicYear: "2025-2026",
         });
+        // clear dependent lists
         setTeachers([]);
+        setSubjects([]);
         setBatches([]);
         setSections([]);
-        setSubjects([]);
       } else {
-        alert(data.message || "Failed to allocate teacher.");
+        alert("Failed to allocate teacher: " + (data.message || "Unknown error"));
       }
-    } catch (error) {
-      console.error("Error creating allocation:", error);
-      alert("Failed to allocate teacher: " + error.message);
+    } catch (err) {
+      console.error("Error creating allocation:", err);
+      alert("Failed to allocate teacher: " + (err.message || "Unknown error"));
     }
   };
 
   const handleDelete = async (id) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to remove this allocation?"
-      )
-    )
-      return;
-
+    if (!window.confirm("Are you sure you want to remove this allocation?")) return;
     try {
       const data = await teacherAllocationService.delete(id);
       if (data.success) {
         alert("Allocation removed successfully");
         fetchAllocations();
+      } else {
+        alert("Failed to remove allocation: " + (data.message || "Unknown error"));
       }
-    } catch (error) {
-      console.error("Error deleting allocation:", error);
-      alert("Failed to remove allocation: " + error.message);
+    } catch (err) {
+      console.error("Error deleting allocation:", err);
+      alert("Failed to remove allocation: " + (err.message || "Unknown error"));
     }
   };
 
   return (
     <>
-      {/* PAGE STYLES (aligned with other admin pages) */}
       <style>{`
-        :root {
-          --primary: #6a4ed9;
-          --accent: #ff8c42;
-          --muted: #6b6b6b;
+        :root{
           --card-bg: #ffffff;
+          --muted: #6b7280;
+          --primary: #6a4ed9;
         }
 
-        .admin-page {
+        .ta-page {
           display: flex;
           min-height: 100vh;
-          background: linear-gradient(135deg,#f3e5f5,#e0f7fa);
+          background: linear-gradient(180deg,#f3f4f6,#eef2ff);
         }
 
-        .main-content {
+        .ta-main {
           flex: 1;
-          padding: 28px 36px;
+          padding: 24px 32px;
           transition: margin-left .32s ease;
+        }
+
+        .ta-card {
+          background: var(--card-bg);
+          border-radius: 12px;
+          padding: 18px;
+          box-shadow: 0 10px 30px rgba(2,6,23,0.06);
+          margin-bottom: 20px;
+        }
+
+        .ta-grid-2 {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+
+        .ta-form-header {
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:12px;
         }
 
         .page-title {
@@ -237,268 +259,223 @@ const TeacherAllocation = () => {
           margin-bottom: 4px;
         }
 
-        .small-muted {
+        .ta-sub {
           color: var(--muted);
           font-size: 14px;
-          font-weight: 500;
         }
 
-        .header-actions {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-          flex-wrap: wrap;
+        .ta-input {
+          width:100%;
+          padding:10px;
+          border:1px solid #e5e7eb;
+          border-radius:8px;
+          font-size:14px;
         }
 
-        .card-surface {
-          background: var(--card-bg);
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.08);
-          margin-bottom: 22px;
+        .ta-select {
+          width:100%;
+          padding:10px;
+          border:1px solid #e5e7eb;
+          border-radius:8px;
+          font-size:14px;
+          background:white;
         }
 
-        .form-grid {
-          display: grid;
-          grid-template-columns: repeat(2,minmax(0,1fr));
-          gap: 16px;
+        .ta-btn {
+          padding:10px 16px;
+          background: var(--primary);
+          color:white;
+          border:none;
+          border-radius:8px;
+          cursor:pointer;
+          font-weight:600;
         }
 
-        .form-label-strong {
-          display: block;
-          margin-bottom: 5px;
-          font-weight: 600;
-          font-size: 14px;
+        .ta-table {
+          width:100%;
+          border-collapse: collapse;
+          background: white;
+          border-radius: 8px;
+          overflow: hidden;
         }
 
-        .table-card {
-          background: var(--card-bg);
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.06);
-        }
-
-        .table-heading {
-          margin-bottom: 10px;
-          font-size: 18px;
+        .ta-table th {
+          background: #f8fafc;
+          text-align: left;
+          padding: 10px;
           font-weight: 700;
-          color: #111827;
+          font-size: 13px;
+          color: #0f172a;
+          border-bottom:1px solid #eef2f6;
         }
 
-        @media (max-width: 992px) {
-          .main-content { padding: 22px 12px; }
-          .form-grid { grid-template-columns: 1fr; }
+        .ta-table td {
+          padding: 10px;
+          border-bottom: 1px solid #f1f5f9;
         }
 
-        @media (max-width: 768px) {
-          .main-content { padding: 16px 8px; }
-          .page-title { font-size: 22px; text-align:center; }
-          .small-muted { text-align:center; }
-          .header-actions { justify-content:center; }
+        .ta-actions button {
+          padding:6px 10px;
+          border-radius:6px;
+          border:none;
+          cursor:pointer;
+          font-size:13px;
         }
 
-        @media (max-width: 480px) {
-          .main-content { padding: 10px 4px; }
-          .page-title { font-size: 18px; }
-          .card-surface, .table-card { padding: 14px; }
+        .ta-remove {
+          background:#dc3545;
+          color:white;
+        }
+
+        @media (max-width: 880px) {
+          .ta-grid-2 { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 520px) {
+          .ta-main { padding: 12px; }
+          .ta-title { font-size:18px;}
         }
       `}</style>
 
-      <div className="admin-page">
+      <div className="ta-page">
         <Sidebar onToggle={setSidebarOpen} />
 
-        <main
-          className="main-content"
-          style={{ marginLeft: sidebarOpen ? "250px" : "80px" }}
-        >
-          {/* HEADER */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-            <div>
-              <h2 className="page-title">Teacher Subject Allocation</h2>
-              <p className="small-muted mb-0">
-                Allocate teachers to subjects, batches and sections for each academic year.
-              </p>
+        <main className="ta-main" style={{ marginLeft: sidebarOpen ? "250px" : "80px" }}>
+          <div className="ta-card">
+            <div className="ta-form-header" style={{ marginBottom: 12 }}>
+              <div>
+                <div className="page-title">Teacher Subject Allocation</div>
+                <div className="ta-sub">Allocate teachers to subjects for batches and sections</div>
+              </div>
             </div>
-            <div className="header-actions">
-              {loading && (
-                <span className="small-muted">Loading data…</span>
-              )}
+
+            <div style={{ marginTop: 8 }}>
+              <form onSubmit={handleSubmit}>
+                <div className="ta-grid-2">
+                  <div>
+                    <label style={{ display: "block", marginBottom: 6, fontWeight: 700 }}>Department</label>
+                    <select
+                      value={formData.department}
+                      onChange={handleDepartmentChange}
+                      required
+                      className="ta-select"
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((dept) => (
+                        <option key={dept._id} value={dept._id}>
+                          {dept.departmentName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", marginBottom: 6, fontWeight: 700 }}>Year</label>
+                    <select
+                      value={formData.year}
+                      onChange={handleYearChange}
+                      required
+                      className="ta-select"
+                    >
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", marginBottom: 6, fontWeight: 700 }}>Teacher</label>
+                    <select
+                      value={formData.teacher}
+                      onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
+                      required
+                      className="ta-select"
+                    >
+                      <option value="">Select Teacher</option>
+                      {teachers.map((teacher) => (
+                        <option key={teacher._id} value={teacher._id}>
+                          {teacher.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", marginBottom: 6, fontWeight: 700 }}>Subject</label>
+                    <select
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      required
+                      className="ta-select"
+                    >
+                      <option value="">Select Subject</option>
+                      {subjects.map((subject) => (
+                        <option key={subject._id} value={subject._id}>
+                          {subject.subjectName} ({subject.subjectCode})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", marginBottom: 6, fontWeight: 700 }}>Batch</label>
+                    <select
+                      value={formData.batch}
+                      onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
+                      required
+                      className="ta-select"
+                    >
+                      <option value="">Select Batch</option>
+                      {batches.map((batch) => (
+                        <option key={batch._id} value={batch._id}>
+                          {batch.batchName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", marginBottom: 6, fontWeight: 700 }}>Section</label>
+                    <select
+                      value={formData.section}
+                      onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                      required
+                      className="ta-select"
+                    >
+                      {sections && sections.length > 0 ? (
+                        <>
+                          <option value="">Select Section</option>
+                          {sections.map((sec) => (
+                            <option key={sec._id || sec.sectionName} value={sec.sectionName || sec._id}>
+                              {sec.sectionName || sec.section}
+                            </option>
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          <option value="A">Create sections before selecting</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  <div style={{ alignSelf: "end" }}>
+                    <button type="submit" className="ta-btn" style={{ minWidth: 160 }}>
+                      Allocate Teacher
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
 
-          {/* ERROR ALERT */}
-          {error && (
-            <div className="alert alert-danger py-2">
-              {error}
-            </div>
-          )}
-
-          {/* ALLOCATION FORM */}
-          <section className="card-surface">
-            <h5 className="mb-3">Allocate Teacher to Subject</h5>
-            <form onSubmit={handleSubmit}>
-              <div className="form-grid">
-                <div>
-                  <label className="form-label-strong">Department</label>
-                  <select
-                    value={formData.department}
-                    onChange={handleDepartmentChange}
-                    required
-                    className="form-control"
-                  >
-                    <option value="">Select Department</option>
-                    {departments.map((dept) => (
-                      <option key={dept._id} value={dept._id}>
-                        {dept.departmentName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="form-label-strong">Year</label>
-                  <select
-                    value={formData.year}
-                    onChange={handleYearChange}
-                    required
-                    className="form-control"
-                  >
-                    <option value="1">1st Year</option>
-                    <option value="2">2nd Year</option>
-                    <option value="3">3rd Year</option>
-                    <option value="4">4th Year</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="form-label-strong">Teacher</label>
-                  <select
-                    value={formData.teacher}
-                    onChange={(e) =>
-                      setFormData({ ...formData, teacher: e.target.value })
-                    }
-                    required
-                    className="form-control"
-                  >
-                    <option value="">Select Teacher</option>
-                    {teachers.map((teacher) => (
-                      <option key={teacher._id} value={teacher._id}>
-                        {teacher.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="form-label-strong">Subject</label>
-                  <select
-                    value={formData.subject}
-                    onChange={(e) =>
-                      setFormData({ ...formData, subject: e.target.value })
-                    }
-                    required
-                    className="form-control"
-                  >
-                    <option value="">Select Subject</option>
-                    {subjects.map((subject) => (
-                      <option key={subject._id} value={subject._id}>
-                        {subject.subjectName} ({subject.subjectCode})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="form-label-strong">Batch</label>
-                  <select
-                    value={formData.batch}
-                    onChange={(e) =>
-                      setFormData({ ...formData, batch: e.target.value })
-                    }
-                    required
-                    className="form-control"
-                  >
-                    <option value="">Select Batch</option>
-                    {batches.map((batch) => (
-                      <option key={batch._id} value={batch._id}>
-                        {batch.batchName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="form-label-strong">Section</label>
-                  <select
-                    value={formData.section}
-                    onChange={(e) =>
-                      setFormData({ ...formData, section: e.target.value })
-                    }
-                    required
-                    className="form-control"
-                  >
-                    {sections && sections.length > 0 ? (
-                      <>
-                        <option value="">Select Section</option>
-                        {sections.map((sec) => (
-                          <option
-                            key={sec._id || sec.sectionName}
-                            value={sec.sectionName || sec._id}
-                          >
-                            {sec.sectionName || sec.section}
-                          </option>
-                        ))}
-                      </>
-                    ) : (
-                      <option value="">
-                        Create sections before selecting
-                      </option>
-                    )}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="form-label-strong">Academic Year</label>
-                  <input
-                    type="text"
-                    value={formData.academicYear}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        academicYear: e.target.value,
-                      })
-                    }
-                    className="form-control"
-                    placeholder="e.g., 2025-2026"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="btn mt-3"
-                style={{
-                  padding: "10px 24px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                }}
-              >
-                Allocate Teacher
-              </button>
-            </form>
-          </section>
-
-          {/* CURRENT ALLOCATIONS TABLE */}
-          <section className="table-card">
-            <h5 className="table-heading">Current Allocations</h5>
+          <div className="ta-card">
+            <h3 style={{ marginTop: 0, marginBottom: 12 }}>Current Allocations</h3>
             <div style={{ overflowX: "auto" }}>
-              <table className="table table-bordered table-striped mb-0">
+              <table className="ta-table">
                 <thead>
-                  <tr style={{ backgroundColor: "#f0f0f0" }}>
+                  <tr>
                     <th>Teacher</th>
                     <th>Subject</th>
                     <th>Department</th>
@@ -509,13 +486,11 @@ const TeacherAllocation = () => {
                     <th>Actions</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {allocations.length === 0 ? (
                     <tr>
-                      <td
-                        colSpan="8"
-                        className="text-center py-3 text-muted"
-                      >
+                      <td colSpan="8" style={{ padding: 20, textAlign: "center", color: "var(--muted)" }}>
                         No allocations found
                       </td>
                     </tr>
@@ -524,25 +499,16 @@ const TeacherAllocation = () => {
                       <tr key={allocation._id}>
                         <td>{allocation.teacher?.name}</td>
                         <td>{allocation.subject?.subjectName}</td>
-                        <td>
-                          {allocation.department?.departmentName}
-                        </td>
+                        <td>{allocation.department?.departmentName}</td>
                         <td>{allocation.year}</td>
                         <td>{allocation.batch?.batchName}</td>
                         <td>{allocation.section}</td>
                         <td>{allocation.academicYear}</td>
-                        <td>
+                        <td className="ta-actions">
                           <button
                             onClick={() => handleDelete(allocation._id)}
-                            className="btn btn-sm"
-                            style={{
-                              padding: "5px 10px",
-                              backgroundColor: "#dc3545",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                            }}
+                            className="ta-remove"
+                            title="Remove allocation"
                           >
                             Remove
                           </button>
@@ -553,7 +519,7 @@ const TeacherAllocation = () => {
                 </tbody>
               </table>
             </div>
-          </section>
+          </div>
         </main>
       </div>
     </>
