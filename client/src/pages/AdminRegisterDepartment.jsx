@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { PlusSquare, CheckCircle, AlertCircle } from "lucide-react";
 import { adminRegisterDepartement, getAllDepartments } from "../services/departmentService";
+import courseService from '../services/courseService';
 import Sidebar from "../components/Sidebar";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminRegisterDepartment = () => {
   const [formData, setFormData] = useState({
+    course: '',
     departmentName: "",
     description: "",
     departmentImage: "",
@@ -16,6 +18,7 @@ const AdminRegisterDepartment = () => {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [departments, setDepartments] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -28,7 +31,17 @@ const AdminRegisterDepartment = () => {
       }
     };
 
+    const fetchCourses = async () => {
+      try {
+        const list = await courseService.getAllCourses();
+        setCourses(list || []);
+      } catch (err) {
+        // ignore
+      }
+    };
+
     fetchData();
+    fetchCourses();
     const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
@@ -43,7 +56,7 @@ const AdminRegisterDepartment = () => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
 
-    if (!formData.departmentName || !formData.description || !formData.departmentImage) {
+    if (!formData.course || !formData.departmentName || !formData.description || !formData.departmentImage) {
       setMessage({ type: "error", text: "Please fill in all required fields" });
       return;
     }
@@ -319,6 +332,25 @@ const AdminRegisterDepartment = () => {
               {/* Register Form */}
               <form className="register-form" onSubmit={handleSubmit}>
                 <h3 className="section-title">Department Information</h3>
+
+                <div className="form-group">
+                  <label htmlFor="course" className="form-label">
+                    Course <span className="required">*</span>
+                  </label>
+                  <select
+                    id="course"
+                    name="course"
+                    className="form-input"
+                    value={formData.course}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Course</option>
+                    {courses.map(c => (
+                      <option key={c._id} value={c._id}>{c.courseName}</option>
+                    ))}
+                  </select>
+                </div>
 
                 <div className="form-group">
                   <label htmlFor="departmentName" className="form-label">

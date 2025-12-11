@@ -59,6 +59,7 @@ const Sidebar = ({ onToggle }) => {
           ...commonItems,
           { name: "Register User", icon: UserPlus, path: "/admin/register-user" },
           { name: "Manage Users", icon: Users, path: "/admin/manage-users" },
+          {name:"Course Creation", icon: BookOpen, path: "/admin/courses"},
           { name: "Register Department", icon: PlusSquare, path: "/admin/register-department" },
           { name: "Register Batches", icon: BookOpen, path: "/admin/batches" },
           { name: "Fees", icon: CopySlash, path: "/admin/fees" },

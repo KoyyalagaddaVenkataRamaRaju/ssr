@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { CheckCircle, AlertCircle, Layers } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { createBatch, getAllDepartments, getAllBatches } from "../services/batchService";
+import courseService from '../services/courseService';
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminRegisterBatchPage = () => {
@@ -11,6 +12,8 @@ const AdminRegisterBatchPage = () => {
   const [batchMessage, setBatchMessage] = useState({ type: "", text: "" });
 
   const [allDepartments, setAllDepartments] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [batches, setBatches] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -26,9 +29,11 @@ const AdminRegisterBatchPage = () => {
           getAllDepartments(),
           getAllBatches(),
         ]);
+        const coursesResp = await courseService.getAllCourses();
         if (!alive) return;
         if (depsResp?.success) setAllDepartments(depsResp.data || []);
         if (batchesResp?.success) setBatches(batchesResp.data || []);
+        setCourses(coursesResp || []);
       } catch (err) {
         console.error("Failed to fetch data", err);
       }
@@ -339,42 +344,59 @@ const AdminRegisterBatchPage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Departments:</label>
-                  {allDepartments.length === 0 ? (
-                    <p>No departments available.</p>
-                  ) : (
-                    allDepartments.map((dept) => {
-                      const isSelected = selectedDepartments.find(
-                        (d) => d.departmentId === dept._id
-                      );
-                      return (
-                        <div key={dept._id} className="department-checkbox">
-                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <input
-                              type="checkbox"
-                              checked={!!isSelected}
-                              onChange={() => handleDepartmentCheckbox(dept._id)}
-                            />
-                            <div>
-                              <div style={{ fontWeight: 600 }}>{dept.departmentName}</div>
-                              <div style={{ fontSize: 13, color: "#666" }}>{dept.description || ""}</div>
-                            </div>
-                          </div>
+                  <label>Course (choose to filter departments):</label>
+                  <select
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                  >
+                    <option value="">-- Select Course --</option>
+                    {courses.map(c => (
+                      <option key={c._id} value={c._id}>{c.courseName}</option>
+                    ))}
+                  </select>
+                </div>
 
-                          {isSelected && (
-                            <input
-                              type="number"
-                              min="1"
-                              value={isSelected.numberOfSections}
-                              onChange={(e) =>
-                                handleSectionChange(dept._id, parseInt(e.target.value || "1", 10))
-                              }
-                              style={{ width: "70px", textAlign: "center" }}
-                            />
-                          )}
-                        </div>
-                      );
-                    })
+                <div className="form-group">
+                  <label>Departments:</label>
+                  {selectedCourse === '' ? (
+                    <p>Please select a course to choose departments.</p>
+                  ) : (
+                    (allDepartments.filter(d => String(d.course) === String(selectedCourse))).length === 0 ? (
+                      <p>No departments available for this course.</p>
+                    ) : (
+                      allDepartments.filter(d => String(d.course) === String(selectedCourse)).map((dept) => {
+                        const isSelected = selectedDepartments.find(
+                          (d) => d.departmentId === dept._id
+                        );
+                        return (
+                          <div key={dept._id} className="department-checkbox">
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                              <input
+                                type="checkbox"
+                                checked={!!isSelected}
+                                onChange={() => handleDepartmentCheckbox(dept._id)}
+                              />
+                              <div>
+                                <div style={{ fontWeight: 600 }}>{dept.departmentName}</div>
+                                <div style={{ fontSize: 13, color: "#666" }}>{dept.description || ""}</div>
+                              </div>
+                            </div>
+
+                            {isSelected && (
+                              <input
+                                type="number"
+                                min="1"
+                                value={isSelected.numberOfSections}
+                                onChange={(e) =>
+                                  handleSectionChange(dept._id, parseInt(e.target.value || "1", 10))
+                                }
+                                style={{ width: "70px", textAlign: "center" }}
+                              />
+                            )}
+                          </div>
+                        );
+                      })
+                    )
                   )}
                 </div>
 

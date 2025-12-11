@@ -17,6 +17,7 @@ import PrincipalDashboard from "./pages/PrincipalDashboard";
 import AdminRegisterUser from "./pages/AdminRegisterUser";
 import AdminManageUsers from "./pages/AdminManageUsers";
 import TeacherRegisterStudent from "./pages/TeacherRegisterStudent";
+import AdminCreateCourse from './pages/AdminCreateCourse';
 import Navbar from "./components/Navbar";
 import AdminRegisterDepartment from "./pages/AdminRegisterDepartment";
 import Home from "./pages/Home";
@@ -252,6 +253,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminRegisterDepartment />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/courses"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminCreateCourse />
               </ProtectedRoute>
             }
           />

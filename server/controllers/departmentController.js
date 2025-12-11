@@ -1,15 +1,22 @@
 import Department from '../models/Departement.js';
 import Batch from '../models/Batch.js';
+import Course from '../models/Course.js';
 
 export const adminRegisterDepartment = async (req, res) => {
   try {
-    const { departmentName, description, departmentImage } = req.body;
+    const { departmentName, description, departmentImage, course } = req.body;
     console.log(req.body);
-    if (!departmentName || !description || !departmentImage) {
+    if (!departmentName || !description || !departmentImage || !course) {
       return res.status(400).json({
         success: false,
         message: 'Please provide all required fields',
       });
+    }
+
+    // validate course exists
+    const courseDoc = await Course.findById(course);
+    if (!courseDoc) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
     }
 
     // Find the latest department to increment the ID
@@ -39,6 +46,7 @@ export const adminRegisterDepartment = async (req, res) => {
       departmentImage,
       description,
       createdBy: req.user.id,
+      course: courseDoc._id,
       isActive: true,
     };
 
