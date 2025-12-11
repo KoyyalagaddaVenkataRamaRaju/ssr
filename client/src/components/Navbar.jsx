@@ -35,16 +35,8 @@ const Navbar = () => {
     },
     { title: "Departments", dynamic: true },
     {
-      title: "Academics",
-      dropdown: ["UG Programs", "PG Programs", "Departments", "Faculty"],
-    },
-    {
       title: "Admissions",
       dropdown: ["How to Apply", "Eligibility", "Fee Structure", "Scholarships"],
-    },
-    {
-      title: "Research",
-      dropdown: ["Research Centers", "Publications", "Projects"],
     },
     {
       title: "Placements",
