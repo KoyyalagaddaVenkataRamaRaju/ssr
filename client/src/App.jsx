@@ -120,6 +120,13 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/teacher/multi-step-form"
+           element={
+            <ProtectedRoute allowedRoles={["teacher"]}>
+           <MultiStepForm />
+           </ProtectedRoute>
+           }
+            />
            <Route
             path="/teacher/profile"
             element={

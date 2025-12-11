@@ -1,19 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import StepOne from './AdmissonSections/StepOne';
-import StepTwo from './AdmissonSections/StepTwo';
-import StepThree from './AdmissonSections/StepThree';
-import StepFour from './AdmissonSections/StepFour';
-import StepFive from './AdmissonSections/StepFive';
-import StepSix from './AdmissonSections/StepSix';
-import StepSeven from './AdmissonSections/StepSeven';
-import StepEight from './AdmissonSections/StepEight';
-import StepNine from './AdmissonSections/StepNine';
-import { submitApplication } from '../services/admissonService';
+// src/pages/MultiStepForm.jsx
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar"; // your existing Sidebar
+import CombinedApplicantDetails from "../components/CombinedApplicantDetails"; // the combined 3-step component you provided
+import { submitApplication } from "../services/admissonService";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-function MultiStepForm() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const navigate = useNavigate();
+/**
+ * MultiStepForm
+ *
+ * Parent page that hosts CombinedApplicantDetails (internal 3-step flow).
+ * - Keeps a local `formData` object that mirrors what's inside CombinedApplicantDetails.
+ * - Listens to onNext(payload, meta) from child; merges payload into local state.
+ * - If meta.submit === true, calls submitApplication(payload) and navigates to summary.
+ * - Computes a simple progress (1..3) from saved data so the progress bar reflects where user is.
+ *
+ * This file intentionally does not change submission logic or payload structure — it simply
+ * wraps the combined component, shows a responsive layout with your Sidebar and a top progress bar.
+ */
+export default function MultiStepForm() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [formData, setFormData] = useState({
     studentDetails: {},
     addressDetails: {},
@@ -24,160 +30,231 @@ function MultiStepForm() {
     preferences: {},
     signatureUpload: {},
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [progressStep, setProgressStep] = useState(1); // computed
+  const navigate = useNavigate();
 
-  const handleNextStep = (stepData) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...stepData,
-    }));
-    setCurrentStep((prev) => prev + 1);
-  };
+  // compute progress from saved formData so progress reflects actual saved state
+  useEffect(() => {
+    const hasSignature =
+      formData.signatureUpload &&
+      (formData.signatureUpload.studentSignature || formData.signatureUpload.passportSizePhoto);
 
-  const handlePreviousStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
+    const hasOther =
+      (formData.otherDetails && Object.keys(formData.otherDetails).some((k) => !!formData.otherDetails[k])) ||
+      (formData.uploadedFiles && Object.keys(formData.uploadedFiles).length > 0) ||
+      (Array.isArray(formData.studyDetails) && formData.studyDetails.length && formData.studyDetails.some((r) => r && Object.keys(r).length)) ||
+      (formData.preferences && Object.keys(formData.preferences).some((k) => !!formData.preferences[k]));
 
-  const handleSubmit = async (finalData) => {
-    try {
-      const response = await submitApplication(finalData);
+    if (hasSignature) setProgressStep(3);
+    else if (hasOther) setProgressStep(2);
+    else setProgressStep(1);
+  }, [formData]);
 
-      const data = response;
-      console.log(data);
-      if (data.success) {
-        navigate(`/summary/${data.applicationId}`);
+  // Called by CombinedApplicantDetails
+  const handleCombinedNext = async (payload = {}, meta = {}) => {
+    // Merge incoming payload into local state (shallow merge at top level)
+    setFormData((prev) => {
+      return {
+        ...prev,
+        ...payload,
+      };
+    });
+
+    // If meta.submit true -> final submit on server
+    if (meta && meta.submit) {
+      setSubmitting(true);
+      try {
+        const response = await submitApplication(payload);
+        if (response && response.success) {
+          navigate(`/summary/${response.applicationId}`);
+        } else {
+          // keep it simple: show alert (you can replace with toast)
+          alert(response?.message || "Failed to submit application. Please try again.");
+          console.error("submitApplication response:", response);
+        }
+      } catch (err) {
+        console.error("Error submitting application:", err);
+        alert("Server error while submitting application.");
+      } finally {
+        setSubmitting(false);
       }
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    }
+
+    // If child passes a suggested progress (optional), respect it
+    if (meta && typeof meta.progress === "number") {
+      setProgressStep(Math.min(Math.max(meta.progress, 1), 3));
     }
   };
 
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <StepOne
-            data={formData.studentDetails}
-            onNext={handleNextStep}
-          />
-        );
-      case 2:
-        return (
-          <StepTwo
-            data={formData.addressDetails}
-            onNext={handleNextStep}
-            onPrevious={handlePreviousStep}
-          />
-        );
-      case 3:
-        return (
-          <StepThree
-            data={formData.contactDetails}
-            onNext={handleNextStep}
-            onPrevious={handlePreviousStep}
-          />
-        );
-      case 4:
-        return (
-          <StepFour
-            data={formData.otherDetails}
-            onNext={handleNextStep}
-            onPrevious={handlePreviousStep}
-          />
-        );
-      case 5:
-        return (
-          <StepFive
-            data={formData.uploadedFiles}
-            onNext={handleNextStep}
-            onPrevious={handlePreviousStep}
-          />
-        );
-      case 6:
-        return (
-          <StepSix
-            data={formData.studyDetails}
-            onNext={handleNextStep}
-            onPrevious={handlePreviousStep}
-          />
-        );
-      case 7:
-        return (
-          <StepSeven
-            data={formData.preferences}
-            onNext={handleNextStep}
-            onPrevious={handlePreviousStep}
-          />
-        );
-      case 8:
-        return (
-          <StepEight
-            data={formData.signatureUpload}
-            onNext={handleNextStep}
-            onPrevious={handlePreviousStep}
-          />
-        );
-      case 9:
-        return (
-          <StepNine
-            formData={formData}
-            onPrevious={handlePreviousStep}
-            onSubmit={handleSubmit}
-          />
-        );
-      default:
-        return null;
-    }
+  const handleCombinedPrevious = () => {
+    // Child will handle internal previous. Parent-level fallback: step back progress
+    setProgressStep((p) => Math.max(1, p - 1));
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h1>Online Admission Application Form</h1>
-        <p style={styles.stepIndicator}>Step {currentStep} of 9</p>
+    <>
+      <style>{`
+        :root{
+          --sidebar-width: 250px;
+          --sidebar-collapsed: 80px;
+        }
+
+        .msf-page {
+          display: flex;
+          min-height: 100vh;
+          background: linear-gradient(180deg,#f7fafc,#eef2ff);
+          font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+          color: #0f172a;
+        }
+
+        /* increased base font size for readability */
+        .msf-main {
+          flex: 1;
+          transition: margin-left .28s ease;
+          padding: 28px 30px;
+          min-height: 100vh;
+          font-size: 18px; /* increased from default */
+          line-height: 1.45;
+        }
+
+        .msf-header {
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:16px;
+          margin-bottom:18px;
+        }
+
+        .msf-title { font-size:24px; font-weight:800; margin:0; } /* bumped */
+        .msf-sub { color:#6b7280; font-size:15px; margin:0; } /* bumped */
+
+        .msf-progress {
+          width: 360px; /* a bit wider so the bar looks balanced with larger text */
+        }
+
+        .msf-progress-bar {
+          height:12px; /* slightly taller to match larger font */
+          background: #e6eef8;
+          border-radius: 999px;
+          overflow:hidden;
+        }
+
+        .msf-progress-fill {
+          height:100%;
+          background: linear-gradient(90deg,#06b6d4,#2563eb);
+          transition: width .28s ease;
+        }
+
+        .msf-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        /* small responsive tweaks */
+        @media (max-width: 980px) {
+          .msf-main { padding: 18px; font-size: 17px; }
+          .msf-progress { width: 260px; }
+        }
+
+        @media (max-width: 680px) {
+          .msf-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+          .msf-title { font-size: 20px; }
+          .msf-sub { font-size: 14px; }
+          .msf-main { font-size: 16px; }
+          .msf-progress { width: 100%; }
+        }
+
+        /* improve button sizes to match larger fonts */
+        .msf-control-btn {
+          padding: 12px 16px;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 15px;
+        }
+      `}</style>
+
+      <div className="msf-page">
+        {/* use your existing Sidebar component. It accepts onToggle prop and manages its own isOpen */}
+        <Sidebar onToggle={(isOpen) => setSidebarOpen(!!isOpen)} />
+
+        <main
+          className="msf-main"
+          style={{ marginLeft: sidebarOpen ? "var(--sidebar-width)" : "var(--sidebar-collapsed)" }}
+        >
+          <div className="msf-container">
+            <div className="msf-header">
+              <div>
+                <h1 className="msf-title">Online Admission Application</h1>
+                <p className="msf-sub">Three-step consolidated flow — Personal → Documents → Submit</p>
+              </div>
+
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <div style={{ textAlign: "right", minWidth: 140 }}>
+                  <div style={{ fontSize: 15, color: "#475569", marginBottom: 6 }}>Step {progressStep} of 3</div>
+                  <div style={{ fontSize: 14, color: "#64748b" }}>
+                    {progressStep === 1 && "Personal information"}
+                    {progressStep === 2 && "Documents & preferences"}
+                    {progressStep === 3 && "Signature & submit"}
+                  </div>
+                </div>
+
+                <div className="msf-progress">
+                  <div className="msf-progress-bar">
+                    <div
+                      className="msf-progress-fill"
+                      style={{ width: `${(progressStep / 3) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <CombinedApplicantDetails
+                data={formData}
+                onNext={(payload, meta) => {
+                  // merged and handle submit
+                  handleCombinedNext(payload, meta || {});
+                }}
+                onPrevious={handleCombinedPrevious}
+              />
+            </div>
+
+            <div style={{ marginTop: 22, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="msf-control-btn"
+                style={{
+                  border: "1px solid rgba(15,23,42,0.06)",
+                  background: "transparent",
+                  color: "#374151"
+                }}
+              >
+                Back to top
+              </button>
+
+              <button
+                onClick={() => {
+                  // quick client-side save: call CombinedApplicantDetails' save via onNext with advance:false
+                  // We'll reuse handleCombinedNext with advance:false to just persist locally
+                  handleCombinedNext(formData, { advance: false });
+                  alert("Draft saved locally.");
+                }}
+                className="msf-control-btn"
+                style={{
+                  border: "none",
+                  background: "linear-gradient(90deg,#06b6d4,#2563eb)",
+                  color: "white"
+                }}
+                disabled={submitting}
+              >
+                {submitting ? "Submitting..." : "Save draft"}
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
-      <div style={styles.progressBar}>
-        <div style={{ ...styles.progress, width: `${(currentStep / 9) * 100}%` }}></div>
-      </div>
-      <div style={styles.formContainer}>
-        {renderStep()}
-      </div>
-    </div>
+    </>
   );
 }
-
-const styles = {
-  container: {
-    maxWidth: '900px',
-    margin: '0 auto',
-    padding: '40px 20px',
-    fontFamily: 'Arial, sans-serif',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '30px',
-  },
-  stepIndicator: {
-    color: '#666',
-    marginTop: '10px',
-  },
-  progressBar: {
-    height: '6px',
-    backgroundColor: '#e0e0e0',
-    borderRadius: '3px',
-    marginBottom: '30px',
-    overflow: 'hidden',
-  },
-  progress: {
-    height: '100%',
-    backgroundColor: '#4CAF50',
-    transition: 'width 0.3s ease',
-  },
-  formContainer: {
-    backgroundColor: '#f9f9f9',
-    padding: '30px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  },
-};
-
-export default MultiStepForm;

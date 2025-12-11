@@ -18,6 +18,7 @@ import {
   Images,
   ChevronDown,
   ChevronRight,
+  CheckCheckIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -242,11 +243,6 @@ const Sidebar = ({ onToggle }) => {
             ],
           },
           {
-            name: "Reports",
-            icon: FileText,
-            path: "/admin/reports",
-          },
-          {
             name: "Settings",
             icon: Settings,
             path: "#",
@@ -256,6 +252,11 @@ const Sidebar = ({ onToggle }) => {
       case "teacher":
         return [
           commonDashboard,
+          {
+            name:"Application",
+            icon:CheckCheckIcon,
+            path:"/teacher/multi-step-form",
+          },
           {
             name: "Classes & Students",
             icon: BookOpen,
