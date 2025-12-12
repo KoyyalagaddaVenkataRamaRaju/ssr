@@ -13,7 +13,7 @@ const pad = (num, size) => {
 // Fallback to a PUBLIC prefix when no authenticated teacher is present (public submissions)
 const generateApplicationId = async (req) => {
   const year = new Date().getFullYear();
-
+  console.log(req.user);
   // prefer authenticated teacher employeeId, otherwise use PUBLIC
   const teacherId = (req && req.user && req.user.employeeId) ? req.user.employeeId : 'PUBLIC';
   console.log(teacherId);
