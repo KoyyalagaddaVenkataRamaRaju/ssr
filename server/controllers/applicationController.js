@@ -1,9 +1,33 @@
 import Application from '../models/Application.js';
+import Counter from '../models/Counter.js';
 
-const generateApplicationId = () => {
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `OAMDC2025-${random}${timestamp}`;
+// Prevent duplicate submissions by Aadhar number
+
+const pad = (num, size) => {
+  let s = String(num);
+  while (s.length < size) s = '0' + s;
+  return s;
+};
+
+// Generate application id using teacher employeeId (if available) + year + 4-digit atomic sequence
+// Fallback to a PUBLIC prefix when no authenticated teacher is present (public submissions)
+const generateApplicationId = async (req) => {
+  const year = new Date().getFullYear();
+
+  // prefer authenticated teacher employeeId, otherwise use PUBLIC
+  const teacherId = (req && req.user && req.user.employeeId) ? req.user.employeeId : 'PUBLIC';
+  console.log(teacherId);
+
+  // Use a counter document per year for atomic increment
+  const counterId = `applications_${year}`;
+  const counter = await Counter.findOneAndUpdate(
+    { _id: counterId },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+
+  const seq = pad(counter.seq, 4);
+  return `SSR-${teacherId}-${year}-${seq}`;
 };
 
 export const createApplication = async (req, res) => {
@@ -19,7 +43,21 @@ export const createApplication = async (req, res) => {
       signatureUpload,
     } = req.body;
 
-    const applicationId = generateApplicationId();
+    // normalize possible aadhar field names
+    const aadharNumber = studentDetails?.aadharNumber || studentDetails?.aadhar || studentDetails?.aadharNo || studentDetails?.adharNo;
+
+    // If Aadhar provided, check for existing application with same Aadhar
+    if (aadharNumber) {
+      const existing = await Application.findOne({ 'studentDetails.aadharNumber': aadharNumber });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: 'User already registered with this Aadhar number',
+        });
+      }
+    }
+
+    const applicationId = await generateApplicationId(req);
 
     const application = new Application({
       applicationId,
@@ -110,9 +148,20 @@ export const updateOfficeUseOnly = async (req, res) => {
     const { applicationId } = req.params;
     const officeUseData = req.body;
 
+    // determine status: if studentIdGenerated is provided, mark approved
+    let newStatus = undefined;
+    const studentId = officeUseData?.studentIdGenerated;
+    if (typeof studentId !== 'undefined') {
+      if (studentId && String(studentId).trim() !== '') newStatus = 'approved';
+      else newStatus = 'submitted';
+    }
+
+    const updateObj = { officeUseOnly: officeUseData };
+    if (newStatus) updateObj.status = newStatus;
+
     const application = await Application.findOneAndUpdate(
       { applicationId },
-      { officeUseOnly: officeUseData },
+      updateObj,
       { new: true }
     );
 

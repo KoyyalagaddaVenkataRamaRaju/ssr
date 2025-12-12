@@ -44,8 +44,8 @@ function ApplicationListing() {
             </tr>
           </thead>
           <tbody>
-            {applications.map((app, index) => (
-              <tr key={index} style={styles.tableRow}>
+            {applications.map((app) => (
+              <tr key={app.applicationId || app._id} style={styles.tableRow}>
                 <td style={styles.tableCell}>{app.applicationId}</td>
                 <td style={styles.tableCell}>{app.studentName}</td>
                 <td style={styles.tableCell}>{app.mobileNo}</td>
@@ -53,7 +53,7 @@ function ApplicationListing() {
                 <td style={styles.tableCell}>{app.status}</td>
                 <td style={styles.tableCell}>
                   <button
-                    onClick={() => navigate(`/applications/${app._id}`)}
+                    onClick={() => navigate(`/applications/${app.applicationId}`)}
                     style={styles.viewButton}
                   >
                     View Details

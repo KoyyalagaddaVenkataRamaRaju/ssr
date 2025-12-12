@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getApplicationById } from '../services/admissonService';
+import { getApplicationById, updateOfficeUseOnly } from '../services/admissonService';
 function ApplicationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [admitted, setAdmitted] = useState(false);
+  const [admissionNo, setAdmissionNo] = useState('');
+  const [portalNumber, setPortalNumber] = useState('');
+  const [savingOffice, setSavingOffice] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -14,7 +18,12 @@ function ApplicationDetails() {
         const result =  response;
         console.log(result.data);
         if (result.success) {
-          setData(result.data[0]);
+          const app = result.data[0];
+          setData(app);
+          const admittedFlag = !!(app?.officeUseOnly?.studentIdGenerated);
+          setAdmitted(admittedFlag);
+          setAdmissionNo(app?.officeUseOnly?.studentIdGenerated || '');
+          setPortalNumber(app?.officeUseOnly?.portalNumber || '');
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -93,15 +102,94 @@ function ApplicationDetails() {
         </div>
       </div>
 
-      {data.officeUseOnly && Object.keys(data.officeUseOnly).length > 0 && (
-        <div style={styles.section}>
-          <h2>Office Use Only</h2>
-          <div style={styles.grid}>
-            <div><strong>Fee Paid:</strong> {data.officeUseOnly?.applicationFeePaid}</div>
-            <div><strong>Student ID:</strong> {data.officeUseOnly?.studentIdGenerated}</div>
-          </div>
+      <div style={styles.section}>
+        <h2>Office Use Only</h2>
+        <div style={styles.grid}>
+          <div><strong>Fee Paid:</strong> {data.officeUseOnly?.applicationFeePaid}</div>
+          <div><strong>Student ID:</strong> {data.officeUseOnly?.studentIdGenerated || '—'}</div>
+          <div><strong>Portal No:</strong> {data.officeUseOnly?.portalNumber || '—'}</div>
         </div>
-      )}
+
+        <div style={{ marginTop: 14 }}>
+          {!admitted ? (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button
+                style={{ ...styles.button, backgroundColor: '#2563eb' }}
+                onClick={() => setAdmitted(true)}
+              >
+                Mark as Admitted
+              </button>
+              <div style={{ color: '#6b7280' }}>Not admitted</div>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ fontWeight: 700, color: '#065f46' }}>Admitted</div>
+                <button
+                  style={{ ...styles.button, backgroundColor: '#ef4444' }}
+                  onClick={async () => {
+                    // mark as not admitted: clear officeUseOnly fields
+                    setSavingOffice(true);
+                    try {
+                      const res = await updateOfficeUseOnly(data.applicationId, { studentIdGenerated: '', portalNumber: '' });
+                      if (res.success) {
+                        setData(res.data);
+                        setAdmitted(false);
+                        setAdmissionNo('');
+                        setPortalNumber('');
+                      }
+                    } catch (err) {
+                      console.error(err);
+                    } finally {
+                      setSavingOffice(false);
+                    }
+                  }}
+                >
+                  Mark as Not Admitted
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <input
+                  placeholder="Admission Number"
+                  value={admissionNo}
+                  onChange={(e) => setAdmissionNo(e.target.value)}
+                  style={styles.inputSmall}
+                />
+                <input
+                  placeholder="Portal Number"
+                  value={portalNumber}
+                  onChange={(e) => setPortalNumber(e.target.value)}
+                  style={styles.inputSmall}
+                />
+              </div>
+
+              <div style={{ marginTop: 8 }}>
+                <button
+                  style={{ ...styles.button, backgroundColor: '#06b6d4' }}
+                  onClick={async () => {
+                    setSavingOffice(true);
+                    try {
+                      const officeUseData = { studentIdGenerated: admissionNo, portalNumber };
+                      const res = await updateOfficeUseOnly(data.applicationId, officeUseData);
+                      if (res.success) {
+                        setData(res.data);
+                      }
+                    } catch (err) {
+                      console.error(err);
+                    } finally {
+                      setSavingOffice(false);
+                    }
+                  }}
+                  disabled={savingOffice}
+                >
+                  {savingOffice ? 'Saving...' : 'Save Admission'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <div style={styles.buttonContainer}>
         <button
@@ -163,6 +251,11 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
   },
+  inputSmall: {
+    padding: '8px 10px',
+    borderRadius: '6px',
+    border: '1px solid #ddd'
+  }
 };
 
 export default ApplicationDetails;

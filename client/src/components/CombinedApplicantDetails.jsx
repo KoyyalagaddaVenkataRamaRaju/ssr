@@ -1,5 +1,7 @@
 // src/components/CombinedApplicantDetails.jsx
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { uploadSingleFile } from '../services/admissonService';
 
 /**
  * CombinedApplicantDetails
@@ -153,30 +155,41 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
     setOther((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUploadedFile = (e) => {
+  const handleUploadedFile = async (e) => {
     const { name, files } = e.target;
     if (!files || !files[0]) return;
     const file = files[0];
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target.result;
-      setUploadedFiles((prev) => ({ ...prev, [name]: dataUrl }));
-      setPreviews((prev) => ({ ...prev, [name]: dataUrl }));
-    };
-    reader.readAsDataURL(file);
+    try {
+      // upload to server and store returned url
+      const res = await uploadSingleFile(file);
+      const fileObj = res.file || res.data?.file || res;
+      const url = fileObj?.url || fileObj?.file?.url || '';
+      if (url) {
+        setUploadedFiles((prev) => ({ ...prev, [name]: url }));
+        setPreviews((prev) => ({ ...prev, [name]: url }));
+      }
+    } catch (err) {
+      console.error('Upload failed', err);
+      setErrors((prev) => ({ ...prev, server: err?.message || 'Upload failed' }));
+    }
   };
 
-  const handleSignatureFile = (e) => {
+  const handleSignatureFile = async (e) => {
     const { name, files } = e.target;
     if (!files || !files[0]) return;
     const file = files[0];
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target.result;
-      setSignatureUpload((prev) => ({ ...prev, [name]: dataUrl }));
-      setSignaturePreviews((prev) => ({ ...prev, [name]: dataUrl }));
-    };
-    reader.readAsDataURL(file);
+    try {
+      const res = await uploadSingleFile(file);
+      const fileObj = res.file || res.data?.file || res;
+      const url = fileObj?.url || '';
+      if (url) {
+        setSignatureUpload((prev) => ({ ...prev, [name]: url }));
+        setSignaturePreviews((prev) => ({ ...prev, [name]: url }));
+      }
+    } catch (err) {
+      console.error('Signature upload failed', err);
+      setErrors((prev) => ({ ...prev, server: err?.message || 'Upload failed' }));
+    }
   };
 
   const handleStudyChange = (index, field, value) => {
@@ -289,10 +302,17 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
       return;
     }
 
-    setSaving(true);
+    // delegate actual submission to parent via onNext(payload, { submit: true })
     try {
-      // call parent with submit flag true so parent can POST and move to summary page
-      saveAndMaybeAdvance({ advance: true, submit: true });
+      setSaving(true);
+      const payload = buildCombined();
+      if (typeof onNext === 'function') {
+        onNext(payload, { advance: true, submit: true });
+      }
+    } catch (error) {
+      console.error('Error delegating submit to parent', error);
+      setErrors((prev) => ({ ...prev, server: 'Submission failed' }));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
     }
@@ -356,6 +376,12 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
           {internalStep === 3 && 'Upload signature/photo and review before submitting.'}
         </div>
       </div>
+
+      {errors.server && (
+        <div style={{ background: '#fee2e2', color: '#b91c1c', padding: 10, borderRadius: 8, marginBottom: 12 }}>
+          {errors.server}
+        </div>
+      )}
 
       {/* STEP 1 */}
       {internalStep === 1 && (

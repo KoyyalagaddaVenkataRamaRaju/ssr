@@ -82,6 +82,7 @@ const applicationSchema = new mongoose.Schema(
     officeUseOnly: {
       applicationFeePaid: String,
       studentIdGenerated: String,
+      portalNumber: String,
       onlineApplicationPassword: String,
       appliedOnlinePart1: String,
       collegeOptionsEntered: String,

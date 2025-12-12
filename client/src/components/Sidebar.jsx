@@ -187,6 +187,7 @@ const Sidebar = ({ onToggle }) => {
                 icon: PlusSquare,
                 path: "/admin/section-creation",
               },
+              
             ],
           },
           {
@@ -293,6 +294,21 @@ const Sidebar = ({ onToggle }) => {
                 path: "/teacher/reports",
               },
             ],
+          },
+          {
+            name:"Admission Forms",
+            icon:CheckCheckIcon,
+            children:[
+              {
+                name:"New Admission",
+                icon:PlusSquare,
+                path:'/multi-step-form',
+              },
+              {
+                name:"Application Listing",
+                icon:CheckCheckIcon,
+                path:"/applications",
+              }]
           },
           {
             name: "Grades",

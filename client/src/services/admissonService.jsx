@@ -102,10 +102,11 @@ export const uploadSingleFile = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await api.post("/api/upload", formData, {
+    const response = await api.post("/api/files/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
+    // return file object as response.file
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: "File upload failed" };
@@ -124,7 +125,7 @@ export const uploadMultipleFiles = async (filesArray) => {
       formData.append("files", file);
     });
 
-    const response = await api.post("/api/upload/multiple", formData, {
+    const response = await api.post("/api/files/upload-multiple", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
