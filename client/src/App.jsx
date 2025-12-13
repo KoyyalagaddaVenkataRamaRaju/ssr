@@ -55,6 +55,7 @@ import MultiStepForm from "./pages/AdmissonAplicationForm";
 import ApplicationSummary from "./pages/ApplicationSummary";
 import ApplicationDetails from "./pages/ApplicationDetails";
 import ApplicationListing from "./pages/ApplicationListing";
+import CoordinatorManagement from "./pages/CoordinatorManagement";
 const RootRedirect = () => {
   const { isAuthenticated, user, loading } = useAuth();
 
@@ -120,6 +121,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route 
+          path="/coordinator/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["coordinator"]}>
+              <TeacherDashboard />
+            </ProtectedRoute>
+              }
+          />
           <Route path="/teacher/multi-step-form"
            element={
             <ProtectedRoute allowedRoles={["teacher"]}>
@@ -166,6 +175,15 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+            <Route
+            path="/admin/coordinator-management"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <CoordinatorManagement/>
               </ProtectedRoute>
             }
           />

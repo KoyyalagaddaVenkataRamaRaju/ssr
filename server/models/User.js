@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['principal', 'admin', 'teacher', 'student'],
+      enum: ['principal', 'admin', 'teacher', 'student','coordinator'],
       required: [true, 'Please specify a role'],
     },
     // Reference to Department collection
@@ -66,6 +66,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     canRegisterStudents: {
+      type: Boolean,
+      default: false,
+    },
+    isCoordinator: {
       type: Boolean,
       default: false,
     },

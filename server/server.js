@@ -32,7 +32,7 @@ import problemsRouter from './routes/problems.js';
 import studentRouter from './routes/studentRoutes.js';
 import applicationRoutes from './routes/application.js';
 import fileUploadRoutes from './routes/files.js';
-
+import coordinatorRoutes from './routes/coordinators.js';
 
 
 
@@ -91,6 +91,7 @@ app.use("/api/fees", feeRoutes);
 app.use("/api/teacher", facultyRoutes); 
 app.use("/api/gallery", galleryRoutes);
 app.use('/api/student', studentRouter);
+app.use('/api/coordinators', coordinatorRoutes);
 app.get("/api/placements", (req, res) => {
   const data = [
     {

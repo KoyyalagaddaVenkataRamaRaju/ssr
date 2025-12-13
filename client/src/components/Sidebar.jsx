@@ -86,6 +86,115 @@ const Sidebar = ({ onToggle }) => {
           },
         ];
 
+        return [
+          commonDashboard, 
+                    {
+            name: "Academic Setup",
+            icon: BookOpen,
+            children: [
+              {
+                name: "Register Course",
+                icon: PlusSquare,
+                path:"/admin/courses"
+              },
+              {
+                name: "Register Department",
+                icon: PlusSquare,
+                path: "/admin/register-department",
+              },
+              {
+                name: "Register Batches",
+                icon: BookOpen,
+                path: "/admin/batches",
+              },
+              {
+                name: "Subject Creation",
+                icon: BookOpen,
+                path: "/admin/subject-creation",
+              },
+              {
+                name: "Semester Creation",
+                icon: BookOpen,
+                path: "/admin/semester-creation",
+              },
+              {
+                name: "Teacher Allocation",
+                icon: Users,
+                path: "/admin/teacher-allocation",
+              },
+              {
+                name: "Timetable Preparation",
+                icon: Calendar,
+                path: "/admin/timetable-preparation",
+              },
+              {
+                name: "Section Creation",
+                icon: PlusSquare,
+                path: "/admin/section-creation",
+              },
+              
+            ],
+          },
+                    {
+            name:"Application",
+            icon:CheckCheckIcon,
+            path:"/teacher/multi-step-form",
+          },
+          {
+            name: "Classes & Students",
+            icon: BookOpen,
+            children: [
+              {
+                name: "My Classes",
+                icon: BookOpen,
+                path: "/teacher/classes",
+              },
+              {
+                name: "Students",
+                icon: Users,
+                path: "/teacher/students",
+              },
+              {
+                name: "Register Student",
+                icon: UserPlus,
+                path: "/teacher/register-student",
+              },
+            ],
+          },
+          {
+            name: "Attendance",
+            icon: Calendar,
+            children: [
+              {
+                name: "Attendance",
+                icon: Calendar,
+                path: "/teacher/attendance",
+              },
+              {
+                name: "Attendance Reports",
+                icon: Calendar,
+                path: "/teacher/reports",
+              },
+            ],
+          },
+          {
+            name:"Admission Forms",
+            icon:CheckCheckIcon,
+            children:[
+              {
+                name:"New Admission",
+                icon:PlusSquare,
+                path:'/multi-step-form',
+              },
+              {
+                name:"Application Listing",
+                icon:CheckCheckIcon,
+                path:"/applications",
+              }]
+          }, 
+          
+        ];
+
       case "student":
         return [
           commonDashboard,
@@ -141,6 +250,11 @@ const Sidebar = ({ onToggle }) => {
                 path: "/admin/manage-users",
               },
             ],
+          },
+          {
+            name:"Co-ordinator Management",
+            icon:Users,
+            path:"/admin/coordinator-management",
           },
           
           {
@@ -251,76 +365,136 @@ const Sidebar = ({ onToggle }) => {
         ];
 
       case "teacher":
-        return [
-          commonDashboard,
-          {
-            name:"Application",
-            icon:CheckCheckIcon,
-            path:"/teacher/multi-step-form",
-          },
-          {
-            name: "Classes & Students",
-            icon: BookOpen,
-            children: [
-              {
-                name: "My Classes",
-                icon: BookOpen,
-                path: "/teacher/classes",
-              },
-              {
-                name: "Students",
-                icon: Users,
-                path: "/teacher/students",
-              },
-              {
-                name: "Register Student",
-                icon: UserPlus,
-                path: "/teacher/register-student",
-              },
-            ],
-          },
-          {
-            name: "Attendance",
-            icon: Calendar,
-            children: [
-              {
-                name: "Attendance",
-                icon: Calendar,
-                path: "/teacher/attendance",
-              },
-              {
-                name: "Attendance Reports",
-                icon: Calendar,
-                path: "/teacher/reports",
-              },
-            ],
-          },
-          {
-            name:"Admission Forms",
-            icon:CheckCheckIcon,
-            children:[
-              {
-                name:"New Admission",
-                icon:PlusSquare,
-                path:'/multi-step-form',
-              },
-              {
-                name:"Application Listing",
-                icon:CheckCheckIcon,
-                path:"/applications",
-              }]
-          },
-          {
-            name: "Grades",
-            icon: FileText,
-            path: "#",
-          },
-          {
-            name: "Profile",
-            icon: GraduationCap,
-            path: "/teacher/profile",
-          },
-        ];
+        {
+          const isCoord = user?.isCoordinator === true || user?.isCoordinator;
+
+          const items = [
+            commonDashboard,
+            {
+              name: "Application",
+              icon: CheckCheckIcon,
+              path: "/teacher/multi-step-form",
+            },
+            {
+              name: "Classes & Students",
+              icon: BookOpen,
+              children: [
+                {
+                  name: "My Classes",
+                  icon: BookOpen,
+                  path: "/teacher/classes",
+                },
+                {
+                  name: "Students",
+                  icon: Users,
+                  path: "/teacher/students",
+                },
+                {
+                  name: "Register Student",
+                  icon: UserPlus,
+                  path: "/teacher/register-student",
+                },
+              ],
+            },
+            {
+              name: "Attendance",
+              icon: Calendar,
+              children: [
+                {
+                  name: "Attendance",
+                  icon: Calendar,
+                  path: "/teacher/attendance",
+                },
+                {
+                  name: "Attendance Reports",
+                  icon: Calendar,
+                  path: "/teacher/reports",
+                },
+              ],
+            },
+            {
+              name: "Admission Forms",
+              icon: CheckCheckIcon,
+              children: [
+                {
+                  name: "New Admission",
+                  icon: PlusSquare,
+                  path: "/multi-step-form",
+                },
+                {
+                  name: "Application Listing",
+                  icon: CheckCheckIcon,
+                  path: "/applications",
+                },
+              ],
+            },
+          ];
+
+          if (isCoord) {
+            // Add coordinator-specific items for teacher who is also a coordinator
+            items.push({
+              name: "Academic Setup",
+              icon: BookOpen,
+              children: [
+                {
+                  name: "Register Course",
+                  icon: PlusSquare,
+                  path: "/admin/courses",
+                },
+                {
+                  name: "Register Department",
+                  icon: PlusSquare,
+                  path: "/admin/register-department",
+                },
+                {
+                  name: "Register Batches",
+                  icon: BookOpen,
+                  path: "/admin/batches",
+                },
+                {
+                  name: "Subject Creation",
+                  icon: BookOpen,
+                  path: "/admin/subject-creation",
+                },
+                {
+                  name: "Semester Creation",
+                  icon: BookOpen,
+                  path: "/admin/semester-creation",
+                },
+                {
+                  name: "Teacher Allocation",
+                  icon: Users,
+                  path: "/admin/teacher-allocation",
+                },
+                {
+                  name: "Timetable Preparation",
+                  icon: Calendar,
+                  path: "/admin/timetable-preparation",
+                },
+                {
+                  name: "Section Creation",
+                  icon: PlusSquare,
+                  path: "/admin/section-creation",
+                },
+              ],
+            });
+          }
+
+          items.push(
+            {
+              name: "Grades",
+              icon: FileText,
+              path: "#",
+            },
+            {
+              name: "Profile",
+              icon: GraduationCap,
+              path: "/teacher/profile",
+            }
+          );
+
+          return items;
+        }
 
       default:
         return [commonDashboard];
