@@ -329,11 +329,6 @@ const Sidebar = ({ onToggle }) => {
                 icon: CopySlash,
                 path: "/admin/fees",
               },
-              {
-                name: "Student Fee",
-                icon: BadgeDollarSign,
-                path: "/admin/studentfees",
-              },
             ],
           },
           {
