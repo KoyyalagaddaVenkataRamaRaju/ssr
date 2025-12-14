@@ -12,6 +12,7 @@ import {
   fetchSectionsByDepartment,
   createTeacherAllocation,
   fetchTeacherAllocations,
+  fetchSubjectsByDepartmentAndYear,
   deleteTeacherAllocation
 } from "../services/teacherAllocationService.jsx";
 import { fetchDepartment } from "../services/attendanceService.jsx";
@@ -105,7 +106,7 @@ const TeacherAllocation = () => {
 
   const fetchSubjectsByDepartment = async (departmentId, year) => {
     try {
-      const data = await subjectService.getByDepartmentAndYear(departmentId, year);
+      const data = await fetchSubjectsByDepartmentAndYear(departmentId, year);
       if (data.success) setSubjects(data.data);
     } catch (err) {
       console.error("Error fetching subjects:", err);
