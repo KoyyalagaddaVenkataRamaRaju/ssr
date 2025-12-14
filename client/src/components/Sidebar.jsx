@@ -309,11 +309,6 @@ const Sidebar = ({ onToggle }) => {
             icon: Calendar,
             children: [
               {
-                name: "Attendance",
-                icon: FileText,
-                path: "/admin/attendance",
-              },
-              {
                 name: "Attendance Reports",
                 icon: FileText,
                 path: "/admin/reports",
@@ -352,11 +347,7 @@ const Sidebar = ({ onToggle }) => {
               },
             ],
           },
-          {
-            name: "Settings",
-            icon: Settings,
-            path: "#",
-          },
+          
         ];
 
       case "teacher":
