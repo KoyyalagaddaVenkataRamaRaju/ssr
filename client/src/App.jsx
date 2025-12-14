@@ -328,7 +328,7 @@ function App() {
             path="/admin/attendance"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <AttendanceSidebar />
+                <TakeAttendance/>
               </ProtectedRoute>
             }
           />
