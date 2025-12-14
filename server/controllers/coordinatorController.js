@@ -79,7 +79,7 @@ export const demoteCoordinatorToTeacher = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Coordinator not found' });
     }
 
-    if (coordinator.role !== 'coordinator') { 
+    if (coordinator.isCoordinator!== true) { 
       return res.status(400).json({ success: false, error: 'User is not a coordinator' });
     }
 
@@ -112,7 +112,7 @@ export const getTeachersAndCoordinators = async (req, res) => {
       .populate('department', 'departmentName departmentId')
       .sort({ role: 1, name: 1 });
 
-    const teachers = users.filter(u => u.role === 'teacher');
+    const teachers = users.filter(u => u.role === 'teacher' && u.isCoordinator !== true);
     const coordinators = users.filter(u => u.isCoordinator === true);
 
     res.json({

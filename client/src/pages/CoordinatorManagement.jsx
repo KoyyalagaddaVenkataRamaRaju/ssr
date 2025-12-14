@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllDepartments } from '../services/departmentService';
+import Sidebar  from '../components/Sidebar';
 import { fetchTeachersandCoordinatorsData,promoteToCoordinatorfromTeacher ,demoteToTeacherfromCoordinator} from '../services/coordinatorService';
 
 const CoordinatorManagement = () => {
@@ -11,6 +12,8 @@ const CoordinatorManagement = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
 
   useEffect(() => {
     fetchDepartments();
@@ -110,6 +113,20 @@ const CoordinatorManagement = () => {
   };
 
   return (
+     <div style={{ display: "flex", minHeight: "100vh" }}>
+    
+    {/* ✅ Sidebar ONLY */}
+    <Sidebar onToggle={setSidebarOpen} />
+
+    {/* ✅ Your existing page UI */}
+    <main
+      style={{
+        flex: 1,
+        marginLeft: sidebarOpen ? "250px" : "80px",
+        transition: "margin-left 0.3s ease",
+        padding: "20px"
+      }}
+    >
     <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
       <h1 style={{ marginBottom: '30px' }}>Coordinator Management</h1>
 
@@ -521,6 +538,9 @@ const CoordinatorManagement = () => {
         </>
       )}
     </div>
+    
+    </main>
+  </div>
   );
 };
 

@@ -44,6 +44,7 @@ export const promoteToCoordinatorfromTeacher = async (teacherId) => {
 };
 
 export const demoteToTeacherfromCoordinator = async (coordinatorId) => {
+  console.log(coordinatorId);
     try {
         const response = await api.put(`/api/coordinators/${coordinatorId}/demote`);   
         console.log(response.data)
