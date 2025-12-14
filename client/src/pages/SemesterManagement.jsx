@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { semesterService } from "../services/semesterService.js";
-import { fetchAllSemsters } from "../services/semesterService.jsx";
+import { fetchAllSemsters,updateSemester,createSemester,setCurrentSemester ,deleteSemester} from "../services/semesterService.jsx";
 import { fetchDepartment } from "../services/attendanceService.jsx";
 
 const SemesterManagement = () => {
@@ -79,12 +78,12 @@ const SemesterManagement = () => {
     e.preventDefault();
     try {
       if (editingSemester) {
-        const data = await semesterService.update(editingSemester._id, formData);
+        const data = await updateSemester(editingSemester._id, formData);
         if (data.success) {
           alert("Semester updated successfully!");
         }
       } else {
-        const data = await semesterService.create(formData);
+        const data = await createSemester(formData);
         if (data.success) {
           alert("Semester created successfully!");
         }
@@ -105,7 +104,7 @@ const SemesterManagement = () => {
       return;
 
     try {
-      const data = await semesterService.setAsCurrent(id);
+      const data = await setCurrentSemester(id);
       if (data.success) {
         alert("Current semester updated successfully!");
         fetchSemesters();
@@ -140,7 +139,7 @@ const SemesterManagement = () => {
       return;
 
     try {
-      const data = await semesterService.delete(id);
+      const data = await deleteSemester(id);
       if (data.success) {
         alert("Semester deleted successfully");
         fetchSemesters();
