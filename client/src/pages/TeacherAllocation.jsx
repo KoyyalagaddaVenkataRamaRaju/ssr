@@ -10,6 +10,10 @@ import {
   fetchTeachersByDepartment,
   fetchBatchesByDepartment,
   fetchSectionsByDepartment,
+  createTeacherAllocation,
+  fetchTeacherAllocations,
+  updateTeacherAllocation,
+  deleteTeacherAllocation
 } from "../services/teacherAllocationService.jsx";
 import { fetchDepartment } from "../services/attendanceService.jsx";
 
@@ -59,7 +63,7 @@ const TeacherAllocation = () => {
 
   const fetchAllocations = async () => {
     try {
-      const data = await teacherAllocationService.getAll();
+      const data = await fetchTeacherAllocations();
       if (data.success) {
         setAllocations(data.data);
       }
@@ -167,7 +171,7 @@ const TeacherAllocation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await teacherAllocationService.create(formData);
+      const data = await createTeacherAllocation(formData);
       if (data.success) {
         alert("Teacher allocated successfully!");
         fetchAllocations();
@@ -197,7 +201,7 @@ const TeacherAllocation = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to remove this allocation?")) return;
     try {
-      const data = await teacherAllocationService.delete(id);
+      const data = await deleteTeacherAllocation(id);
       if (data.success) {
         alert("Allocation removed successfully");
         fetchAllocations();

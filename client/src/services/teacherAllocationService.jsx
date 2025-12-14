@@ -22,6 +22,45 @@ api.interceptors.request.use(
   }
 );
 
+
+export const allocateTeacherToSubject = async (allocationData) => {
+  try {
+    console.log("Allocating teacher:", allocationData);
+    const response = await api.post('/api/teacher-allocations', allocationData);
+    console.log("Teacher allocated successfully:", response.data);
+    return response.data;
+  }
+  catch (error) {
+    console.error("Error allocating teacher:", error);
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+
+
+export const updateTeacherAllocation = async (allocationId, allocationData) => {
+  try {
+    const response = await api.put(`/api/teacher-allocations/${allocationId}`, allocationData);
+    return response.data;
+  }
+    catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+    }
+};
+
+export const deleteTeacherAllocation = async (allocationId) => {
+    try {   
+        const response = await api.delete(`/api/teacher-allocations/${allocationId}`);  
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: 'Network error' };
+    }
+  };
+
+
+
+
+
 export const fetchTeachersByDepartment = async (departmentId) => {
   console.log(departmentId)
   try {
