@@ -2,10 +2,25 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { Users, BookOpen, Building, FileText } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useNavigate } from "react-router-dom";
+
 
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+
+const navigate = useNavigate();
+
+const handleLogout = () => {
+  if (!window.confirm("Are you sure you want to logout?")) return;
+
+  localStorage.removeItem("token");   // remove auth token
+  localStorage.removeItem("user");    // optional (if stored)
+
+  navigate("/login");                 // redirect
+};
+
+
 
   // 🕐 Simulate loading state for 1 second
   useEffect(() => {
@@ -200,9 +215,28 @@ const AdminDashboard = () => {
           ) : (
             <>
               {/* Dashboard Header */}
-              <div className="dashboard-header">
-                <h1 className="page-title">Admin Dashboard</h1>
-              </div>
+         <div className="dashboard-header">
+  <h1 className="page-title">Admin Dashboard</h1>
+
+  <button
+    onClick={handleLogout}
+    style={{
+      padding: "8px 16px",
+      background: "#d32f2f",
+      color: "#fff",
+      border: "none",
+      borderRadius: "8px",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "background 0.3s"
+    }}
+    onMouseEnter={(e) => (e.target.style.background = "#b71c1c")}
+    onMouseLeave={(e) => (e.target.style.background = "#d32f2f")}
+  >
+    Logout
+  </button>
+</div>
+
 
               {/* Dashboard Cards */}
               <div className="dashboard-grid">
