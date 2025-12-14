@@ -357,11 +357,6 @@ const Sidebar = ({ onToggle }) => {
           const items = [
             commonDashboard,
             {
-              name: "Application",
-              icon: CheckCheckIcon,
-              path: "/teacher/multi-step-form",
-            },
-            {
               name: "Classes & Students",
               icon: BookOpen,
               children: [
