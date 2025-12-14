@@ -23,7 +23,18 @@ api.interceptors.request.use(
 );
 
 
-export const allocateTeacherToSubject = async (allocationData) => {
+export const fetchTeacherAllocations = async () => {
+  try {
+    const response = await api.get('/api/teacher-allocations'); 
+    
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
+
+export const createTeacherAllocation = async (allocationData) => {
   try {
     console.log("Allocating teacher:", allocationData);
     const response = await api.post('/api/teacher-allocations', allocationData);

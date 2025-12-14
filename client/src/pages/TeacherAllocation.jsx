@@ -12,7 +12,6 @@ import {
   fetchSectionsByDepartment,
   createTeacherAllocation,
   fetchTeacherAllocations,
-  updateTeacherAllocation,
   deleteTeacherAllocation
 } from "../services/teacherAllocationService.jsx";
 import { fetchDepartment } from "../services/attendanceService.jsx";
