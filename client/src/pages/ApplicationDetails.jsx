@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getApplicationById, updateOfficeUseOnly } from '../services/admissonService';
+import Sidebar from '../components/Sidebar';
 function ApplicationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ function ApplicationDetails() {
   const [admissionNo, setAdmissionNo] = useState('');
   const [portalNumber, setPortalNumber] = useState('');
   const [savingOffice, setSavingOffice] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
