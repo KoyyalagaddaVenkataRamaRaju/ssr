@@ -192,9 +192,7 @@ const Navbar = () => {
           <span>📞 +91 98765 43210 | ✉️ info@ssrcollege.edu</span>
 
           <div>
-            <Link to="/multi-step-form" style={{ background: "#fff", color: "#7A54B1", padding: "5px 15px", borderRadius: 4, textDecoration:"none" }}>
-              Apply Now
-            </Link>
+      
             &nbsp;
             <Link to="/login" style={{ background: "#fff", color: "#7A54B1", padding: "5px 15px", borderRadius: 4, textDecoration:"none" }}>
               Login
