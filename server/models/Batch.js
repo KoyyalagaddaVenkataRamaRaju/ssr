@@ -4,6 +4,20 @@ const batchSchema = new mongoose.Schema(
   {
     batchName: { type: String, required: true, trim: true, maxlength: 50 },
 
+// Batch.js
+course: {
+  courseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course',
+    required: true,
+  },
+  courseName: {
+    type: String,
+    required: true,
+  },
+},
+
+
     // Branch-wise departments with names
     departments: [
       {

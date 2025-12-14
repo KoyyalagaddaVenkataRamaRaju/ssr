@@ -78,10 +78,10 @@ const AdminRegisterBatchPage = () => {
 
     const startYear = parseInt(batchFormData.startYear, 10);
     const endYear = startYear + 3;
-    const batchName = `${startYear}-${endYear}`;
+    const batchName = `${startYear}-${endYear}`; 
 
     try {
-      const response = await createBatch({ batchName, departments: selectedDepartments });
+      const response = await createBatch({ batchName,course:selectedCourse, departments: selectedDepartments });
 
       if (response.success) {
         setBatchMessage({ type: "success", text: "Batch created successfully!" });
@@ -421,11 +421,12 @@ const AdminRegisterBatchPage = () => {
                   batches.map((batch) => (
                     <div key={batch._id} className="batch-card">
                       <h4>{batch.batchName}</h4>
-                      {batch.departments.map((d) => (
-                        <p key={d.departmentId} style={{ margin: "6px 0" }}>
-                          <strong>{d.departmentName}</strong> — {d.numberOfSections} Sections
-                        </p>
-                      ))}
+                      {batch.departments?.map((d) => (
+  <p key={d.departmentId} style={{ margin: "6px 0" }}>
+    <strong>{d.departmentName}</strong> — {d.numberOfSections} Sections
+  </p>
+))}
+
                     </div>
                   ))
                 )}

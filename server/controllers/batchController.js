@@ -1,18 +1,31 @@
 import Batch from '../models/Batch.js';
 import Department from '../models/Departement.js';
 import Semester from '../models/Semester.js';
-
+import Course from '../models/Course.js';
 // ===================== CREATE BATCH =====================
 export const createBatch = async (req, res) => {
   try {
-    const { batchName, departments } = req.body;
+    const { batchName, departments,course } = req.body;
 
-    if (!batchName || !departments || !Array.isArray(departments) || departments.length === 0) {
+    if (!course ||!batchName || !departments || !Array.isArray(departments) || departments.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Batch name and at least one department are required.',
+        message: 'Batch name course name and at least one department are required.',
       });
     }
+
+
+    const courseDoc = await Course.findById(course);
+
+if (!courseDoc) {
+  return res.status(404).json({
+    success: false,
+    message: 'Course not found',
+  });
+}
+
+
+
 
     const deptIds = departments.map((d) => d.departmentId);
     const validDepartments = await Department.find({ _id: { $in: deptIds } });
@@ -53,13 +66,18 @@ export const createBatch = async (req, res) => {
     startDate = new Date(startYear, 0, 1);
     endDate = new Date(startYear + 2, 11, 31);
 
-    const batch = await Batch.create({
-      batchName,
-      departments: departmentsForBatch,
-      startDate,
-      endDate,
-      academicYears,
-    });
+const batch = await Batch.create({
+  batchName,
+  course: {
+    courseId: courseDoc._id,
+    courseName: courseDoc.courseName,
+  },
+  departments: departmentsForBatch,
+  startDate,
+  endDate,
+  academicYears,
+});
+
 
 await Department.updateMany(
   { _id: { $in: deptIds } },
