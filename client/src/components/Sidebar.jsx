@@ -463,11 +463,6 @@ const Sidebar = ({ onToggle }) => {
 
           items.push(
             {
-              name: "Grades",
-              icon: FileText,
-              path: "#",
-            },
-            {
               name: "Profile",
               icon: GraduationCap,
               path: "/teacher/profile",
