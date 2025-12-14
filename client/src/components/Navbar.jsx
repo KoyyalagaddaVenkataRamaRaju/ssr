@@ -351,9 +351,7 @@ const Navbar = () => {
 
         {/* CTA Buttons */}
         <div className="mobile-cta">
-          <Link to="/apply" className="mobile-cta-btn" onClick={() => setMobileOpen(false)}>
-            Apply Now
-          </Link>
+        
           <Link to="/login" className="mobile-cta-btn" onClick={() => setMobileOpen(false)}>
             Login
           </Link>
