@@ -29,6 +29,20 @@ function ApplicationListing() {
   }
 
   return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+        
+        {/* ✅ Sidebar ONLY */}
+        <Sidebar onToggle={setSidebarOpen} />
+    
+        {/* ✅ Your existing page UI */}
+        <main
+          style={{
+            flex: 1,
+            marginLeft: sidebarOpen ? "250px" : "80px",
+            transition: "margin-left 0.3s ease",
+            padding: "20px"
+          }}
+        >
     <div style={styles.container}>
       <h1>Applications List</h1>
       <div style={styles.tableContainer}>
@@ -64,6 +78,8 @@ function ApplicationListing() {
           </tbody>
         </table>
       </div>
+    </div>
+    </main>
     </div>
   );
 }

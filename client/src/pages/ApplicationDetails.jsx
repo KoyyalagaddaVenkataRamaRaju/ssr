@@ -44,6 +44,20 @@ function ApplicationDetails() {
   }
 
   return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+        
+        {/* ✅ Sidebar ONLY */}
+        <Sidebar onToggle={setSidebarOpen} />
+    
+        {/* ✅ Your existing page UI */}
+        <main
+          style={{
+            flex: 1,
+            marginLeft: sidebarOpen ? "250px" : "80px",
+            transition: "margin-left 0.3s ease",
+            padding: "20px"
+          }}
+        >
     <div style={styles.container}>
       <button onClick={() => navigate(-1)} style={styles.backButton}>← Back</button>
       
@@ -168,6 +182,7 @@ function ApplicationDetails() {
                 <button
                   style={{ ...styles.button, backgroundColor: '#06b6d4' }}
                   onClick={async () => {
+                    navigate(`/applications`);
                     setSavingOffice(true);
                     try {
                       const officeUseData = { studentIdGenerated: admissionNo, portalNumber };
@@ -191,14 +206,9 @@ function ApplicationDetails() {
         </div>
       </div>
 
-      <div style={styles.buttonContainer}>
-        <button
-          onClick={() => navigate(`/admin/office-use/${data.applicationId}`)}
-          style={styles.button}
-        >
-          Edit Office Use
-        </button>
-      </div>
+   
+    </div>
+    </main>
     </div>
   );
 }
