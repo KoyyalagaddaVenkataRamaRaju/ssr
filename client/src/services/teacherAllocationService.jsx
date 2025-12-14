@@ -33,6 +33,15 @@ export const fetchTeacherAllocations = async () => {
   }
 };
 
+export const fetchSubjectsByDepartmentAndYear = async (departmentId, year) => {
+  try {
+    const response = await api.get(`/api/subjects?department=${departmentId}&year=${year}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Network error' };
+  }
+};
+
 
 export const createTeacherAllocation = async (allocationData) => {
   try {
