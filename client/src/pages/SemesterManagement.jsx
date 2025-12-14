@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { semesterService } from "../services/semesterService.js";
+import { fetchAllSemsters } from "../services/semesterService.jsx";
 import { fetchDepartment } from "../services/attendanceService.jsx";
 
 const SemesterManagement = () => {
@@ -52,7 +53,7 @@ const SemesterManagement = () => {
 
   const fetchSemesters = async () => {
     try {
-      const data = await semesterService.getAll();
+      const data = await fetchAllSemsters();
       if (data.success) {
         setSemesters(data.data);
       }
