@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { subjectService } from "../services/subjectService.js";
-import { fetchDepartment } from "../services/attendanceService.jsx";
+import { createSubject, fetchAllSubjects,updateSubject,deleteSubject } from "../services/subjectService.jsx";
+import {fetchDepartment } from "../services/attendanceService.jsx";
 
 const SubjectManagement = () => {
   const [departments, setDepartments] = useState([]);
@@ -54,7 +54,7 @@ const SubjectManagement = () => {
 
   const fetchSubjects = async () => {
     try {
-      const data = await subjectService.getAll();
+      const data = await fetchAllSubjects();
       if (data.success) {
         setSubjects(data.data);
       }
@@ -83,12 +83,12 @@ const SubjectManagement = () => {
     e.preventDefault();
     try {
       if (editingSubject) {
-        const data = await subjectService.update(editingSubject._id, formData);
+        const data = await updateSubject(editingSubject._id, formData);
         if (data.success) {
           alert("Subject updated successfully!");
         }
       } else {
-        const data = await subjectService.create(formData);
+        const data = await createSubject(formData);
         if (data.success) {
           alert("Subject created successfully!");
         }
@@ -119,7 +119,7 @@ const SubjectManagement = () => {
     if (!window.confirm("Are you sure you want to delete this subject?")) return;
 
     try {
-      const data = await subjectService.delete(id);
+      const data = await deleteSubject(id);
       if (data.success) {
         alert("Subject deleted successfully");
         fetchSubjects();

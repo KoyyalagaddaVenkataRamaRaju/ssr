@@ -20,3 +20,50 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+export const fetchAllSubjects = async () => {
+  try {
+    const response = await api.get('/api/subjects');            
+    
+    return response.data;
+  } catch (error) {     
+
+    throw error.response?.data || { message: "Network error" };
+  }
+};
+
+export const createSubject = async (subjectData) => {
+  try {     
+    const response = await api.post('/api/subjects', subjectData);
+    
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: "Network error" };
+  }
+};
+export const updateSubject = async (subjectId, subjectData) => {
+  try {     
+    const response = await api.put(`/api/subjects/${subjectId}`, subjectData);
+    return response.data;
+    } catch (error) {
+    throw error.response?.data || { message: "Network error" };
+    }
+};
+export const deleteSubject = async (subjectId) => {
+    try {   
+        const response = await api.delete(`/api/subjects/${subjectId}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: "Network error" };
+    }
+};
+export const fetchSubjectsByDepartmentAndYear = async (departmentId, year) => {
+  try {
+    const response = await api.get(`/api/subjects?department=${departmentId}&year=${year}`);
+    return response.data;
+  }
+    catch (error) {
+
+    throw error.response?.data || { message: "Network error" };
+
+    }
+};
