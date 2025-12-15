@@ -240,7 +240,8 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
     if (!contact.mobileNo?.trim()) err.mobileNo = 'Mobile number is required';
     if (!contact.email?.trim()) err.email = 'Email is required';
     setErrors(err);
-    return Object.keys(err).length === 0;
+    /*return Object.keys(err).length === 0;*/
+    return true; // temporarily disable validation
   };
 
   /* -------------------------

@@ -235,6 +235,22 @@ const Sidebar = ({ onToggle }) => {
       case "admin":
         return [
           commonDashboard,
+           {
+              name: "Admission Forms",
+              icon: CheckCheckIcon,
+              children: [
+                {
+                  name: "New Admission",
+                  icon: PlusSquare,
+                  path: "/multi-step-form",
+                },
+                {
+                  name: "Application Listing",
+                  icon: CheckCheckIcon,
+                  path: "/applications",
+                },
+              ],
+            },
           {
             name: "User Management",
             icon: Users,
@@ -356,6 +372,22 @@ const Sidebar = ({ onToggle }) => {
 
           const items = [
             commonDashboard,
+             {
+              name: "Admission Forms",
+              icon: CheckCheckIcon,
+              children: [
+                {
+                  name: "New Admission",
+                  icon: PlusSquare,
+                  path: "/multi-step-form",
+                },
+                {
+                  name: "Application Listing",
+                  icon: CheckCheckIcon,
+                  path: "/applications",
+                },
+              ],
+            },
             {
               name: "Classes & Students",
               icon: BookOpen,
@@ -390,22 +422,6 @@ const Sidebar = ({ onToggle }) => {
                   name: "Attendance Reports",
                   icon: Calendar,
                   path: "/teacher/reports",
-                },
-              ],
-            },
-            {
-              name: "Admission Forms",
-              icon: CheckCheckIcon,
-              children: [
-                {
-                  name: "New Admission",
-                  icon: PlusSquare,
-                  path: "/multi-step-form",
-                },
-                {
-                  name: "Application Listing",
-                  icon: CheckCheckIcon,
-                  path: "/applications",
                 },
               ],
             },
