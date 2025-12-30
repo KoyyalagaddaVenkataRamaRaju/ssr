@@ -38,7 +38,32 @@ const assignFeesToNewStudent = async (student) => {
 
 export const adminRegisterUser = async (req, res) => {
   try {
-    const { name, email, password, role, department, phone, enrollmentId,  joiningYear,employeeId, canRegisterStudents, section, batch } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role,
+      department,
+      phone,
+      enrollmentId,
+      joiningYear,
+      employeeId,
+      canRegisterStudents,
+      section,
+      batch,
+      designation,
+      dob,
+      photo,
+      bloodGroup,
+      officialDetails,
+      panNumber,
+      aadhaarNumber,
+      salary,
+      address,
+      systemRole,
+      remarks,
+      post,
+    } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({
@@ -83,6 +108,19 @@ export const adminRegisterUser = async (req, res) => {
       if (employeeId) userData.employeeId = employeeId;
       if (joiningYear) userData.joiningYear = joiningYear;
       userData.canRegisterStudents = canRegisterStudents === true;
+      // optional teacher fields
+      if (designation) userData.designation = designation;
+      if (dob) userData.dob = dob;
+      if (photo) userData.photo = photo;
+      if (bloodGroup) userData.bloodGroup = bloodGroup;
+      if (officialDetails) userData.officialDetails = officialDetails;
+      if (panNumber) userData.panNumber = panNumber;
+      if (aadhaarNumber) userData.aadhaarNumber = aadhaarNumber;
+      if (salary) userData.salary = salary;
+      if (address) userData.address = address;
+      if (systemRole) userData.systemRole = systemRole;
+      if (remarks) userData.remarks = remarks;
+      if (post) userData.post = post;
     }
 
     const user = await User.create(userData);
@@ -90,7 +128,7 @@ if (user.role === 'teacher') {
   await FacultyProfile.create({
     user: user._id,
     fullName: user.name,
-    designation: "Faculty",
+    designation: user.designation || "Faculty",
     department: user.department,
     email: user.email,
     phone: user.phone,
@@ -106,7 +144,17 @@ if (user.role === 'teacher') {
     github: "",
     twitter: "",
     website: "",
-    profileImage: "",
+    profileImage: user.photo || "",
+    dob: user.dob || null,
+    bloodGroup: user.bloodGroup || "",
+    officialDetails: user.officialDetails || "",
+    panNumber: user.panNumber || "",
+    aadhaarNumber: user.aadhaarNumber || "",
+    salary: user.salary || 0,
+    address: user.address || "",
+    systemRole: user.systemRole || "",
+    remarks: user.remarks || "",
+    post: user.post || "",
   });
 }
 // Auto assign fees if student

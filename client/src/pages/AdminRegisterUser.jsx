@@ -20,6 +20,18 @@ const AdminRegisterUser = () => {
     employeeId: "",
     canRegisterStudents: false,
     joiningYear: '',
+    designation: '',
+    dob: '',
+    photoFile: null,
+    photo: '',
+    bloodGroup: '',
+    officialDetails: '',
+    panNumber: '',
+    aadhaarNumber: '',
+    salary: '',
+    address: '',
+    systemRole: '',
+    remarks: '',
   });
 
   const [loading, setLoading] = useState(true);
@@ -31,6 +43,7 @@ const AdminRegisterUser = () => {
   const [batches, setBatches] = useState([]);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   // 🕐 Initial Load
   useEffect(() => {
@@ -104,6 +117,12 @@ const AdminRegisterUser = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    if (type === 'file') {
+      const file = e.target.files[0];
+      setFormData({ ...formData, [name]: file, photoFile: file });
+      if (file) setPhotoPreview(URL.createObjectURL(file));
+      return;
+    }
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value,
@@ -128,7 +147,25 @@ const AdminRegisterUser = () => {
     setSubmitting(true);
 
     try {
-      const response = await adminRegisterUser(formData);
+      // If a photo file is present, convert to base64 and attach as `photo`
+      const payload = { ...formData };
+      if (formData.photoFile) {
+        const fileToBase64 = (file) =>
+          new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(file);
+          });
+        try {
+          const b64 = await fileToBase64(formData.photoFile);
+          payload.photo = b64;
+        } catch (err) {
+          console.error('Failed to convert photo to base64', err);
+        }
+      }
+
+      const response = await adminRegisterUser(payload);
       if (response.success) {
         setMessage({ type: "success", text: "User registered successfully!" });
         setFormData({
@@ -143,9 +180,22 @@ const AdminRegisterUser = () => {
           enrollmentId: '',
           employeeId: '',
           canRegisterStudents: false,
-          joiningYear: "",   
+          joiningYear: "",
+          designation: '',
+          dob: '',
+          photoFile: null,
+          photo: '',
+          bloodGroup: '',
+          officialDetails: '',
+          panNumber: '',
+          aadhaarNumber: '',
+          salary: '',
+          address: '',
+          systemRole: '',
+          remarks: '',
         });
         fetchRecentUsers();
+        setPhotoPreview(null);
       }
     } catch (error) {
       setMessage({
@@ -475,20 +525,103 @@ const AdminRegisterUser = () => {
 {formData.role === 'teacher' && (
     <>
       <div className="form-group">
-  <label htmlFor="joiningYear" className="form-label">Joining Year</label>
-  <input
-    type="number"
-    id="joiningYear"
-    name="joiningYear"
-    className="form-input"
-    placeholder="Enter joining year"
-    value={formData.joiningYear}
-    onChange={handleChange}
-    min="1990"
-    max={new Date().getFullYear()}
-    required
-  />
-</div>
+        <label htmlFor="joiningYear" className="form-label">Joining Year</label>
+        <input
+          type="number"
+          id="joiningYear"
+          name="joiningYear"
+          className="form-input"
+          placeholder="Enter joining year"
+          value={formData.joiningYear}
+          onChange={handleChange}
+          min="1990"
+          max={new Date().getFullYear()}
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Designation</label>
+        <input
+          type="text"
+          name="designation"
+          className="form-input"
+          value={formData.designation}
+          onChange={handleChange}
+          placeholder="Enter designation"
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Date of Birth</label>
+        <input
+          type="date"
+          name="dob"
+          className="form-input"
+          value={formData.dob}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Photo</label>
+        <input type="file" name="photoFile" accept="image/*" onChange={handleChange} />
+        {photoPreview && (
+          <div style={{ marginTop: 8 }}>
+            <img src={photoPreview} alt="preview" style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 8 }} />
+          </div>
+        )}
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Blood Group</label>
+        <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} className="form-input">
+          <option value="">Select Blood Group</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Official / Employment Details</label>
+        <textarea name="officialDetails" className="form-input" value={formData.officialDetails} onChange={handleChange} placeholder="Add official/employment details" />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">PAN Number</label>
+        <input type="text" name="panNumber" className="form-input" value={formData.panNumber} onChange={handleChange} />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Aadhaar Number</label>
+        <input type="text" name="aadhaarNumber" className="form-input" value={formData.aadhaarNumber} onChange={handleChange} />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Salary</label>
+        <input type="number" name="salary" className="form-input" value={formData.salary} onChange={handleChange} />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Address</label>
+        <textarea name="address" className="form-input" value={formData.address} onChange={handleChange} />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">System / Admin Role</label>
+        <input type="text" name="systemRole" className="form-input" value={formData.systemRole} onChange={handleChange} placeholder="e.g., admin, manager" />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Remarks / Notes</label>
+        <textarea name="remarks" className="form-input" value={formData.remarks} onChange={handleChange} placeholder="Any remarks" />
+      </div>
 
     </>
 )}

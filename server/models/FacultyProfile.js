@@ -36,6 +36,16 @@ const FacultyProfileSchema = new mongoose.Schema(
     website: String,
 
     profileImage: String,
+    dob: Date,
+    bloodGroup: String,
+    officialDetails: String,
+    panNumber: String,
+    aadhaarNumber: String,
+    salary: Number,
+    address: String,
+    systemRole: String,
+    remarks: String,
+    post: String,
     cloudinaryId: String,
   },
   { timestamps: true }

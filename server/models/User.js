@@ -52,6 +52,55 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: function() { return this.role === 'teacher'; }
     },
+    designation: {
+      type: String,
+      trim: true,
+      required: false,
+    },
+    dob: {
+      type: Date,
+      required: false,
+    },
+    photo: {
+      type: String,
+      required: false,
+    },
+    bloodGroup: {
+      type: String,
+      required: false,
+    },
+    officialDetails: {
+      type: String,
+      required: false,
+    },
+    panNumber: {
+      type: String,
+      required: false,
+    },
+    aadhaarNumber: {
+      type: String,
+      required: false,
+    },
+    salary: {
+      type: Number,
+      required: false,
+    },
+    address: {
+      type: String,
+      required: false,
+    },
+    systemRole: {
+      type: String,
+      required: false,
+    },
+    remarks: {
+      type: String,
+      required: false,
+    },
+    post: {
+      type: String,
+      required: false,
+    },
     section: {
       type: String,
       trim: true,
