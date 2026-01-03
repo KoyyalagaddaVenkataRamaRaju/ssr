@@ -82,6 +82,7 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
     ewsMeeSevaNa: '',
     rationCardNo: '',
     riceCardNo: '',
+    fatherAadhar: '',
     motherAadhar: '',
     bankName: '',
     bankIFSC: '',
@@ -241,7 +242,7 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
     if (!contact.email?.trim()) err.email = 'Email is required';
     setErrors(err);
     /*return Object.keys(err).length === 0;*/
-    return true; // temporarily disable validation
+    // temporarily disable validation
   };
 
   /* -------------------------
@@ -397,13 +398,13 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
 
                 <div style={styles.fieldRow}>
                   <div style={styles.field}>
-                    <label style={styles.label}>Student Name *</label>
+                    <label style={styles.label}>Student Name as per SSC*</label>
                     <input name="studentName" value={student.studentName} onChange={handleStudentChange} style={styles.input} />
                     <InlineError msg={errors.studentName} />
                   </div>
 
                   <div style={styles.field}>
-                    <label style={styles.label}>Father's Name *</label>
+                    <label style={styles.label}>Father's Name as per SSC*</label>
                     <input name="fatherName" value={student.fatherName} onChange={handleStudentChange} style={styles.input} />
                     <InlineError msg={errors.fatherName} />
                   </div>
@@ -411,7 +412,7 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
 
                 <div style={styles.fieldRow}>
                   <div style={styles.field}>
-                    <label style={styles.label}>Mother's Name *</label>
+                    <label style={styles.label}>Mother's Name as per SSC*</label>
                     <input name="motherName" value={student.motherName} onChange={handleStudentChange} style={styles.input} />
                     <InlineError msg={errors.motherName} />
                   </div>
@@ -439,6 +440,7 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
                     <label style={styles.label}>Aadhar Number</label>
                     <input name="aadharNumber" value={student.aadharNumber} onChange={handleStudentChange} style={styles.input} placeholder="12-digit Aadhar" />
                   </div>
+                  
                 </div>
 
                 <div style={styles.fieldRow}>
@@ -670,6 +672,17 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
                   <input name="riceCardNo" value={other.riceCardNo} onChange={handleOtherChange} style={styles.input} />
                 </div>
 
+<div style={styles.field}>
+  <label style={styles.label}>Father Aadhar</label>
+  <input
+    name="fatherAadhar"
+    value={other.fatherAadhar}
+    onChange={handleOtherChange}
+    style={styles.input}
+    placeholder="12-digit Aadhar"
+  />
+</div>
+
                 <div style={styles.field}>
                   <label style={styles.label}>Mother Aadhar</label>
                   <input name="motherAadhar" value={other.motherAadhar} onChange={handleOtherChange} style={styles.input} />
@@ -858,7 +871,7 @@ export default function CombinedApplicantDetails({ data = {}, onNext, onPrevious
               </div>
 
               <div style={styles.field}>
-                <label style={styles.label}>Passport Size Photo *</label>
+                <label style={styles.label}>Passport Size Photo 100kb Only*</label>
                 <input type="file" name="passportSizePhoto" accept=".jpg,.jpeg,.png" onChange={handleSignatureFile} style={styles.fileInput} />
                 <InlineError msg={errors.passportSizePhoto} />
                 {signaturePreviews.passportSizePhoto && (
