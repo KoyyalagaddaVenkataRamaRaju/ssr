@@ -13,6 +13,8 @@
     "axios": "^1.12.2",
     "bootstrap": "^5.3.8",
     "cloudinary": "^1.41.3",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.344.0",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
