@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ProblemList from "../pages/studentSections/ProblemList";
+import { fetchCodingProblems } from "../services/codingService";
 
 function CodingProblems() {
   const [selectedPlatform, setSelectedPlatform] = useState("leetcode");
@@ -20,12 +21,10 @@ function CodingProblems() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/problems/${selectedPlatform}`
-      );
-      console.log(response);
-      if (!response.ok) throw new Error("Failed to fetch problems");
-      const data = await response.json();
+      const response = await fetchCodingProblems(selectedPlatform);
+      
+      
+      const data =  response;
       setProblems(data);
     } catch (error) {
       console.error("Error fetching problems:", error);
