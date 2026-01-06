@@ -72,6 +72,7 @@ export const getApplicationSummary = async (applicationId) => {
   try {
     const response = await api.get(`/api/applications/summary/${applicationId}`);
     return response.data;
+    
   } catch (error) {
     throw error.response?.data || { message: "Summary fetch failed" };
   }

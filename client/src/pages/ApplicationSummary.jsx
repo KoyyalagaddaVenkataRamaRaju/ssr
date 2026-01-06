@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import {getApplicationSummary} from '../services/admissonService';
+import { get } from 'mongoose';
 
 function ApplicationSummary() {
   const { applicationId } = useParams();
@@ -10,13 +12,10 @@ function ApplicationSummary() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/applications/summary/${applicationId}`
-        );
-        const result = await response.json();
-        if (result.success) {
+        const response = await getApplicationSummary(applicationId);
+        console.log(response)
+        const result =  response;
           setData(result.data);
-        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {

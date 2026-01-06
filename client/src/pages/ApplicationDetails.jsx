@@ -12,7 +12,8 @@ import {
   Building2,
   CheckCircle,
   XCircle,
-  Save
+  Save,
+  FileText
 } from 'lucide-react';
 
 function ApplicationDetails() {
@@ -71,7 +72,7 @@ function ApplicationDetails() {
           </div>
 
           <div style={styles.grid}>
-            {/* LEFT */}
+            {/* LEFT COLUMN */}
             <div style={styles.column}>
               <Card icon={<User size={18} />} title="Student Details">
                 <Detail label="Name" value={data.studentDetails?.studentName} />
@@ -92,7 +93,7 @@ function ApplicationDetails() {
               </Card>
             </div>
 
-            {/* RIGHT */}
+            {/* RIGHT COLUMN */}
             <div style={styles.column}>
               <Card icon={<Phone size={18} />} title="Contact Details">
                 <Detail label="Mobile" value={data.contactDetails?.mobileNo} />
@@ -113,50 +114,39 @@ function ApplicationDetails() {
                 <Detail label="Language" value={data.preferences?.secondLanguage} />
               </Card>
 
+              {/* UPLOADED DOCUMENTS */}
+              <Card icon={<FileText size={18} />} title="Uploaded Documents">
+                <FileLink label="10th Marks Memo" file={data.uploadedFiles?.tenthMarksMemo} />
+                <FileLink label="Inter Marks / TC" file={data.uploadedFiles?.interMarksTC} />
+                <FileLink label="Student Aadhar" file={data.uploadedFiles?.studentAadhar} />
+                <FileLink label="Mother Aadhar" file={data.uploadedFiles?.motherAadhar} />
+                <FileLink label="Caste Certificate" file={data.uploadedFiles?.casteCertificate} />
+                <FileLink label="Income Certificate" file={data.uploadedFiles?.incomeCertificate} />
+                <FileLink label="Ration / Rice Card" file={data.uploadedFiles?.rationRiceCard} />
+              </Card>
+
+              <Card icon={<User size={18} />} title="Signature & Photo">
+                <FileLink label="Student Signature" file={data.signatureUpload?.studentSignature} />
+                <FileLink label="Passport Photo" file={data.signatureUpload?.passportSizePhoto} />
+              </Card>
+
               {/* OFFICE USE */}
               <div style={styles.officeCard}>
                 <h3 style={styles.cardTitle}>
                   <Building2 size={18} /> Office Use Only
                 </h3>
 
-                <Detail label="Fee Paid" value={data.officeUseOnly?.applicationFeePaid} />
                 <Detail label="Student ID" value={data.officeUseOnly?.studentIdGenerated || '—'} />
                 <Detail label="Portal No" value={data.officeUseOnly?.portalNumber || '—'} />
 
                 <div style={styles.divider} />
 
                 {!admitted ? (
-                  <div style={styles.row}>
-                    <button style={styles.primaryBtn} onClick={() => setAdmitted(true)}>
-                      <CheckCircle size={18} /> Mark as Admitted
-                    </button>
-                    <span style={styles.muted}>Not admitted</span>
-                  </div>
+                  <button style={styles.primaryBtn} onClick={() => setAdmitted(true)}>
+                    <CheckCircle size={18} /> Mark as Admitted
+                  </button>
                 ) : (
                   <>
-                    <div style={styles.rowBetween}>
-                      <span style={styles.success}>
-                        <CheckCircle size={18} /> Admitted
-                      </span>
-                      <button
-                        style={styles.dangerBtn}
-                        disabled={savingOffice}
-                        onClick={async () => {
-                          setSavingOffice(true);
-                          await updateOfficeUseOnly(data.applicationId, {
-                            studentIdGenerated: '',
-                            portalNumber: '',
-                          });
-                          setAdmitted(false);
-                          setAdmissionNo('');
-                          setPortalNumber('');
-                          setSavingOffice(false);
-                        }}
-                      >
-                        <XCircle size={16} /> Mark as Not Admitted
-                      </button>
-                    </div>
-
                     <div style={styles.inputGrid}>
                       <input
                         style={styles.input}
@@ -184,7 +174,7 @@ function ApplicationDetails() {
                         setSavingOffice(false);
                       }}
                     >
-                      <Save size={18} /> {savingOffice ? 'Saving…' : 'Save Admission'}
+                      <Save size={18} /> Save Admission
                     </button>
                   </>
                 )}
@@ -197,12 +187,32 @@ function ApplicationDetails() {
   );
 }
 
+/* ---------- FILE LINK COMPONENT ---------- */
+const FileLink = ({ label, file }) => {
+  if (!file?.url) return null;
+
+  const isImage = /\.(jpg|jpeg|png)$/i.test(file.url);
+
+  return (
+    <div style={styles.fileRow}>
+      <span style={styles.fileLabel}>{label}</span>
+      {isImage ? (
+        <a href={file.url} target="_blank" rel="noreferrer">
+          <img src={file.url} alt={label} style={styles.filePreview} />
+        </a>
+      ) : (
+        <a href={file.url} target="_blank" rel="noreferrer" style={styles.fileBtn}>
+          View / Download
+        </a>
+      )}
+    </div>
+  );
+};
+
 /* ---------- SMALL UI COMPONENTS ---------- */
 const Card = ({ title, icon, children }) => (
   <div style={styles.card}>
-    <h3 style={styles.cardTitle}>
-      {icon} {title}
-    </h3>
+    <h3 style={styles.cardTitle}>{icon} {title}</h3>
     {children}
   </div>
 );
@@ -214,143 +224,35 @@ const Detail = ({ label, value }) => (
   </div>
 );
 
-/* ---------- STYLES (RESPONSIVE) ---------- */
+/* ---------- STYLES ---------- */
 const styles = {
   layout: { display: 'flex', minHeight: '100vh', background: '#f8fafc' },
   main: { flex: 1, transition: 'margin-left .3s', overflowY: 'auto' },
   container: { maxWidth: 1400, margin: '0 auto', padding: 20 },
-
-  header: {
-    display: 'flex',
-    gap: 16,
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-
-  title: { fontSize: 28, fontWeight: 700, color: '#0f172a' },
+  header: { display: 'flex', gap: 16, alignItems: 'center', marginBottom: 24 },
+  title: { fontSize: 28, fontWeight: 700 },
   appId: { background: '#e2e8f0', padding: '6px 12px', borderRadius: 8 },
-
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))',
-    gap: 24,
-  },
-
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))', gap: 24 },
   column: { display: 'flex', flexDirection: 'column', gap: 20 },
-
-  card: {
-    background: '#fff',
-    borderRadius: 14,
-    padding: 20,
-    boxShadow: '0 6px 18px rgba(0,0,0,.06)',
-  },
-
-  officeCard: {
-    background: '#fff',
-    borderRadius: 16,
-    padding: 22,
-    border: '2px solid #e5e7eb',
-  },
-
-  cardTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    fontSize: 18,
-    fontWeight: 700,
-    marginBottom: 14,
-  },
-
-  detail: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '8px 0',
-    borderBottom: '1px dashed #e5e7eb',
-  },
-
+  card: { background: '#fff', borderRadius: 14, padding: 20, boxShadow: '0 6px 18px rgba(0,0,0,.06)' },
+  officeCard: { background: '#fff', borderRadius: 16, padding: 22, border: '2px solid #e5e7eb' },
+  cardTitle: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 18, fontWeight: 700, marginBottom: 14 },
+  detail: { display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px dashed #e5e7eb' },
   label: { fontWeight: 600, color: '#475569' },
   value: { color: '#0f172a' },
-
   divider: { height: 1, background: '#e5e7eb', margin: '16px 0' },
-
-  row: { display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' },
-  rowBetween: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: 12,
-    flexWrap: 'wrap',
-  },
-
-  muted: { color: '#64748b' },
-  success: { color: '#166534', fontWeight: 700 },
-
-  inputGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 12,
-    marginTop: 12,
-  },
-
+  inputGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 },
   input: { padding: 12, borderRadius: 8, border: '1px solid #cbd5f5' },
+  backBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#334155', color: '#fff', padding: '10px 16px', borderRadius: 8, border: 'none' },
+  primaryBtn: { background: '#2563eb', color: '#fff', padding: '12px 18px', borderRadius: 10, border: 'none' },
+  saveBtn: { marginTop: 14, width: '100%', background: '#10b981', color: '#fff', padding: 14, borderRadius: 12, border: 'none', fontWeight: 800 },
 
-  backBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    background: '#334155',
-    color: '#fff',
-    padding: '10px 16px',
-    borderRadius: 8,
-    border: 'none',
-    cursor: 'pointer',
-  },
+  fileRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px dashed #e5e7eb' },
+  fileLabel: { fontWeight: 600 },
+  fileBtn: { padding: '6px 12px', background: '#2563eb', color: '#fff', borderRadius: 6, fontSize: 13, textDecoration: 'none' },
+  filePreview: { width: 60, height: 60, objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' },
 
-  primaryBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    background: 'linear-gradient(135deg,#3b82f6,#2563eb)',
-    color: '#fff',
-    padding: '12px 18px',
-    borderRadius: 10,
-    border: 'none',
-    fontWeight: 700,
-  },
-
-  dangerBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    background: '#ef4444',
-    color: '#fff',
-    padding: '8px 14px',
-    borderRadius: 8,
-    border: 'none',
-  },
-
-  saveBtn: {
-    marginTop: 14,
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    background: 'linear-gradient(135deg,#10b981,#059669)',
-    color: '#fff',
-    padding: '14px',
-    borderRadius: 12,
-    border: 'none',
-    fontWeight: 800,
-  },
-
-  center: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 18,
-  },
+  center: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 },
 };
 
 export default ApplicationDetails;
