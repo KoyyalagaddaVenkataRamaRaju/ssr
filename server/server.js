@@ -88,7 +88,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/hero-carousel', heroCarouselRoutes);
 app.use("/api/recruiters", recruiterRoutes);
 app.use("/api/fees", feeRoutes);
-app.use("/api/teacher", facultyRoutes); 
+app.use("/api/teacher", facultyRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use('/api/student', studentRouter);
 app.use('/api/coordinators', coordinatorRoutes);
@@ -147,7 +147,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT ;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`✅ Server is running on port ${PORT}`);
 });
