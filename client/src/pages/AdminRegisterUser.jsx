@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
 import { UserPlus, CheckCircle, AlertCircle, ClipboardList } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { adminRegisterUser, getAllUsers } from "../services/authService";
@@ -7,6 +8,7 @@ import { fetchBatchesByDepartment, fetchSectionsByDepartment } from '../services
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminRegisterUser = () => {
+  const location = useLocation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -50,6 +52,18 @@ const AdminRegisterUser = () => {
     const timer = setTimeout(() => setLoading(false), 1000);
     fetchRecentUsers();
     fetchDepartments();
+    // If navigated with prefill state, apply it
+    if (location && location.state && location.state.prefill) {
+      const p = location.state.prefill;
+      setFormData((prev) => ({ ...prev, ...p }));
+      // if a department id/name present, fetch dependent lists
+      if (p.department) {
+        fetchBatches(p.department);
+        fetchSections(p.department);
+      }
+      // clear the navigation state to avoid reusing on refresh
+      try { window.history.replaceState({}, document.title); } catch (e) {}
+    }
     return () => clearTimeout(timer);
   }, []);
 
