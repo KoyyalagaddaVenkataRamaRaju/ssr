@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {getApplicationSummary} from '../services/admissonService';
-import { get } from 'mongoose';
+
 
 function ApplicationSummary() {
   const { applicationId } = useParams();
