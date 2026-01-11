@@ -148,22 +148,8 @@ export const updateOfficeUseOnly = async (req, res) => {
     const { applicationId } = req.params;
     const officeUseData = req.body;
 
-    // determine status: if studentIdGenerated is provided, mark approved
-    let newStatus = undefined;
-    const studentId = officeUseData?.studentIdGenerated;
-    if (typeof studentId !== 'undefined') {
-      if (studentId && String(studentId).trim() !== '') newStatus = 'approved';
-      else newStatus = 'submitted';
-    }
-
-    const updateObj = { officeUseOnly: officeUseData };
-    if (newStatus) updateObj.status = newStatus;
-
-    const application = await Application.findOneAndUpdate(
-      { applicationId },
-      updateObj,
-      { new: true }
-    );
+    // 1️⃣ Fetch existing application
+    const application = await Application.findOne({ applicationId });
 
     if (!application) {
       return res.status(404).json({
@@ -172,10 +158,36 @@ export const updateOfficeUseOnly = async (req, res) => {
       });
     }
 
+    // 2️⃣ Determine new status
+    let newStatus = application.status;
+    if (typeof officeUseData.studentIdGenerated !== 'undefined') {
+      newStatus =
+        officeUseData.studentIdGenerated &&
+        officeUseData.studentIdGenerated.trim() !== ''
+          ? 'approved'
+          : 'submitted';
+    }
+
+    // 3️⃣ MERGE officeUseOnly (VERY IMPORTANT)
+    const updatedOfficeUseOnly = {
+      ...(application.officeUseOnly || {}),
+      ...officeUseData,
+    };
+
+    // 4️⃣ Update application
+    const updatedApplication = await Application.findOneAndUpdate(
+      { applicationId },
+      {
+        officeUseOnly: updatedOfficeUseOnly,
+        status: newStatus,
+      },
+      { new: true }
+    );
+
     res.status(200).json({
       success: true,
       message: 'Office use data updated successfully',
-      data: application,
+      data: updatedApplication,
     });
   } catch (error) {
     console.error('Error updating office use data:', error);
@@ -186,6 +198,7 @@ export const updateOfficeUseOnly = async (req, res) => {
     });
   }
 };
+
 
 export const getApplicationBySummary = async (req, res) => {
   try {

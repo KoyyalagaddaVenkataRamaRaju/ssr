@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getApplicationById, updateOfficeUseOnly } from '../services/admissonService';
+import { getAllDepartments } from '../services/departmentService';
+import { fetchBatchesByDepartment, fetchSectionsByDepartment } from '../services/teacherAllocationService.jsx';
+import { adminRegisterUser } from '../services/authService';
+import { useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import {
   ArrowLeft,
@@ -19,12 +23,25 @@ import {
 function ApplicationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [admitted, setAdmitted] = useState(false);
   const [admissionNo, setAdmissionNo] = useState('');
   const [portalNumber, setPortalNumber] = useState('');
   const [savingOffice, setSavingOffice] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [batches, setBatches] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedBatch, setSelectedBatch] = useState('');
+  const [selectedSection, setSelectedSection] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [emailInput, setEmailInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
+  const [regSubmitting, setRegSubmitting] = useState(false);
+  const [regMessage, setRegMessage] = useState('');
+  const [accountCreated, setAccountCreated] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -34,15 +51,49 @@ function ApplicationDetails() {
         if (response.success) {
           const app = response.data[0];
           setData(app);
-          setAdmitted(!!app?.officeUseOnly?.studentIdGenerated);
-          setAdmissionNo(app?.officeUseOnly?.studentIdGenerated || '');
+          const studentId = app?.officeUseOnly?.studentIdGenerated;
+          const accountFlag = !!app?.officeUseOnly?.studentAccountCreated;
+          setAdmitted(!!studentId || accountFlag);
+          setAdmissionNo(studentId || '');
           setPortalNumber(app?.officeUseOnly?.portalNumber || '');
+          setAccountCreated(accountFlag);
+          // prefill contact fields
+          setNameInput(app.studentDetails?.studentName || '');
+          setEmailInput(app.contactDetails?.email || '');
+          setPhoneInput(app.contactDetails?.mobileNo || '');
+          // if preferences include department/section, pre-load related lists
+          const prefDept = app.preferences?.departmentId || app.preferences?.degreeGroup || '';
+          const prefSection = app.preferences?.section || '';
+          if (prefDept) {
+            setSelectedDepartment(prefDept);
+            try {
+              const respB = await fetchBatchesByDepartment(prefDept);
+              if (respB && respB.success) setBatches(respB.data || []);
+              else if (Array.isArray(respB)) setBatches(respB);
+              const respS = await fetchSectionsByDepartment(prefDept);
+              if (respS && respS.success) setSections(respS.data || []);
+              else if (Array.isArray(respS)) setSections(respS);
+              if (prefSection) setSelectedSection(prefSection);
+            } catch (err) {
+              console.error('Failed to preload batches/sections', err);
+            }
+          }
         }
       } finally {
         setLoading(false);
       }
     };
     fetchData();
+    // fetch departments for assigning student
+    const loadDeps = async () => {
+      try {
+        const resp = await getAllDepartments();
+        if (resp && resp.success) setDepartments(resp.data || []);
+      } catch (err) {
+        console.error('Failed to load departments', err);
+      }
+    };
+    loadDeps();
   }, [id]);
 
   if (loading) return <div style={styles.center}>Loading application…</div>;
@@ -147,35 +198,177 @@ function ApplicationDetails() {
                   </button>
                 ) : (
                   <>
+                    <div style={{ ...styles.inputGrid, gridTemplateColumns: '1fr 1fr 1fr' }}>
+                      <select
+                        style={styles.input}
+                        value={selectedDepartment}
+                        onChange={async (e) => {
+                          const depId = e.target.value;
+                          setSelectedDepartment(depId);
+                          setSelectedBatch('');
+                          setSelectedSection('');
+                          setSections([]);
+                          if (depId) {
+                            try {
+                              const resp = await fetchBatchesByDepartment(depId);
+                              if (resp && resp.success) setBatches(resp.data || []);
+                              else if (Array.isArray(resp)) setBatches(resp);
+                              const respS = await fetchSectionsByDepartment(depId);
+                              if (respS && respS.success) setSections(respS.data || []);
+                              else if (Array.isArray(respS)) setSections(respS);
+                            } catch (err) {
+                              console.error('Failed to fetch batches/sections', err);
+                              setBatches([]);
+                              setSections([]);
+                            }
+                          } else {
+                            setBatches([]);
+                          }
+                        }}
+                      >
+                        <option value="">Select Department</option>
+                        {departments.map((d) => (
+                          <option key={d._id} value={d._id}>{d.departmentName || d.name || d._id}</option>
+                        ))}
+                      </select>
+
+                      <select
+                        style={styles.input}
+                        value={selectedBatch}
+                        onChange={(e) => setSelectedBatch(e.target.value)}
+                        disabled={!batches.length}
+                      >
+                        <option value="">Select Batch</option>
+                        {batches.map((b) => (
+                          <option key={b._id} value={b._id}>{b.batchName || b.name || b._id}</option>
+                        ))}
+                      </select>
+                      <select
+                        style={styles.input}
+                        value={selectedSection}
+                        onChange={(e) => setSelectedSection(e.target.value)}
+                        disabled={!sections.length}
+                      >
+                        <option value="">Select Section</option>
+                        {sections.map((s) => (
+                          <option key={s._id || s.sectionName} value={s.sectionName || s._id}>{s.sectionName || s.section || s._id}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ ...styles.inputGrid, gridTemplateColumns: '1fr 1fr' }}>
+                    </div>
+
                     <div style={styles.inputGrid}>
                       <input
                         style={styles.input}
-                        placeholder="Admission Number"
+                        placeholder="Enrollment / Admission Number"
                         value={admissionNo}
                         onChange={(e) => setAdmissionNo(e.target.value)}
                       />
+                    </div>
+
+                    <div style={{ ...styles.inputGrid, gridTemplateColumns: '1fr 1fr' }}>
                       <input
                         style={styles.input}
                         placeholder="Portal Number"
                         value={portalNumber}
                         onChange={(e) => setPortalNumber(e.target.value)}
                       />
+                      <div />
                     </div>
 
                     <button
                       style={styles.saveBtn}
-                      disabled={savingOffice || !admissionNo}
+                      disabled={
+                        savingOffice || regSubmitting || accountCreated || !admissionNo || !selectedDepartment || !selectedBatch || !selectedSection || !nameInput || !emailInput
+                      }
                       onClick={async () => {
+                        setRegMessage('');
                         setSavingOffice(true);
-                        await updateOfficeUseOnly(data.applicationId, {
-                          studentIdGenerated: admissionNo,
-                          portalNumber,
-                        });
-                        setSavingOffice(false);
+                        try {
+                           const saveResp = await updateOfficeUseOnly(data.applicationId, {
+      studentIdGenerated: admissionNo,
+      portalNumber,
+      department: selectedDepartment,
+      batch: selectedBatch,
+      section: selectedSection,
+      studentAccountCreated: true,
+    });
+
+
+                          if (!saveResp || !saveResp.success) {
+                            setRegMessage('Failed to save admission: ' + (saveResp?.message || 'Unknown'));
+                            setSavingOffice(false);
+                            return;
+                          }
+
+                          // Auto-create student account if department & batch selected
+                          const payload = {
+                            name: nameInput || data.studentDetails?.studentName || '',
+                            email: emailInput || data.contactDetails?.email || '',
+                            password: 'SSR@159',
+                            role: 'student',
+                            department: selectedDepartment,
+                            batch: selectedBatch,
+                            section: selectedSection,
+                            phone: phoneInput || data.contactDetails?.mobileNo || '',
+                            enrollmentId: admissionNo || data.applicationId,
+                          };
+
+                          setRegSubmitting(true);
+                          const regResp = await adminRegisterUser(payload);
+                          setRegSubmitting(false);
+
+                          if (regResp && regResp.success) {
+                            setRegMessage('Student account created successfully');
+                            setAccountCreated(true);
+                            setAdmitted(true);
+                            // persist account-created flag in application officeUseOnly
+                            try {
+                              
+                              await updateOfficeUseOnly(data.applicationId, {
+                                studentAccountCreated: true,
+                              });
+                            } catch (err) {
+                              console.warn('Failed to persist accountCreated flag', err);
+                            }
+                            // update local data so saved values show in UI
+                           setData((prev) => ({
+        ...prev,
+        officeUseOnly: {
+          ...(prev?.officeUseOnly || {}),
+          studentIdGenerated: admissionNo,
+          portalNumber,
+          department: selectedDepartment,
+          batch: selectedBatch,
+          section: selectedSection,
+          studentAccountCreated: true,
+        },
+      }));
+                          } else {
+                            setRegMessage('Account creation failed: ' + (regResp.message || 'Unknown'));
+                          }
+                        } catch (err) {
+                          console.error(err);
+                          setRegMessage('Failed to save admission or create account');
+                        } finally {
+                          setSavingOffice(false);
+                        }
                       }}
                     >
-                      <Save size={18} /> Save Admission
+                      {accountCreated ? (
+                        <>
+                          <CheckCircle size={18} /> Account Created
+                        </>
+                      ) : (
+                        <>
+                          <Save size={18} /> {regSubmitting ? 'Creating Account...' : 'Save Admission & Create Account'}
+                        </>
+                      )}
                     </button>
+
+                    {regMessage && <div style={{ marginTop: 10 }}>{regMessage}</div>}
                   </>
                 )}
               </div>

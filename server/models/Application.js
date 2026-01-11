@@ -80,14 +80,33 @@ const applicationSchema = new mongoose.Schema(
       passportSizePhoto: String,
     },
     officeUseOnly: {
-      applicationFeePaid: String,
-      studentIdGenerated: String,
-      portalNumber: String,
-      onlineApplicationPassword: String,
-      appliedOnlinePart1: String,
-      collegeOptionsEntered: String,
-      collegeAllotmentStatus: String,
-    },
+  applicationFeePaid: String,
+  studentIdGenerated: String,
+  portalNumber: String,
+
+  // ✅ ADD THESE
+  department: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Department',
+  },
+  batch: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Batch',
+  },
+  section: String,
+
+  // ✅ ADD THIS
+  studentAccountCreated: {
+    type: Boolean,
+    default: false,
+  },
+
+  onlineApplicationPassword: String,
+  appliedOnlinePart1: String,
+  collegeOptionsEntered: String,
+  collegeAllotmentStatus: String,
+},
+
     status: {
       type: String,
       enum: ['draft', 'submitted', 'approved', 'rejected'],
