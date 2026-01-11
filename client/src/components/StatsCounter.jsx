@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FaUniversity, FaUserGraduate, FaBookOpen, FaAward } from "react-icons/fa";
+import {
+  FaUniversity,
+  FaUserGraduate,
+  FaBookOpen,
+  FaAward,
+} from "react-icons/fa";
 
 const StatsCounter = () => {
   const ref = useRef(null);
@@ -19,30 +24,26 @@ const StatsCounter = () => {
     triumphs: 99,
   };
 
-  // Detect when visible
+  /* ---------------- VISIBILITY OBSERVER ---------------- */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setStartCount(true);
-      },
+      ([entry]) => entry.isIntersecting && setStartCount(true),
       { threshold: 0.4 }
     );
-
     if (ref.current) observer.observe(ref.current);
   }, []);
 
-  // Counter animation
+  /* ---------------- COUNTER ANIMATION ---------------- */
   useEffect(() => {
     if (!startCount) return;
 
-    const duration = 2000;
+    const duration = 1800;
     const fps = 60;
     const steps = duration / (1000 / fps);
     let step = 0;
 
     const animate = () => {
       step++;
-
       setCounts({
         placements: (targetValues.placements / steps) * step,
         students: Math.floor((targetValues.students / steps) * step),
@@ -58,140 +59,121 @@ const StatsCounter = () => {
 
   return (
     <>
-      <style>
-        {`
+      <style>{`
+        :root {
+          --stats-accent: #a69cf8;
+        }
+
+        /* ================= SECTION ================= */
         .stats-section {
-          padding: 70px 0;
-          background: #FFF4E5; /* LIGHT ORANGE BG */
-          display: flex;
-          justify-content: center;
+          padding: 80px 16px;
+          background: linear-gradient(180deg, #f7f8ff, #ffffff);
         }
 
         .stats-container {
-          width: 100%;
-          max-width: 1300px;
+          max-width: 1200px;
+          margin: auto;
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 40px;
-          padding: 0 25px;
+          gap: 32px;
         }
 
+        /* ================= CARD ================= */
         .stat-card {
           background: #ffffff;
-          padding: 28px 18px;
-          border-radius: 14px;
+          border-radius: 18px;
+          padding: 28px 22px;
           display: flex;
-          gap: 18px;
           align-items: center;
-          transition: 0.3s ease;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          gap: 18px;
+
+          border: 1.2px solid var(--stats-accent);
+          box-shadow:
+            0 10px 22px rgba(0,0,0,0.08),
+            0 14px 30px rgba(166,156,248,0.18);
+
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
           opacity: 0;
           transform: translateY(20px);
-          animation: fadeInUp 1s forwards;
+          animation: fadeUp 0.8s ease forwards;
         }
 
         .stat-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+          transform: translateY(-6px);
+          box-shadow:
+            0 16px 36px rgba(166,156,248,0.35),
+            0 22px 48px rgba(0,0,0,0.12);
         }
 
-        @keyframes fadeInUp {
+        @keyframes fadeUp {
           to {
             opacity: 1;
             transform: translateY(0);
           }
         }
 
+        /* ================= ICON ================= */
         .stat-icon {
-          font-size: 46px;
-          color: #ff7b29; /* Orange icon */
+          font-size: 44px;
+          color: var(--stats-accent);
+          flex-shrink: 0;
           opacity: 0;
-          animation: iconPop 1s ease forwards;
+          animation: iconFade 0.9s ease forwards;
         }
 
-        @keyframes iconPop {
-          0% { opacity: 0; transform: scale(0.6); }
-          100% { opacity: 1; transform: scale(1); }
+        @keyframes iconFade {
+          from {
+            opacity: 0;
+            transform: scale(0.85);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
         }
 
+        /* ================= TEXT ================= */
         .stat-value {
-          font-size: 32px;
-          font-weight: 700;
-          color: #ff7b29;
+          font-size: 30px;
+          font-weight: 800;
+          color: var(--text-main);
           margin: 0;
         }
 
         .stat-label {
-          font-size: 15px;
-          color: #354b6d;
-          margin: 0;
-          margin-top: -3px;
+          font-size: 14.5px;
+          color: var(--text-muted);
+          margin: 2px 0 0;
+          font-weight: 600;
         }
 
-        /* ---------- RESPONSIVE ---------- */
-
-        /* Tablets */
+        /* ================= RESPONSIVE ================= */
         @media (max-width: 992px) {
           .stats-container {
             grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-          }
-          .stat-card {
-            padding: 25px 15px;
-          }
-          .stat-value {
-            font-size: 28px;
-          }
-          .stat-icon {
-            font-size: 40px;
           }
         }
 
-        /* Mobile Large */
-        @media (max-width: 768px) {
-          .stats-container {
-            gap: 22px;
-          }
-          .stat-card {
-            flex-direction: row;
-            text-align: left;
-          }
-        }
-
-        /* Small phones */
-        @media (max-width: 600px) {
+        @media (max-width: 640px) {
           .stats-container {
             grid-template-columns: 1fr;
           }
           .stat-card {
             flex-direction: column;
             text-align: center;
-            gap: 12px;
-            padding: 20px 15px;
+            gap: 14px;
           }
           .stat-icon {
-            font-size: 38px;
+            font-size: 40px;
           }
           .stat-value {
             font-size: 26px;
           }
         }
+      `}</style>
 
-        /* Extra small devices */
-        @media (max-width: 400px) {
-          .stat-value {
-            font-size: 24px;
-          }
-          .stat-icon {
-            font-size: 35px;
-          }
-        }
-        `}
-      </style>
-
-      <div className="stats-section" ref={ref}>
+      <section className="stats-section" ref={ref}>
         <div className="stats-container">
-
           <div className="stat-card">
             <FaUniversity className="stat-icon" />
             <div>
@@ -204,7 +186,7 @@ const StatsCounter = () => {
             <FaUserGraduate className="stat-icon" />
             <div>
               <p className="stat-value">
-                {counts.students >= 10000 ? "10k" : counts.students}
+                {counts.students >= 10000 ? "10k+" : counts.students}
               </p>
               <p className="stat-label">Total Students</p>
             </div>
@@ -226,12 +208,11 @@ const StatsCounter = () => {
               <p className="stat-value">
                 {counts.triumphs >= 99 ? "99+" : counts.triumphs}
               </p>
-              <p className="stat-label">Student Triumphs</p>
+              <p className="stat-label">Student Achievements</p>
             </div>
           </div>
-
         </div>
-      </div>
+      </section>
     </>
   );
 };

@@ -12,107 +12,109 @@ const RecruitersSection = () => {
       });
   }, []);
 
-  // Show only ACTIVE logos
   const activeLogos = logos.filter((l) => l.isActive === true);
-
-  // Duplicate for infinite scroll
   const scrollingLogos = [...activeLogos, ...activeLogos];
 
   return (
     <>
       <style>{`
+        :root {
+          --recruiter-accent: #a69cf8;
+        }
+
+        /* ================= SECTION ================= */
         .recruiter-section {
-          padding: 50px 10px;
+          padding: 80px 12px;
+          background: linear-gradient(180deg, #ffffff, #f7f8ff);
           text-align: center;
-          background: #ffffff;
           overflow: hidden;
+          font-family: 'Inter', sans-serif;
         }
 
         .recruiter-title {
-          font-size: 30px;
+          font-size: 32px;
           font-weight: 800;
-          color: #0a2a63;
-          margin-bottom: 8px;
+          color: var(--text-main);
+          margin-bottom: 10px;
         }
 
         .recruiter-line {
-          width: 90px;
-          height: 4px;
-          background: linear-gradient(90deg, #ff3b3b, #ff7b29);
-          margin: auto;
-          border-radius: 8px;
-          margin-bottom: 25px;
+          width: 70px;
+          height: 3px;
+          background: var(--recruiter-accent);
+          margin: 0 auto 40px;
+          border-radius: 999px;
         }
 
-        /* SLIDER AREA */
-        .slider {
+        /* ================= SLIDER ================= */
+        .recruiter-slider {
           width: 100%;
           overflow: hidden;
           position: relative;
-          padding: 20px 0;
         }
 
-        .slide-track {
+        .recruiter-track {
           display: flex;
-          gap: 65px;
           align-items: center;
-          animation: scroll 22s linear infinite;
+          gap: 70px;
+          animation: recruiterScroll 26s linear infinite;
           will-change: transform;
         }
 
-        .slider:hover .slide-track {
+        .recruiter-slider:hover .recruiter-track {
           animation-play-state: paused;
         }
 
-        .logo-img {
-          height: 85px;
+        @keyframes recruiterScroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+
+        /* ================= LOGOS (COLOR) ================= */
+        .recruiter-logo {
+          height: 78px;
           object-fit: contain;
-          filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+          opacity: 1;
           transition: transform 0.3s ease, filter 0.3s ease;
-          transform-style: preserve-3d;
         }
 
-        .logo-img:hover {
-          transform: translateZ(35px) scale(1.25) rotateY(10deg);
-          filter: drop-shadow(0 10px 22px rgba(0,0,0,0.25));
+        .recruiter-logo:hover {
+          transform: translateY(-6px) scale(1.05);
+          filter: drop-shadow(0 8px 18px rgba(0,0,0,0.18));
         }
 
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-
+        /* ================= RESPONSIVE ================= */
         @media (max-width: 1024px) {
-          .slide-track { gap: 55px; }
-          .logo-img { height: 70px; }
+          .recruiter-track { gap: 55px; }
+          .recruiter-logo { height: 64px; }
         }
 
         @media (max-width: 768px) {
-          .logo-img { height: 55px; }
-          .recruiter-title { font-size: 24px; }
-          .slide-track { gap: 45px; }
+          .recruiter-title { font-size: 26px; }
+          .recruiter-logo { height: 52px; }
+          .recruiter-track { gap: 45px; }
         }
 
         @media (max-width: 480px) {
-          .logo-img { height: 48px; }
-          .slide-track { gap: 35px; }
           .recruiter-title { font-size: 22px; }
+          .recruiter-logo { height: 46px; }
+          .recruiter-track { gap: 36px; }
         }
-
       `}</style>
 
       <section className="recruiter-section">
-        <h2 className="recruiter-title">OUR RECRUITERS</h2>
-        <div className="recruiter-line"></div>
+        <h2 className="recruiter-title">Our Recruiters</h2>
+        <div className="recruiter-line" />
 
-        <div className="slider">
-          <div className="slide-track">
+        <div className="recruiter-slider">
+          <div className="recruiter-track">
             {scrollingLogos.map((logo, index) => (
               <img
                 key={index}
                 src={logo.imageUrl}
                 alt={logo.companyName}
-                className="logo-img"
+                className="recruiter-logo"
+                loading="lazy"
               />
             ))}
           </div>

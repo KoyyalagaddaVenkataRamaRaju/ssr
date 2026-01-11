@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -9,20 +9,14 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     setError("");
   };
 
@@ -35,22 +29,23 @@ const Login = () => {
       return;
     }
 
-    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const emailRegex =
+      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     if (!emailRegex.test(formData.email)) {
       setError("Please enter a valid email address");
       return;
     }
 
     setLoading(true);
-
     try {
       const response = await login(formData.email, formData.password);
-
       if (response.success && response.user) {
         navigate(`/${response.user.role}/dashboard`);
       }
     } catch (err) {
-      setError(err.message || "Login failed. Please check your credentials.");
+      setError(
+        err.message || "Login failed. Please check your credentials."
+      );
     } finally {
       setLoading(false);
     }
@@ -60,233 +55,321 @@ const Login = () => {
     <>
       <Navbar />
 
-      {/* ===========================
-          ⭐ NEW 5-STAR UI STYLING
-      ============================ */}
+      {/* ================= CURVED LOGIN STYLES ================= */}
       <style>{`
-        body {
-          background: #ffffff;
+        :root {
+          --primary: #7a54b1;
+          --primary-dark: #643e94;
+          --gold: #facc15;
+          --bg: #f8fafc;
+          --text-dark: #0f172a;
+          --text-muted: #64748b;
         }
 
-        .login-page {
-          min-height: 100vh;
+        body {
+          font-family: 'Inter', system-ui, -apple-system,
+            BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Arial, sans-serif;
+        }
+
+        .login-wrapper {
+          min-height: calc(100vh - 120px);
+          display: grid;
+          grid-template-columns: 1.2fr 0.8fr;
+          position: relative;
+          background: var(--bg);
+          overflow: hidden;
+        }
+
+        /* ============ LEFT PANEL ============ */
+        .login-left {
+          background: linear-gradient(
+            135deg,
+            var(--primary),
+            var(--primary-dark)
+          );
+          color: #fff;
+          padding: 80px 70px;
+          display: flex;
+          align-items: center;
+          position: relative;
+          z-index: 1;
+        }
+
+        .brand-content {
+          max-width: 520px;
+        }
+
+        .brand-content h1 {
+          font-size: 48px;
+          font-weight: 800;
+          line-height: 1.2;
+        }
+
+        .brand-content h1 span {
+          color: var(--gold);
+        }
+
+        .brand-content p {
+          margin: 18px 0 30px;
+          font-size: 17px;
+          color: #eee6ff;
+          line-height: 1.6;
+        }
+
+        .features div {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 14px;
+          font-size: 15px;
+        }
+
+        .features svg {
+          color: var(--gold);
+        }
+
+        /* ============ CURVE DIVIDER ============ */
+        .curve-divider {
+          position: absolute;
+          left: 68%;
+          top: -10%;
+          width: 40%;
+          height: 120%;
+          background: var(--bg);
+          border-radius: 50%;
+          transform: translateX(-50%);
+          z-index: 2;
+          box-shadow: -20px 0 50px rgba(0,0,0,0.12);
+        }
+
+        /* ============ RIGHT PANEL ============ */
+        .login-right {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 50px 20px;
-          background: #ffffff;
+          padding: 40px;
+          z-index: 3;
+          background: var(--bg);
         }
 
-        .login-container {
+        .login-card {
           width: 100%;
-          max-width: 480px;
-          background: #ffffff;
-          border-radius: 18px;
-          padding: 40px 35px;
-          box-shadow: 
-            0 4px 10px rgba(0,0,0,0.08),
-            0 10px 25px rgba(122,84,177,0.18);
-          animation: popIn 0.6s ease;
-          border: 1px solid #f1e9ff;
-        }
-
-        @keyframes popIn {
-          from { transform: translateY(20px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          max-width: 420px;
+          background: #fff;
+          padding: 34px 32px 38px;
+          border-radius: 22px;
+          border: 1px solid #ede9fe;
+          box-shadow: 0 26px 60px rgba(122,84,177,0.25);
+          margin-left: -40px;
         }
 
         .login-header {
           text-align: center;
-          margin-bottom: 25px;
+          margin-bottom: 22px;
         }
 
-        .logo-icon {
-          color: #7A54B1;
+        .login-header h2 {
+          font-size: 26px;
+          color: var(--text-dark);
+          margin-top: 8px;
         }
 
-        .login-title {
-          font-size: 28px;
-          font-weight: 700;
-          color: #333;
-          margin-top: 12px;
-        }
-
-        .login-tagline {
+        .login-header p {
           font-size: 14px;
-          color: #666;
+          color: var(--text-muted);
         }
 
         .form-label {
+          font-size: 14px;
           font-weight: 600;
+          color: #374151;
           margin-bottom: 6px;
-          color: #444;
         }
 
         .form-input {
           width: 100%;
-          padding: 12px;
-          border-radius: 8px;
-          border: 1px solid #ccc;
-          transition: 0.3s ease;
-          background: #fafafa;
+          padding: 12px 14px;
+          border-radius: 10px;
+          border: 1px solid #d1d5db;
+          background: #f9fafb;
+          font-size: 14px;
         }
 
         .form-input:focus {
-          border-color: #7A54B1;
+          outline: none;
+          border-color: var(--primary);
           background: #fff;
-          box-shadow: 0 0 6px rgba(122,84,177,0.3);
-        }
-
-        .form-input.error {
-          border-color: #ff5b5b;
+          box-shadow: 0 0 0 3px rgba(122,84,177,0.2);
         }
 
         .error-message {
-          color: #ff4c4c;
+          color: #ef4444;
           font-size: 14px;
-          margin-top: -5px;
           margin-bottom: 10px;
         }
 
-        .remember-me label {
-          color: #444;
+        .password-toggle {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--primary);
         }
 
-        .forgot-password {
+        .form-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 10px 0 16px;
           font-size: 14px;
-          color: #7A54B1;
-          text-decoration: none;
-        }
-        .forgot-password:hover {
-          text-decoration: underline;
         }
 
         .login-button {
           width: 100%;
-          padding: 12px;
-          margin-top: 15px;
-          border-radius: 8px;
-          background: #7A54B1;
-          border: none;
+          padding: 13px;
+          border-radius: 14px;
+          background: linear-gradient(
+            135deg,
+            var(--primary),
+            var(--primary-dark)
+          );
           color: white;
+          border: none;
           font-size: 16px;
           font-weight: 600;
-          transition: 0.3s;
+          cursor: pointer;
         }
 
-        .login-button:hover {
-          background: #643e94;
+        .login-button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 14px 30px rgba(122,84,177,0.35);
         }
 
-        .btn-loading {
-          opacity: 0.8;
-          cursor: wait;
+        .login-button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
         }
 
-        .password-toggle {
-          color: #7A54B1;
-        }
-
-        @media(max-width: 480px) {
-          .login-container {
-            padding: 30px 25px;
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 900px) {
+          .login-wrapper {
+            grid-template-columns: 1fr;
           }
-          .login-title {
-            font-size: 24px;
+
+          .login-left,
+          .curve-divider {
+            display: none;
+          }
+
+          .login-right {
+            background: #fff;
+          }
+
+          .login-card {
+            margin-left: 0;
+            box-shadow: none;
+            border-radius: 0;
+            max-width: 100%;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .login-right {
+            padding: 24px 16px;
+          }
+
+          .login-card {
+            padding: 26px 20px 28px;
           }
         }
       `}</style>
 
-      {/* ===================
-          LOGIN UI
-      =================== */}
-      <div className="login-page">
-        <div className="login-container">
-          <div className="login-header">
-            <GraduationCap className="logo-icon" size={60} />
-            <h1 className="login-title">College Management Portal</h1>
-            <p className="login-tagline">
-              Secure access for Students, Teachers, and Staff.
+      {/* ================= CURVED LOGIN LAYOUT ================= */}
+      <div className="login-wrapper">
+        {/* LEFT */}
+        <div className="login-left">
+          <div className="brand-content">
+            <h1>
+              SSR <span>College</span>
+            </h1>
+            <p>
+              Securely manage students, faculty, attendance, and academic
+              operations with our modern college management system.
             </p>
-          </div>
 
-          <form className="login-form" onSubmit={handleSubmit}>
-            {/* EMAIL */}
-            <div className="form-group mb-3">
-              <label htmlFor="email" className="form-label">
-                Email Address
-              </label>
+            <div className="features">
+              <div><CheckCircle2 size={18} /> Secure Role-Based Access</div>
+              <div><CheckCircle2 size={18} /> Registeration Management</div>
+              <div><CheckCircle2 size={18} /> Student & Teacher Dashboards</div>
+              <div><CheckCircle2 size={18} /> Attendance & Academics</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="curve-divider" />
+
+        {/* RIGHT */}
+        <div className="login-right">
+          <form className="login-card" onSubmit={handleSubmit}>
+            <div className="login-header">
+              
+              <h2>Welcome Back</h2>
+              <p>Sign in to continue</p>
+            </div>
+
+            {error && <div className="error-message">{error}</div>}
+
+            <div className="mb-3">
+              <label className="form-label">Email</label>
               <input
                 type="email"
-                id="email"
                 name="email"
-                className={`form-input ${error ? "error" : ""}`}
-                placeholder="Enter your email"
+                className="form-input"
+                placeholder="name@example.com"
                 value={formData.email}
                 onChange={handleChange}
               />
             </div>
 
-            {/* PASSWORD */}
-            <div className="form-group mb-3">
-              <label htmlFor="password" className="form-label">
-                Password
-              </label>
+            <div className="mb-3">
+              <label className="form-label">Password</label>
               <div style={{ position: "relative" }}>
                 <input
                   type={showPassword ? "text" : "password"}
-                  id="password"
                   name="password"
-                  className={`form-input ${error ? "error" : ""}`}
+                  className="form-input"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
                 />
-
                 <button
                   type="button"
-                  onClick={() => setShowPassword((s) => !s)}
                   className="password-toggle"
-                  style={{
-                    position: "absolute",
-                    right: 10,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
+                  onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {error && <p className="error-message">{error}</p>}
-
-            {/* REMEMBER + FORGOT */}
-            <div className="form-footer d-flex justify-content-between mb-2">
-              <div className="remember-me">
+            <div className="form-footer">
+              <label>
                 <input
                   type="checkbox"
-                  id="remember"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <label htmlFor="remember">Remember Me</label>
-              </div>
+                />{" "}
+                Remember Me
+              </label>
 
-              <a href="/forgot-password" className="forgot-password">
-                Forgot Password?
-              </a>
+              <a href="/forgot-password">Forgot Password?</a>
             </div>
 
-            {/* LOGIN BUTTON */}
-            <button
-              type="submit"
-              className={`login-button ${loading ? "btn-loading" : ""}`}
-              disabled={loading}
-            >
+            <button className="login-button" disabled={loading}>
               {loading ? "Logging in..." : "Login"}
             </button>
           </form>

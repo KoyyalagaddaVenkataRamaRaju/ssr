@@ -1,340 +1,236 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 const ContactUs = () => {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(t);
-  }, []);
-
   return (
     <>
       <Navbar />
 
+      {/* ================= CONTACT STYLES ================= */}
       <style>{`
         :root {
-          --ssr-purple: #6a3bbb;
-          --ssr-purple-light: #9b6fe9;
-          --ssr-glow: rgba(155, 111, 233, 0.25);
-          --ssr-gold: #d4ac0d;
-          --text-dark: #222;
+          --primary: #7a54b1;
+          --primary-dark: #643e94;
+          --primary-soft: #f3effc;
+          --text-main: #0f172a;
+          --text-muted: #64748b;
+          --border-light: #e5e7eb;
+          --shadow-soft: 0 14px 36px rgba(0,0,0,0.14);
         }
 
-        .ct-header {
-          width: 100%;
+        body {
+          font-family: 'Inter', system-ui, -apple-system,
+            BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Arial, sans-serif;
+        }
+
+        /* ================= HERO ================= */
+        .contact-hero {
           min-height: 260px;
-          padding: 80px 20px;
           display: flex;
-          justify-content: center;
           align-items: center;
+          justify-content: center;
           text-align: center;
           color: white;
-          position: relative;
-          background-image: url("https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg");
+          background:
+            linear-gradient(
+              to right,
+              rgba(122,84,177,0.88),
+              rgba(122,84,177,0.6)
+            ),
+            url("https://images.pexels.com/photos/3184433/pexels-photo-3184433.jpeg");
           background-size: cover;
           background-position: center;
-          overflow: hidden;
         }
 
-        .ct-header::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            to right,
-            rgba(106, 59, 187, 0.65),
-            rgba(155, 111, 233, 0.45)
-          );
-          z-index: 1;
-          opacity: 0;
-          animation: fadeOverlay 1s ease forwards;
-        }
-
-        .ct-title {
-          position: relative;
-          z-index: 2;
-          font-size: 40px;
+        .contact-hero h1 {
+          font-size: 42px;
           font-weight: 800;
-          opacity: 0;
-          letter-spacing: 1px;
-          animation: fadeTitle 1.2s ease forwards;
-          animation-delay: 0.2s;
+          letter-spacing: 0.5px;
         }
 
-        @keyframes fadeOverlay {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes fadeTitle {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .ct-wrapper {
+        /* ================= WRAPPER ================= */
+        .contact-wrapper {
           max-width: 1200px;
-          margin: 50px auto;
-          padding: 20px;
-          display: flex;
-          gap: 40px;
-          align-items: flex-start;
-          opacity: 0;
-          animation: fadeUp 1s ease forwards;
+          margin: 70px auto;
+          padding: 0 20px;
+          display: grid;
+          grid-template-columns: 1fr 1.4fr;
+          gap: 44px;
         }
 
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .ct-img-box {
-          flex: 1;
-          position: relative;
-        }
-
-        .ct-img {
+        /* ================= IMAGE ================= */
+        .contact-image img {
           width: 100%;
-          max-width: 450px;
-          border-radius: 15px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-          transform: translateX(-20px);
-          opacity: 0;
-          animation: fadeLeft 1s ease forwards;
-          animation-delay: 0.2s;
+          border-radius: 18px;
+          box-shadow: var(--shadow-soft);
         }
 
-        @keyframes fadeLeft {
-          from { opacity: 0; transform: translateX(-30px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-
-        .ct-glow {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(circle, var(--ssr-glow), transparent);
-          filter: blur(45px);
-          z-index: -1;
-        }
-
-        .ct-content {
-          flex: 2;
-          animation: fadeRight 1s ease forwards;
-          opacity: 0;
-          animation-delay: 0.3s;
-        }
-
-        @keyframes fadeRight {
-          from { opacity: 0; transform: translateX(30px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-
-        .ct-heading {
+        /* ================= CONTENT ================= */
+        .contact-content h2 {
           font-size: 28px;
           font-weight: 700;
-          color: var(--ssr-purple);
-          margin-bottom: 15px;
+          color: var(--primary);
+          margin-bottom: 14px;
         }
 
-        .ct-text {
-          color: #444;
+        .contact-content p {
           font-size: 16px;
+          color: var(--text-muted);
           line-height: 1.8;
-          margin-bottom: 20px;
+          margin-bottom: 26px;
         }
 
-        .ct-info {
-          background: #fff;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-          margin-bottom: 25px;
+        /* ================= INFO CARD ================= */
+        .contact-info {
+          background: white;
+          border: 1px solid var(--border-light);
+          border-radius: 18px;
+          padding: 24px;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+          display: grid;
+          gap: 16px;
         }
 
-        .ct-info p {
-          margin: 8px 0;
-          font-size: 16px;
-        }
-
-        .ct-form {
-          background: #fff;
-          padding: 25px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-        }
-
-        .ct-form input,
-        .ct-form textarea {
-          width: 100%;
-          padding: 10px 12px;
-          border-radius: 8px;
-          border: 1px solid #ccc;
-          margin-bottom: 15px;
+        .info-item {
+          display: flex;
+          gap: 14px;
+          align-items: flex-start;
           font-size: 15px;
-          transition: 0.3s ease;
+          color: var(--text-main);
         }
 
-        .ct-form input:focus,
-        .ct-form textarea:focus {
-          border-color: var(--ssr-purple);
-          box-shadow: 0 0 8px rgba(106, 59, 187, 0.3);
+        .info-item svg {
+          color: var(--primary);
+          flex-shrink: 0;
+          margin-top: 2px;
         }
 
-        .ct-btn {
-          background: var(--ssr-purple);
-          color: white;
-          border: none;
-          padding: 12px 20px;
-          font-size: 16px;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: 0.3s;
+        .info-item span {
+          font-weight: 600;
+          color: var(--primary);
         }
 
-        .ct-btn:hover {
-          background: var(--ssr-purple-light);
-        }
-
-        /* SKELETON */
-        .skeleton {
-          background: linear-gradient(90deg, #e3e3e3 0%, #f7f7f7 50%, #e3e3e3 100%);
-          animation: skelAnim 1.2s linear infinite;
-          background-size: 200% 100%;
-          border-radius: 10px;
-        }
-
-        @keyframes skelAnim {
-          0% { background-position: 150% 0; }
-          100% { background-position: -150% 0; }
-        }
-
-        .sk-img {
-          width: 100%;
-          height: 320px;
-          max-width: 450px;
-        }
-
-        .sk-line {
-          width: 100%;
-          height: 18px;
-          margin-bottom: 15px;
-        }
-
-        /* GOOGLE MAP SECTION */
+        /* ================= MAP ================= */
         .map-section {
-          width: 100%;
-          margin-top: 40px;
-          animation: fadeUp 1s ease;
+          max-width: 1200px;
+          margin: 0 auto 80px;
+          padding: 0 20px;
         }
 
         .map-frame {
           width: 100%;
-          height: 400px;
-          border: 0;
-          border-radius: 10px;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+          height: 420px;
+          border-radius: 18px;
+          border: none;
+          box-shadow: var(--shadow-soft);
         }
 
-        @media (max-width: 900px) {
-          .ct-wrapper {
-            flex-direction: column;
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 992px) {
+          .contact-wrapper {
+            grid-template-columns: 1fr;
             text-align: center;
           }
 
-          .ct-img {
-            max-width: 80%;
-            margin: auto;
+          .contact-content {
+            text-align: left;
           }
 
-          .ct-content {
-            text-align: left;
+          .contact-hero h1 {
+            font-size: 34px;
           }
         }
 
         @media (max-width: 480px) {
-          .ct-title { font-size: 32px; }
-          .ct-heading { font-size: 24px; }
+          .contact-hero h1 {
+            font-size: 28px;
+          }
+
+          .contact-content h2 {
+            font-size: 24px;
+          }
+
+          .map-frame {
+            height: 320px;
+          }
         }
       `}</style>
 
-      {/* HEADER */}
-      <div className="ct-header">
-        <h1 className="ct-title">Contact Us</h1>
-      </div>
+      {/* ================= HERO ================= */}
+      <section className="contact-hero">
+        <h1>Contact Us</h1>
+      </section>
 
-      {/* SKELETON */}
-      {loading ? (
-        <div className="ct-wrapper">
-          <div className="ct-img-box">
-            <div className="skeleton sk-img"></div>
-          </div>
+      {/* ================= CONTENT ================= */}
+      <section className="contact-wrapper">
+        {/* IMAGE */}
+        <div className="contact-image">
+          <img
+            src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg"
+            alt="Contact SSR Degree College"
+          />
+        </div>
 
-          <div className="ct-content">
-            <div className="skeleton sk-line" style={{ width: "70%" }}></div>
-            <div className="skeleton sk-line"></div>
-            <div className="skeleton sk-line"></div>
-            <div className="skeleton sk-line" style={{ width: "80%" }}></div>
-            <div className="skeleton sk-line" style={{ width: "50%" }}></div>
+        {/* CONTENT */}
+        <div className="contact-content">
+          <h2>Get in Touch</h2>
+          <p>
+            We’re here to help! Reach out to SSR Degree College for admissions,
+            academic support, or general enquiries. Our dedicated team is always
+            ready to assist you.
+          </p>
+
+          <div className="contact-info">
+            <div className="info-item">
+              <MapPin size={20} />
+              <div>
+                <span>Address:</span><br />
+                SSR Degree College, Jagannadhapuram, Machilipatnam
+              </div>
+            </div>
+
+            <div className="info-item">
+              <Phone size={20} />
+              <div>
+                <span>Phone:</span><br />
+                +91 98765 43210
+              </div>
+            </div>
+
+            <div className="info-item">
+              <Mail size={20} />
+              <div>
+                <span>Email:</span><br />
+                info@ssrcollege.ac.in
+              </div>
+            </div>
+
+            <div className="info-item">
+              <Clock size={20} />
+              <div>
+                <span>Working Hours:</span><br />
+                Mon – Sat, 9:00 AM – 5:00 PM
+              </div>
+            </div>
           </div>
         </div>
-      ) : (
-        <>
-          {/* CONTACT CONTENT */}
-          <div className="ct-wrapper">
-            {/* LEFT IMAGE */}
-            <div className="ct-img-box">
-              <div className="ct-glow"></div>
-              <img
-                src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg"
-                className="ct-img"
-                alt="Contact"
-              />
-            </div>
+      </section>
 
-            {/* RIGHT CONTENT */}
-            <div className="ct-content">
-              <h2 className="ct-heading">Get in Touch</h2>
+      {/* ================= MAP ================= */}
+      <section className="map-section">
+        <iframe
+          className="map-frame"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3831.752232474001!2d81.1331668!3d16.181722599999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a49e7c6551437fb%3A0x4f8e0dc6bf911f0a!2sSSR%20Degree%20College!5e0!3m2!1sen!2sin!4v1763482176908!5m2!1sen!2sin"
+          loading="lazy"
+          allowFullScreen
+          title="SSR Degree College Location"
+        />
+      </section>
 
-              <p className="ct-text">
-                We’re here to help! Reach out to SSR Degree College for any
-                academic queries, admissions, or support. Our team will assist you promptly.
-              </p>
-
-              <div className="ct-info">
-                <p><b>📍 Address:</b> SSR Degree College, Jagannadhapuram, Machilipatnam</p>
-                <p><b>📞 Phone:</b> +91 98765 43210</p>
-                <p><b>📧 Email:</b> info@ssrcollege.ac.in</p>
-                <p><b>🕒 Timings:</b> Mon–Sat, 9:00 AM – 5:00 PM</p>
-              </div>
-
-              {/* <div className="ct-form">
-                <input type="text" placeholder="Your Name" />
-                <input type="email" placeholder="Your Email" />
-                <input type="text" placeholder="Subject" />
-                <textarea rows="4" placeholder="Your Message"></textarea>
-
-                <button className="ct-btn">Send Message</button>
-              </div> */}
-            </div>
-          </div>
-
-          {/* GOOGLE MAP SECTION */}
-          <div className="map-section">
-            <iframe
-              className="map-frame"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3831.752232474001!2d81.1331668!3d16.181722599999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a49e7c6551437fb%3A0x4f8e0dc6bf911f0a!2sSSR%20Degree%20College!5e0!3m2!1sen!2sin!4v1763482176908!5m2!1sen!2sin"
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="SSR Degree College Location"
-            ></iframe>
-          </div>
-
-          <Footer />
-        </>
-      )}
+      <Footer />
     </>
   );
 };

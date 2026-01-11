@@ -58,8 +58,8 @@ const AboutUs = () => {
         .abt-title {
           position: relative;
           z-index: 2;
-          font-size: 40px;
-          font-weight: 800;
+          font-size: 32px;
+          font-weight: 650;
           letter-spacing: 1px;
           opacity: 0;
           animation: abtFadeTitle 1s ease forwards;
