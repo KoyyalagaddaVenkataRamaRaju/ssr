@@ -71,6 +71,7 @@ const DepartmentPage = () => {
             'Segoe UI', Roboto, Arial, sans-serif;
         }
 
+        /* ================= HERO ================= */
         .dept-hero {
           position: relative;
           min-height: 360px;
@@ -138,6 +139,7 @@ const DepartmentPage = () => {
           font-weight: 600;
         }
 
+        /* ================= MAIN ================= */
         .dept-container {
           max-width: 1200px;
           margin: 70px auto;
@@ -153,7 +155,12 @@ const DepartmentPage = () => {
           padding: 28px;
           border: 1px solid var(--border);
           box-shadow: var(--shadow-soft);
-          margin-bottom: 28px;
+        }
+
+        .card h3,
+        .card h4 {
+          margin-top: 0;
+          color: var(--text-main);
         }
 
         .dept-description {
@@ -162,6 +169,7 @@ const DepartmentPage = () => {
           line-height: 1.85;
         }
 
+        /* ================= BATCHES ================= */
         .batch-grid {
           margin-top: 20px;
           display: grid;
@@ -174,6 +182,12 @@ const DepartmentPage = () => {
           border-radius: 14px;
           background: linear-gradient(180deg, #fff, var(--primary-soft));
           border: 1px solid var(--border);
+          transition: 0.25s ease;
+        }
+
+        .batch-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 18px 38px rgba(122,84,177,0.18);
         }
 
         .batch-name {
@@ -187,6 +201,7 @@ const DepartmentPage = () => {
           margin-top: 6px;
         }
 
+        /* ================= SIDE ================= */
         .stat-box {
           display: flex;
           align-items: center;
@@ -211,6 +226,16 @@ const DepartmentPage = () => {
           font-size: 20px;
         }
 
+        .stat-label {
+          font-weight: 600;
+          color: var(--text-main);
+        }
+
+        .stat-sub {
+          font-size: 13px;
+          color: var(--text-muted);
+        }
+
         .btn-primary {
           width: 100%;
           padding: 13px;
@@ -224,6 +249,12 @@ const DepartmentPage = () => {
           color: white;
           font-weight: 700;
           margin-top: 12px;
+          transition: 0.25s ease;
+        }
+
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 16px 36px rgba(122,84,177,0.35);
         }
 
         .btn-outline {
@@ -237,16 +268,32 @@ const DepartmentPage = () => {
           margin-top: 10px;
         }
 
+        /* ================= RESPONSIVE ================= */
         @media (max-width: 992px) {
           .dept-container {
             grid-template-columns: 1fr;
+          }
+          .dept-title {
+            font-size: 34px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .dept-title {
+            font-size: 26px;
+          }
+          .card {
+            padding: 22px;
           }
         }
       `}</style>
 
       {/* ================= HERO ================= */}
       <section className="dept-hero">
-        <img src={department.departmentImage} alt={department.departmentName} />
+        <img
+          src={department.departmentImage}
+          alt={department.departmentName}
+        />
         <div className="dept-hero-content">
           <h1 className="dept-title">{department.departmentName}</h1>
           <p className="dept-sub">{department.description}</p>
@@ -269,38 +316,22 @@ const DepartmentPage = () => {
           <div className="card">
             <h3>About the Department</h3>
             <p className="dept-description">{department.description}</p>
-          </div>
 
-          <div className="card">
-            <h3>Batches</h3>
+            <h4 style={{ marginTop: 26 }}>Batches</h4>
             <div className="batch-grid">
               {department.batches?.length ? (
                 department.batches.map((b) => (
                   <div key={b.batchId} className="batch-card">
                     <div className="batch-name">{b.batchName}</div>
-                    <div className="batch-meta">Batch ID: {b.batchId}</div>
+                    <div className="batch-meta">
+                      Batch ID: {b.batchId}
+                    </div>
                   </div>
                 ))
               ) : (
                 <p className="dept-description">No batches available.</p>
               )}
             </div>
-          </div>
-
-          <div className="card">
-            <h3>Facilities & Infrastructure</h3>
-            <p className="dept-description">
-              Well-equipped laboratories, smart classrooms, departmental
-              library access, research support, and digital learning resources.
-            </p>
-          </div>
-
-          <div className="card">
-            <h3>Career Opportunities</h3>
-            <p className="dept-description">
-              Graduates pursue careers in education, research, corporate
-              sectors, government services, and higher education programs.
-            </p>
           </div>
         </div>
 
@@ -313,12 +344,18 @@ const DepartmentPage = () => {
               <div className="stat-num">
                 {department.batches?.length || 0}
               </div>
-              <div>Batches</div>
+              <div>
+                <div className="stat-label">Batches</div>
+                <div className="stat-sub">Active & archived</div>
+              </div>
             </div>
 
             <div className="stat-box">
               <div className="stat-num">—</div>
-              <div>Students</div>
+              <div>
+                <div className="stat-label">Students</div>
+                <div className="stat-sub">Estimated</div>
+              </div>
             </div>
 
             <button
@@ -339,14 +376,6 @@ const DepartmentPage = () => {
             >
               Contact Department
             </button>
-          </div>
-
-          <div className="card">
-            <h4>Accreditation</h4>
-            <p className="dept-description">
-              Affiliated with the University, aligned with NAAC quality
-              standards, and industry-oriented curriculum.
-            </p>
           </div>
         </aside>
       </main>
