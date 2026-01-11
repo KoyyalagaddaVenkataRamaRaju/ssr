@@ -43,7 +43,6 @@ const FacultyProfileSchema = new mongoose.Schema(
     aadhaarNumber: String,
     salary: Number,
     address: String,
-    systemRole: String,
     remarks: String,
     post: String,
     cloudinaryId: String,

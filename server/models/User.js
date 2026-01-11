@@ -89,10 +89,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    systemRole: {
-      type: String,
-      required: false,
-    },
     remarks: {
       type: String,
       required: false,

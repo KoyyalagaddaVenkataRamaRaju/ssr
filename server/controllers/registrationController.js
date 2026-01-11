@@ -61,7 +61,6 @@ export const adminRegisterUser = async (req, res) => {
       aadhaarNumber,
       salary,
       address,
-      systemRole,
       remarks,
       post,
     } = req.body;
@@ -119,7 +118,6 @@ export const adminRegisterUser = async (req, res) => {
       if (aadhaarNumber) userData.aadhaarNumber = aadhaarNumber;
       if (salary) userData.salary = salary;
       if (address) userData.address = address;
-      if (systemRole) userData.systemRole = systemRole;
       if (remarks) userData.remarks = remarks;
       if (post) userData.post = post;
     }
@@ -153,7 +151,7 @@ if (user.role === 'teacher') {
     aadhaarNumber: user.aadhaarNumber || "",
     salary: user.salary || 0,
     address: user.address || "",
-    systemRole: user.systemRole || "",
+    
     remarks: user.remarks || "",
     post: user.post || "",
   });

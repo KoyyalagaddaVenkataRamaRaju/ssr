@@ -32,7 +32,6 @@ const AdminRegisterUser = () => {
     aadhaarNumber: '',
     salary: '',
     address: '',
-    systemRole: '',
     remarks: '',
   });
 
@@ -74,6 +73,28 @@ const AdminRegisterUser = () => {
     } catch (error) {
       console.error("Error fetching users:", error);
     }
+  };
+
+  const isFormComplete = () => {
+    // basic always-required
+    if (!formData.name || !formData.email || !formData.password || !formData.role) return false;
+    // department and phone are shown for both roles
+    if (!formData.department || !formData.phone) return false;
+
+    if (formData.role === 'student') {
+      if (!formData.batch || !formData.section || !formData.enrollmentId) return false;
+    }
+
+    if (formData.role === 'teacher') {
+      if (!formData.employeeId) return false;
+      if (!formData.joiningYear || !formData.designation || !formData.dob) return false;
+      if (!formData.photoFile) return false;
+      if (!formData.bloodGroup || !formData.officialDetails || !formData.panNumber || !formData.aadhaarNumber) return false;
+      if (!formData.salary && formData.salary !== 0) return false;
+      if (!formData.address || !formData.remarks) return false;
+    }
+
+    return true;
   };
 
   const fetchDepartments = async () => {
@@ -148,8 +169,9 @@ const AdminRegisterUser = () => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
 
-    if (!formData.name || !formData.email || !formData.password) {
-      setMessage({ type: "error", text: "Please fill in all required fields" });
+    // Ensure visible/required fields are filled based on role
+    if (!isFormComplete()) {
+      setMessage({ type: "error", text: "Please fill in all required fields before registering." });
       return;
     }
 
@@ -205,7 +227,6 @@ const AdminRegisterUser = () => {
           aadhaarNumber: '',
           salary: '',
           address: '',
-          systemRole: '',
           remarks: '',
         });
         fetchRecentUsers();
@@ -305,7 +326,6 @@ const AdminRegisterUser = () => {
         }
 
         .form-group {
-          margin-bottom: 1rem;
         }
 
         .form-label {
@@ -577,15 +597,6 @@ const AdminRegisterUser = () => {
         />
       </div>
 
-      <div className="form-group">
-        <label className="form-label">Photo</label>
-        <input type="file" name="photoFile" accept="image/*" onChange={handleChange} />
-        {photoPreview && (
-          <div style={{ marginTop: 8 }}>
-            <img src={photoPreview} alt="preview" style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 8 }} />
-          </div>
-        )}
-      </div>
 
       <div className="form-group">
         <label className="form-label">Blood Group</label>
@@ -627,10 +638,7 @@ const AdminRegisterUser = () => {
         <textarea name="address" className="form-input" value={formData.address} onChange={handleChange} />
       </div>
 
-      <div className="form-group">
-        <label className="form-label">System / Admin Role</label>
-        <input type="text" name="systemRole" className="form-input" value={formData.systemRole} onChange={handleChange} placeholder="e.g., admin, manager" />
-      </div>
+      
 
       <div className="form-group">
         <label className="form-label">Remarks / Notes</label>
@@ -738,6 +746,15 @@ const AdminRegisterUser = () => {
                         Allow teacher to register students
                       </label>
                     </div>
+                    <div className="form-group">
+                      <label className="form-label">Photo</label>
+                      <input type="file" name="photoFile" accept="image/*" onChange={handleChange} />
+                      {photoPreview && (
+                        <div style={{ marginTop: 8 }}>
+                          <img src={photoPreview} alt="preview" style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 8 }} />
+                        </div>
+                      )}
+                    </div>
                   </>
                 )}
 
@@ -749,7 +766,7 @@ const AdminRegisterUser = () => {
                   </div>
                 )}
 
-                <button type="submit" className="btn-primary" disabled={submitting}>
+                <button type="submit" className="btn-primary" disabled={submitting || !isFormComplete()}>
                   {submitting ? "Registering..." : "Register User"}
                 </button>
               </form>
