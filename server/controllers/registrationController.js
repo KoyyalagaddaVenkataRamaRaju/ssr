@@ -3,6 +3,7 @@ import Fee from '../models/Fee.js';
 import StudentFee from '../models/StudentFee.js';
 import mongoose from 'mongoose';
 import FacultyProfile from "../models/FacultyProfile.js";
+import StudentProfile from "../models/StudentProfile.js";
 
 
 const assignFeesToNewStudent = async (student) => {
@@ -160,6 +161,35 @@ if (user.role === 'teacher') {
 // Auto assign fees if student
 if (user.role === 'student') {
   await assignFeesToNewStudent(user);
+  // Create a student profile for the newly registered student
+  try {
+    await StudentProfile.create({
+      user: user._id,
+      fullName: user.name,
+      email: user.email,
+      phone: user.phone || '',
+      studentId: user.enrollmentId || '',
+      department: user.department || null,
+      batch: user.batch || '',
+      semester: user.semester || null,
+      cgpa: 0,
+      about: "",
+      skills: [],
+      languages: [],
+      certifications: [],
+      projects: [],
+      internships: [],
+      achievements: [],
+      interests: [],
+      linkedin: "",
+      github: "",
+      twitter: "",
+      portfolio: "",
+      profileImage: user.photo || "",
+    });
+  } catch (err) {
+    console.error('Error creating StudentProfile for new user:', err.message);
+  }
 }
 
 
@@ -226,6 +256,36 @@ export const teacherRegisterStudent = async (req, res) => {
     });
 
     await assignFeesToNewStudent(student);
+
+    // Create student profile for teacher-registered student
+    try {
+      await StudentProfile.create({
+        user: student._id,
+        fullName: student.name,
+        email: student.email,
+        phone: student.phone || '',
+        studentId: student.enrollmentId || '',
+        department: student.department || null,
+        batch: student.batch || '',
+        semester: student.semester || null,
+        cgpa: 0,
+        about: "",
+        skills: [],
+        languages: [],
+        certifications: [],
+        projects: [],
+        internships: [],
+        achievements: [],
+        interests: [],
+        linkedin: "",
+        github: "",
+        twitter: "",
+        portfolio: "",
+        profileImage: student.photo || "",
+      });
+    } catch (err) {
+      console.error('Error creating StudentProfile for teacher-registered student:', err.message);
+    }
 
     res.status(201).json({
       success: true,
