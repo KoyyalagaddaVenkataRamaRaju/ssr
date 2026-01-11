@@ -7,50 +7,49 @@ import courseService from "../services/courseService";
 
 export default function AdminCreateCourse() {
   const [form, setForm] = useState({ courseName: "", description: "" });
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [courses, setCourses] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-    const fetch = async () => {
-      try {
-        const list = await courseService.getAllCourses();
-        if (!mounted) return;
-        setCourses(list || []);
-      } catch (err) {
-        console.error("Failed to load courses:", err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-    fetch();
-    return () => {
-      mounted = false;
-    };
+    loadCourses();
   }, []);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const loadCourses = async () => {
+    try {
+      const list = await courseService.getAllCourses();
+      setCourses(list || []);
+    } catch (err) {
+      console.error("Failed to load courses:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
-    if (!form.courseName) return setMessage({ type: "error", text: "Course name required" });
+
+    if (!form.courseName)
+      return setMessage({ type: "error", text: "Course name is required" });
+
     setSubmitting(true);
     try {
       const res = await courseService.createCourse(form);
       if (res.success) {
-        setMessage({ type: "success", text: "Course created" });
+        setMessage({ type: "success", text: "Course created successfully" });
         setForm({ courseName: "", description: "" });
-        const list = await courseService.getAllCourses();
-        setCourses(list || []);
+        loadCourses();
       } else {
-        setMessage({ type: "error", text: res.message || "Failed" });
+        setMessage({ type: "error", text: res.message || "Failed to create" });
       }
     } catch (err) {
-      setMessage({ type: "error", text: err.message || "Server error" });
+      setMessage({ type: "error", text: "Server error" });
     } finally {
       setSubmitting(false);
     }
@@ -60,327 +59,271 @@ export default function AdminCreateCourse() {
     <>
       <style>{`
         :root {
-          --sidebar-width: 300px;        /* INCREASED */
-          --sidebar-collapsed: 88px;    /* adjusted */
-          --bg-1: #0f172a;              /* deep */
-          --muted: #6b7280;
-          --accent-1: #0ea5a4;          /* teal */
-          --accent-2: #7c3aed;          /* purple */
+          --sidebar-width: 250px;
+          --sidebar-collapsed: 80px;
+
+          --primary: #ad8ff8;
+          --primary-dark: #8b6fe6;
+          --primary-soft: #f5f1ff;
+
+          --text-dark: #1e293b;
+          --text-muted: #64748b;
+          --border: #e5e7eb;
         }
 
-        /* overall page */
-        .admin-course-page {
+        body {
+          margin: 0;
+          height: 100vh;
+          font-family: 'Inter','Poppins',system-ui,sans-serif;
+          background: linear-gradient(135deg,#f7f4ff,#eef2ff);
+          color: var(--text-dark);
+          overflow: hidden;
+        }
+
+        .dashboard-container {
           display: flex;
-          min-height: 100vh;
-          background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
-          font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-          color: var(--bg-1);
+          height: 100vh;
         }
 
-        /* main area to the right of sidebar */
-        .admin-main {
-          flex: 1;
-          padding: 36px 44px;  /* increased padding */
-          transition: margin-left .28s ease, padding .2s ease;
-          min-height: 100vh;
+        .main-content {
+          flex-grow: 1;
+          padding: clamp(16px,3vw,36px);
+          overflow-y: auto;
+          transition: margin-left .36s cubic-bezier(.2,.9,.2,1);
         }
 
-        /* wider container for larger screens */
-        .course-container {
-          max-width: 1400px;  /* increased */
-          margin: 0 auto;
-        }
-
-        /* header */
-        .course-header {
-          display:flex;
+        .page-header {
+          display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 16px;
+          margin-bottom: 28px;
+        }
+
+        .page-title {
+          display: flex;
+          align-items: center;
           gap: 14px;
-          margin-bottom: 22px;
+          font-size: clamp(22px,2.5vw,28px);
+          font-weight: 700;
+          color: var(--primary-dark);
         }
 
-        .title-block {
-          display:flex;
-          align-items:center;
-          gap:16px;
-        }
-
-        .course-title {
-          font-size: 26px;     /* increased */
-          font-weight: 900;
-          letter-spacing: -0.02em;
-          color: var(--bg-1);
-        }
-
-        .course-sub {
-          color: var(--muted);
-          font-size: 15px;     /* increased */
+        .page-subtitle {
+          color: var(--text-muted);
           margin-top: 6px;
         }
 
-        /* card styles */
-        .card {
-          background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,250,252,0.95));
-          border-radius: 16px; /* larger */
-          padding: 22px;       /* larger */
-          box-shadow: 0 14px 40px rgba(15,23,42,0.06);
-          border: 1px solid rgba(15,23,42,0.03);
-          margin-bottom: 20px;
+        .card-box {
+          background: linear-gradient(135deg,#fff,var(--primary-soft));
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 10px 30px rgba(173,143,248,0.18);
+          margin-bottom: 28px;
         }
 
-        /* form layout - two column, with larger aside */
+        .section-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--primary-dark);
+          margin-bottom: 18px;
+        }
+
         .form-grid {
           display: grid;
-          grid-template-columns: 1fr 380px; /* increased aside */
-          gap: 20px;
-          align-items: start;
+          grid-template-columns: 1fr 320px;
+          gap: 24px;
         }
 
-        .form-col { display:flex; flex-direction:column; gap:14px; }
-
-        .label {
-          font-weight: 700;
-          color: var(--bg-1);
-          font-size: 15px;  /* increased */
+        label {
+          font-weight: 600;
           margin-bottom: 6px;
+          display: block;
         }
 
         .input {
-          width:100%;
-          padding: 14px 16px;   /* larger inputs */
-          border-radius: 12px;  /* larger */
-          border: 1px solid rgba(15,23,42,0.06);
-          background: white;
-          font-size: 15px;      /* larger text */
-          color: var(--bg-1);
+          width: 100%;
+          padding: 12px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
         }
 
         .input:focus {
           outline: none;
-          box-shadow: 0 8px 26px rgba(14,165,164,0.08);
-          border-color: rgba(124,58,237,0.9);
+          border-color: var(--primary);
+          box-shadow: 0 0 0 3px rgba(173,143,248,.35);
         }
-
-        .btn {
-          display:inline-flex;
-          align-items:center;
-          gap:12px;
-          padding: 12px 18px;  /* larger buttons */
-          border-radius: 12px; /* larger */
-          border: none;
-          font-weight: 800;
-          cursor: pointer;
-          transition: transform .12s ease, box-shadow .12s ease;
-          font-size: 15px;
-        }
-
-        .btn:active { transform: translateY(1px); }
 
         .btn-primary {
-          background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-          color: white;
-          box-shadow: 0 12px 30px rgba(124,58,237,0.14);
-        }
-
-        .btn-ghost {
-          background: transparent;
-          border: 1px solid rgba(15,23,42,0.06);
-          color: var(--bg-1);
-        }
-
-        .info-aside {
-          background: linear-gradient(180deg, rgba(124,58,237,0.06), rgba(14,165,164,0.03));
-          padding: 18px;
+          background: linear-gradient(135deg,var(--primary-dark),var(--primary));
           border-radius: 12px;
-          border: 1px solid rgba(15,23,42,0.03);
-          font-size: 14px;
-          color: var(--bg-1);
+          padding: 12px 22px;
+          font-weight: 600;
+          border: none;
+          color: #fff;
         }
 
-        .muted { color: var(--muted); }
-
-        /* course list */
-        .list-grid { display:grid; gap:12px; }
-        .list-item {
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          gap:16px;
-          padding: 16px;              /* larger */
-          border-radius: 12px;
-          border: 1px solid rgba(15,23,42,0.04);
-          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,255,0.98));
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 28px rgba(173,143,248,.45);
         }
 
-        .course-meta { display:flex; gap:16px; align-items:center; }
-        .course-name { font-weight:800; font-size:17px; color: var(--bg-1); }
-        .course-code { font-size:14px; color: var(--muted); }
-
-        .avatar-blob {
-          width: 64px;          /* larger avatar */
-          height: 64px;
+        .btn-outline {
+          border: 1px solid var(--border);
           border-radius: 12px;
+          padding: 12px 22px;
+          background: #fff;
+          font-weight: 600;
+        }
+
+        .message {
+          padding: 12px;
+          border-radius: 12px;
+          font-weight: 600;
+          margin-top: 12px;
+        }
+
+        .message.success {
+          background: #ecfdf5;
+          color: #065f46;
+        }
+
+        .message.error {
+          background: #fef2f2;
+          color: #b91c1c;
+        }
+
+        .course-grid {
           display: grid;
-          place-items: center;
-          background: linear-gradient(135deg,#eef2ff,#fff);
-          border: 1px solid rgba(15,23,42,0.03);
-          font-weight: 900;
-          color: var(--accent-2);
-          font-size: 18px;
+          grid-template-columns: repeat(2,minmax(0,1fr));
+          gap: 20px;
         }
 
-        /* responsive */
-        @media (max-width: 1100px) {
-          .form-grid { grid-template-columns: 1fr 320px; }
-          .admin-main { padding: 28px 28px; }
+        .course-card {
+          background: #fff;
+          border-radius: 14px;
+          padding: 18px;
+          box-shadow: 0 10px 28px rgba(0,0,0,.06);
         }
 
-        @media (max-width: 980px) {
-          .form-grid { grid-template-columns: 1fr; }
-          .admin-main { padding: 22px 18px; }
-          .course-title { font-size: 22px; }
+        .course-card h4 {
+          font-weight: 700;
+          color: var(--primary-dark);
+          margin-bottom: 6px;
         }
 
-        @media (max-width: 560px) {
-          .admin-main { padding: 14px; }
-          .course-title { font-size: 18px; }
-          .input { padding: 12px 12px; font-size: 15px; }
-          .btn { padding: 10px 12px; font-size: 14px; }
-          .avatar-blob { width: 56px; height: 56px; font-size: 16px; }
-          .form-grid { gap: 12px; }
+        @media (max-width: 992px) {
+          .form-grid {
+            grid-template-columns: 1fr;
+          }
+          .course-grid {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
 
-      <div className="admin-course-page">
+      <div className="dashboard-container">
         <Sidebar onToggle={setSidebarOpen} />
 
-        <main
-          className="admin-main"
-          style={{ marginLeft: sidebarOpen ? "var(--sidebar-width)" : "var(--sidebar-collapsed)" }}
+        <div
+          className="main-content"
+          style={{
+            marginLeft: sidebarOpen
+              ? "var(--sidebar-width)"
+              : "var(--sidebar-collapsed)",
+          }}
         >
-          <div className="course-container">
-            <div className="course-header">
-              <div className="title-block">
-                <div style={{ width: 64, height: 64, borderRadius: 12, background: "linear-gradient(135deg,var(--accent-1),var(--accent-2))", display: "grid", placeItems: "center", color: "white", boxShadow: "0 12px 30px rgba(14,165,164,0.12)" }}>
-                  <PlusSquare size={26} />
-                </div>
-                <div>
-                  <div className="course-title">Course Management</div>
-                  <div className="course-sub">Create and manage courses used across the system</div>
-                </div>
+          <div className="page-header">
+            <div>
+              <div className="page-title">
+                <PlusSquare size={28} /> Course Management
               </div>
-
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <button
-                  className="btn btn-ghost"
-                  onClick={() => { setForm({ courseName: "", description: "" }); setMessage({ type: "", text: "" }); }}
-                >
-                  Reset
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                >
-                  Quick top
-                </button>
+              <div className="page-subtitle">
+                Create and manage academic courses
               </div>
-            </div>
-
-            <div className="card">
-              <form onSubmit={handleSubmit} className="form-grid">
-                <div className="form-col">
-                  <div>
-                    <label className="label">Course Name</label>
-                    <input
-                      name="courseName"
-                      value={form.courseName}
-                      onChange={handleChange}
-                      className="input"
-                      placeholder="e.g., Bachelor of Computer Science"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="label">Description</label>
-                    <input
-                      name="description"
-                      value={form.description}
-                      onChange={handleChange}
-                      className="input"
-                      placeholder="Short description (optional)"
-                    />
-                  </div>
-
-                  {message.text && (
-                    <div style={{
-                      marginTop: 10,
-                      padding: 12,
-                      borderRadius: 10,
-                      color: message.type === "success" ? "#064e3b" : "#7f1d1d",
-                      background: message.type === "success" ? "#ecfdf5" : "#fff1f2",
-                      border: `1px solid ${message.type === "success" ? "#bbf7d0" : "#fecaca"}`
-                    }}>
-                      {message.text}
-                    </div>
-                  )}
-
-                  <div style={{ marginTop: 14, display: "flex", gap: 12 }}>
-                    <button type="submit" className="btn btn-primary" disabled={submitting}>
-                      {submitting ? "Creating..." : "Create Course"}
-                    </button>
-                    <button type="button" className="btn btn-ghost" onClick={() => { setForm({ courseName: "", description: "" }); setMessage({ type: "", text: "" }); }}>
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-
-                <aside className="info-aside">
-                  <div style={{ fontWeight: 800, marginBottom: 10, color: "var(--bg-1)" }}>Quick tips</div>
-                  <div className="muted" style={{ fontSize: 14 }}>
-                    • Use consistent course codes (e.g., BCS-101).<br />
-                    • Short names are preferred in dropdown menus.<br />
-                    • Courses are used across departments, allocations and timetables.
-                  </div>
-                  <div style={{ marginTop: 14 }}>
-                    <div style={{ fontWeight: 800, marginBottom: 8 }}>Last updated</div>
-                    <div className="muted" style={{ fontSize: 14 }}>{courses.length} courses in system</div>
-                  </div>
-                </aside>
-              </form>
-            </div>
-
-            <div className="card">
-              <h3 style={{ marginTop: 0, marginBottom: 14, fontSize: 18 }}>Existing Courses</h3>
-
-              {loading ? (
-                <div className="muted">Loading...</div>
-              ) : courses?.length ? (
-                <div className="list-grid">
-                  {courses.map((c) => (
-                    <div key={c._id} className="list-item">
-                      <div className="course-meta">
-                        <div className="avatar-blob">
-                          {(c.courseName || "—").slice(0,2).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="course-name">{c.courseName}</div>
-                          <div className="course-code">{c.courseCode || "—"}</div>
-                        </div>
-                      </div>
-
-                      <div style={{ textAlign: "right", minWidth: 220 }}>
-                        <div className="muted" style={{ fontSize: 14 }}>{c.description || "No description"}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="muted">No courses created yet.</div>
-              )}
             </div>
           </div>
-        </main>
+
+          {/* CREATE COURSE */}
+          <div className="card-box">
+            <h2 className="section-title">Create Course</h2>
+
+            <form onSubmit={handleSubmit} className="form-grid">
+              <div>
+                <label>Course Name *</label>
+                <input
+                  className="input"
+                  name="courseName"
+                  value={form.courseName}
+                  onChange={handleChange}
+                  placeholder="e.g. Bachelor of Computer Science"
+                />
+
+                <label className="mt-3">Description</label>
+                <input
+                  className="input"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Optional description"
+                />
+
+                {message.text && (
+                  <div className={`message ${message.type}`}>
+                    {message.text}
+                  </div>
+                )}
+
+                <div className="mt-4 d-flex gap-3">
+                  <button className="btn-primary" disabled={submitting}>
+                    {submitting ? "Creating..." : "Create Course"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() => setForm({ courseName: "", description: "" })}
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div className="card-box">
+                  <strong>Tips</strong>
+                  <p className="mt-2" style={{ color: "var(--text-muted)" }}>
+                    • Use consistent naming<br />
+                    • Keep names short<br />
+                    • Courses are shared across departments
+                  </p>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          {/* COURSE LIST */}
+          <div className="card-box">
+            <h2 className="section-title">Existing Courses</h2>
+
+            {loading ? (
+              <p>Loading courses...</p>
+            ) : courses.length ? (
+              <div className="course-grid">
+                {courses.map((c) => (
+                  <div key={c._id} className="course-card">
+                    <h4>{c.courseName}</h4>
+                    <p style={{ color: "var(--text-muted)" }}>
+                      {c.description || "No description"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No courses created yet.</p>
+            )}
+          </div>
+        </div>
       </div>
     </>
   );

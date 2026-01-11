@@ -519,8 +519,8 @@ const Sidebar = ({ onToggle }) => {
           --bg-main: #f1f5f9;
           --card-bg: #ffffff;
           --text-dark: #334155;
-          --accent: #0ea5e9;
-          --accent-light: #e0f7ff;
+          --accent: #ad8ff8;
+          --accent-light: #edfdfd;
         }
 
         .sidebar-container {
@@ -563,7 +563,7 @@ const Sidebar = ({ onToggle }) => {
         }
 
         .sidebar-title {
-          font-weight: 700;
+          font-weight: 600;
           font-size: 1.25rem;
           margin: 0;
         }
@@ -574,18 +574,17 @@ const Sidebar = ({ onToggle }) => {
           border: none;
           width: 40px;
           height: 40px;
-          border-radius: 10px;
+          border-radius:12px;
           display: flex;
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(14,165,233,0.35);
-          transition: 0.2s;
+         
         }
 
         .toggle-btn:hover {
           transform: scale(1.06);
-          background: #0284c7;
+          background: #7a54b1;
         }
 
         /* NAVIGATION */
@@ -606,16 +605,13 @@ const Sidebar = ({ onToggle }) => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 12px;
+          gap: 8px;
           padding: 14px;
-          margin-bottom: 10px;
           background: var(--card-bg);
           border-radius: 14px;
-          font-weight: 600;
+          font-weight: 500;
           text-decoration: none;
           color: var(--text-dark);
-          box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-          transition: all 0.25s ease;
           cursor: pointer;
         }
 
@@ -652,7 +648,7 @@ const Sidebar = ({ onToggle }) => {
         }
 
         .nav-subitems {
-          margin-left: 16px;
+          margin-left: 12px;
           margin-top: 6px;
         }
 
@@ -667,7 +663,7 @@ const Sidebar = ({ onToggle }) => {
           text-decoration: none;
           color: var(--text-dark);
           font-weight: 500;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+          
           transition: all 0.2s ease;
         }
 
