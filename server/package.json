@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "k": "node scripts/create_missing_student_profiles.js"
   },
   "keywords": [
     "college",
