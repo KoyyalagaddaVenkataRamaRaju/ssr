@@ -1,40 +1,30 @@
 import React, { useEffect, useState } from "react";
-import AboutSection from "../components/AboutSection";
-import HighlightsSection from "../components/HighlightsSection";
-import DepartmentsShowcase from "../components/DepartmentsShowcase";
-import FacilitiesSection from "../components/FacilitiesSection";
-import TestimonialsSection from "../components/TestimonialsSection";
-import PrincipalMessage from "../components/PrincipalMessage";
-import CTASection from "../components/CTASection";
-import Footer from "../components/Footer";
-import HeroSection from "../components/HeroSection";
 import Navbar from "../components/Navbar";
+import HeroSection from "../components/HeroSection";
 import HomeWelcomeSection from "../components/HomeWelcomeSection";
-import NewsScroller from "../components/NewsScroller";
 import ManagementSection from "../components/ManagementSection";
 import StatsCounter from "../components/StatsCounter";
 import StudentsJourney from "../components/StudentsJourney";
 import RecruitersSection from "../components/RecruitersSection";
+import Footer from "../components/Footer";
 
 const API = import.meta.env.VITE_API_URL;
 
 const HomePage = () => {
   const [slides, setSlides] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [loadingHero, setLoadingHero] = useState(true);
-  const [loadingDepts, setLoadingDepts] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const resSlides = await fetch(`${API}/api/hero-carousel/slides`);
-      const dataSlides = await resSlides.json();
-      setSlides(dataSlides.data || []);
-      setTimeout(() => setLoadingHero(false), 1000);
-
-      const resDept = await fetch(`${API}/api/departments`);
-      const dataDept = await resDept.json();
-      setDepartments(dataDept.data || []);
-      setTimeout(() => setLoadingDepts(false), 1000);
+      try {
+        const resSlides = await fetch(`${API}/api/hero-carousel/slides`);
+        const dataSlides = await resSlides.json();
+        setSlides(dataSlides.data || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setTimeout(() => setLoadingHero(false), 600);
+      }
     };
 
     load();
@@ -42,35 +32,105 @@ const HomePage = () => {
 
   return (
     <>
-    <Navbar/>
-      {/* HERO SECTION */}
-      {loadingHero ? (
-        <div className="container py-5">
-          <div  style={{ height: 320 }} />
-        </div>
-      ) : (
-        <HeroSection slides={slides} />
-      )}
-      <NewsScroller/>
-      <HomeWelcomeSection/>
-      <ManagementSection/>
-      <StatsCounter/>
-      <StudentsJourney/>
-      <RecruitersSection/>
+      <Navbar />
 
+      {/* ================= HERO ================= */}
+      <section className="section-hero">
+        {loadingHero ? (
+          <div className="container py-4">
+            <div className="skeleton" style={{ height: 360 }} />
+          </div>
+        ) : (
+          <HeroSection slides={slides} />
+        )}
+      </section>
 
+      {/* ================= WELCOME ================= */}
+      <section className="section section-white compact">
+        <HomeWelcomeSection />
+      </section>
+
+      {/* ================= MANAGEMENT ================= */}
+      <section className="section section-soft compact">
+        <ManagementSection />
+      </section>
+
+      {/* ================= STATS ================= */}
+      <section className="section section-white compact">
+        <StatsCounter />
+      </section>
+
+      {/* ================= STUDENT JOURNEY ================= */}
+      <section className="section section-soft compact">
+        <StudentsJourney />
+      </section>
+
+      {/* ================= RECRUITERS ================= */}
+      <section className="section section-white compact">
+        <RecruitersSection />
+      </section>
+
+      {/* ================= FOOTER ================= */}
       <Footer />
 
+      {/* ================= GLOBAL PAGE STYLES ================= */}
       <style>{`
+        /* ---------- BASE SECTION ---------- */
+        .section {
+          padding: 70px 0;
+          margin: 0;
+        }
+
+        /* Reduce padding when sections touch */
+        .section.compact {
+          padding-top: 50px;
+          padding-bottom: 0px;
+        }
+
+        .section-white {
+          background: #ffffff;
+        }
+
+        .section-soft {
+          background: var(--primary-soft);
+        }
+
+        .section-hero {
+          background: #ffffff;
+          padding: 0;
+        }
+
+        /* ---------- CONTAINER ---------- */
+        .container {
+          max-width: 1200px;
+        }
+
+        /* ---------- SKELETON ---------- */
         .skeleton {
-          background: linear-gradient(90deg,#ececec,#f7f7f7,#ececec);
+          background: linear-gradient(
+            90deg,
+            #ececec,
+            #f5f5f5,
+            #ececec
+          );
           background-size: 200% 100%;
           animation: shimmer 1.2s infinite;
           border-radius: 12px;
         }
+
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
+        }
+
+        /* ---------- MOBILE ---------- */
+        @media (max-width: 768px) {
+          .section {
+            padding: 50px 0;
+          }
+          .section.compact {
+            padding: 40px 0;
+          }
         }
       `}</style>
     </>

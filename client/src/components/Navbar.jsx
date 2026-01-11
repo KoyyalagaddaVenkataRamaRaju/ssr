@@ -1,47 +1,47 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getAllDepartments } from "../services/departmentService";
+import { Phone, Mail, X, ChevronDown, Menu } from "lucide-react";
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileDropdown, setMobileDropdown] = useState(null);
   const [departments, setDepartments] = useState([]);
+  const [scrolled, setScrolled] = useState(false);
 
   const location = useLocation();
 
+  /* ================= SCROLL EFFECT ================= */
   useEffect(() => {
-    loadDepartments();
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const loadDepartments = async () => {
-    try {
-      const res = await getAllDepartments();
-      setDepartments(res.data || []);
-    } catch (error) {
-      console.log("Error fetching departments:", error);
-    }
-  };
+  /* ================= LOAD DEPARTMENTS ================= */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getAllDepartments();
+        setDepartments(res.data || []);
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+  }, []);
 
-  const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
-  const toggleMobileDropdown = (index) =>
-    setMobileDropdown(mobileDropdown === index ? null : index);
+  const toggleMobileDropdown = (i) =>
+    setMobileDropdown(mobileDropdown === i ? null : i);
+
+  const isActive = (path) => location.pathname === path;
 
   const menuItems = [
     { title: "Home", link: "/" },
-    {
-      title: "About",
-      dropdown: ["About Us", "Vision & Mission", "Chairman Message"],
-    },
+    { title: "About", dropdown: ["About Us", "Vision & Mission", "Chairman Message"] },
     { title: "Departments", dynamic: true },
-    {
-      title: "Admissions",
-      dropdown: ["How to Apply", "Eligibility", "Fee Structure", "Scholarships"],
-    },
-    {
-      title: "Placements",
-      dropdown: ["Placement Cell", "Training", "Recruiters", "Records"],
-    },
+    { title: "Admissions", dropdown: ["How to Apply", "Eligibility", "Fee Structure", "Scholarships"] },
+    { title: "Placements", dropdown: ["Placement Cell", "Training", "Recruiters", "Records"] },
     { title: "Contact Us", link: "/contact" },
   ];
 
@@ -57,262 +57,297 @@ const Navbar = () => {
   return (
     <>
       <style>{`
-      body{
-      overflow-x:hidden !important;
-      }
+        body { overflow-x: hidden; }
 
-
-        /* -------------------- ACTIVE STATE (DESKTOP) -------------------- */
-        .active-link { color: #ff7b29 !important; font-weight: 600; }
-        .active-dropdown { color: #ff7b29 !important; background: rgba(255,123,41,0.12); }
-
-        /* -------------------- MOBILE ACTIVE STATES -------------------- */
-        .active-mobile {
-          color: #ff7b29 !important;
-          font-weight: 700;
+        /* ================= HEADER ================= */
+        .ssr-header {
+          position: sticky;
+          top: 0;
+          z-index: 999;
+          background: rgba(255,255,255,0.95);
+          backdrop-filter: blur(10px);
+          transition: box-shadow .3s ease;
         }
-        .mobile-subitem.active-mobile {
-          color: #ff7b29 !important;
-          background: rgba(255,123,41,0.12);
+
+        .ssr-header.scrolled {
+          box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+        }
+
+        /* ================= TOP BAR ================= */
+        .top-bar {
+          font-size: 12px;
+          padding: 8px 18px;
+          background: #7A54B1;
+          color: white;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .top-info {
+          display: flex;
+          gap: 18px;
+          align-items: center;
+        }
+
+        .top-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .top-bar a {
+          background: white;
+          color: #7A54B1;
+          padding: 4px 14px;
+          border-radius: 6px;
           font-weight: 600;
+          text-decoration: none;
+        }
+
+        /* ================= NAVBAR ================= */
+        .navbar-ssr {
+          padding: 12px 18px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .logo-wrap {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          text-decoration: none;
+        }
+
+        .logo-circle {
+          width: 44px;
+          height: 44px;
+          background: #7A54B1;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 800;
+        }
+
+        .logo-text p {
+          margin: 0;
+          font-weight: 800;
+          color: #7A54B1;
+          font-size: 18px;
+        }
+
+        .logo-text span {
+          font-size: 11px;
+          color: #555;
+        }
+
+        /* ================= DESKTOP MENU ================= */
+        .nav-menu {
+          display: flex;
+          gap: 24px;
+          list-style: none;
+        }
+
+        .nav-link {
+          position: relative;
+          font-weight: 600;
+          font-size: 15px;
+          color: #333;
+          text-decoration: none;
+          padding: 6px 0;
+        }
+
+        .nav-link.active {
+          color: #ff7b29;
+        }
+
+        .nav-link.active::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: -6px;
+          width: 100%;
+          height: 3px;
+          background: linear-gradient(90deg,#ff7b29,#ff3b3b);
+          border-radius: 999px;
+        }
+
+        /* ================= DROPDOWN ================= */
+        .dropdown {
+          position: absolute;
+          top: 120%;
+          width: 220px;
+          background: white;
+          border-radius: 10px;
+          padding: 8px 0;
+          border-top: 3px solid #7A54B1;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(10px);
+          transition: .25s ease;
+        }
+
+        .dropdown.show {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .dropdown a {
+          padding: 10px 16px;
+          display: block;
+          color: #333;
+          text-decoration: none;
+        }
+
+        .dropdown a:hover {
+          background: #f3f1ff;
+          color: #7A54B1;
+        }
+
+        /* ================= MOBILE ================= */
+        .mobile-toggle {
+          display: none;
+          cursor: pointer;
+          color: #7A54B1;
         }
 
         @media (max-width: 992px) {
-          .mobile-toggle { display: block !important; }
-          .nav-menu { display: none !important; }
-          .top-bar { display: none !important; }
+          .nav-menu { display: none; }
+          .mobile-toggle { display: block; }
+          .top-bar { display: none; }
         }
 
-        /* -------------------- MOBILE MENU OVERLAY -------------------- */
-        .menu-overlay {
+        /* ================= MOBILE DRAWER ================= */
+        .mobile-overlay {
           position: fixed;
           inset: 0;
           background: rgba(0,0,0,0.45);
-          z-index: 2900;
-          opacity: 0;
-          pointer-events: none;
-          transition: 0.3s ease;
-        }
-        .menu-overlay.show {
-          opacity: 1;
-          pointer-events: all;
+          opacity: ${mobileOpen ? 1 : 0};
+          pointer-events: ${mobileOpen ? "all" : "none"};
+          transition: .3s;
+          z-index: 2000;
         }
 
-        /* -------------------- MOBILE SLIDE MENU -------------------- */
         .mobile-menu {
           position: fixed;
           top: 0;
           left: 0;
-          height: 100vh;
           width: 82%;
-          max-width: 400px;
-          background: #fff;
-          transform: translateX(-100%);
-          transition: transform .3s ease;
+          max-width: 360px;
+          height: 100vh;
+          background: white;
           padding: 20px;
-          z-index: 3000;
+          transform: translateX(${mobileOpen ? "0" : "-100%"});
+          transition: .3s;
+          z-index: 2100;
           overflow-y: auto;
-          box-shadow: 3px 0 18px rgba(0,0,0,0.2);
         }
-        .mobile-menu.open { transform: translateX(0); }
 
         .mobile-header {
-          display:flex;
+          display: flex;
           justify-content: space-between;
-          align-items:center;
-          margin-bottom:15px;
-          padding-bottom:10px;
-          border-bottom:1px solid #eee;
-        }
-
-        .mobile-close-btn {
-          background:#7A54B1;
-          color:white;
-          border:none;
-          padding:6px 12px;
-          border-radius:6px;
-          font-size:18px;
-          cursor:pointer;
+          align-items: center;
+          margin-bottom: 18px;
         }
 
         .mobile-item {
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          padding:15px 0;
-          border-bottom:1px solid #f0f0f0;
-          font-size:17px;
-          font-weight:600;
+          padding: 14px 0;
+          border-bottom: 1px solid #eee;
+          font-weight: 600;
         }
 
-        .mobile-submenu {
-          background:#fafafa;
-          border-radius:6px;
-          margin-bottom:10px;
-          overflow:hidden;
+        .mobile-drop-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
         }
 
-        .mobile-subitem {
-          padding:12px 16px;
-          display:block;
-          text-decoration:none;
-          color:#444;
-          border-bottom:1px solid #eee;
-          font-size:15px;
+        .mobile-drop-head svg {
+          transition: transform .25s ease;
         }
 
-        .mobile-cta {
-          display:flex;
-          gap:10px;
-          margin: 15px 0;
+        .mobile-drop-head.open svg {
+          transform: rotate(180deg);
         }
-        .mobile-cta-btn {
-          flex:1;
-          background:#7A54B1;
-          color:white;
-          padding:10px 0;
-          border-radius:6px;
-          text-align:center;
-          font-size:15px;
-          text-decoration:none;
+
+        .mobile-sub {
+          padding-left: 14px;
+          background: #fafafa;
+        }
+
+        .mobile-sub a {
+          display: block;
+          padding: 10px 0;
+          font-size: 14px;
+          color: #444;
+          text-decoration: none;
+        }
+
+        .mobile-active {
+          color: #ff7b29;
         }
       `}</style>
 
-      {/* TOP BAR */}
-      <div
-        className="top-bar"
-        style={{
-          background: "#7A54B1",
-          color: "white",
-          padding: "12px 15px",
-          fontSize: 12,
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span>📞 +91 98765 43210 | ✉️ info@ssrcollege.edu</span>
-
-          <div>
-      
-            &nbsp;
-            <Link to="/login" style={{ background: "#fff", color: "#7A54B1", padding: "5px 15px", borderRadius: 4, textDecoration:"none" }}>
-              Login
-            </Link>
+      {/* ================= HEADER ================= */}
+      <header className={`ssr-header ${scrolled ? "scrolled" : ""}`}>
+        <div className="top-bar">
+          <div className="top-info">
+            <div className="top-item"><Phone size={14} /> +91 98765 43210</div>
+            <div className="top-item"><Mail size={14} /> info@ssrcollege.edu</div>
           </div>
+          <Link to="/login">Login</Link>
         </div>
-      </div>
 
-      {/* DESKTOP NAVBAR */}
-      <div
-        className="navbar-ssr"
-        style={{
-          width: "100%",
-          background: "white",
-          padding: "8px 0",
-          boxShadow: "0 3px 8px rgba(0,0,0,0.08)",
-          position: "sticky",
-          top: 0,
-          zIndex: 999,
-        }}
-      >
-        <div className="nav-inner"
-          style={{ display: "flex", justifyContent: "space-between", padding: "0 12px" }}
-        >
-          {/* LOGO */}
-          <Link to="/" style={{ display: "flex", gap: 10, textDecoration: "none" }}>
-            <div style={{
-              width: 45, height: 45, background: "#7A54B1", borderRadius: "50%",
-              display: "flex", justifyContent: "center", alignItems: "center",
-              color: "white", fontWeight: 700, fontSize: 22
-            }}>S</div>
-
-            <div>
-              <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#7A54B1" }}>SSR</p>
-              <p style={{ margin: 0, fontSize: 11, color: "#555" }}>Degree College</p>
+        <div className="navbar-ssr">
+          <Link to="/" className="logo-wrap">
+            <div className="logo-circle">S</div>
+            <div className="logo-text">
+              <p>SSR</p>
+              <span>Degree College</span>
             </div>
           </Link>
 
-          {/* MOBILE ICON */}
-          <div
-            className="mobile-toggle"
-            onClick={toggleMobileMenu}
-            style={{ display: "none", fontSize: 26, cursor: "pointer", color: "#7A54B1" }}
-          >☰</div>
+          <div className="mobile-toggle" onClick={() => setMobileOpen(true)}>
+            <Menu size={26} />
+          </div>
 
-          {/* DESKTOP MENU */}
-          <ul className="nav-menu" style={{ display: "flex", gap: 22 }}>
-            {menuItems.map((item, index) => (
-              <li key={index}
-                onMouseEnter={() => setDropdownOpen(index)}
+          <ul className="nav-menu">
+            {menuItems.map((item, i) => (
+              <li
+                key={i}
+                onMouseEnter={() => setDropdownOpen(i)}
                 onMouseLeave={() => setDropdownOpen(null)}
                 style={{ position: "relative" }}
               >
                 {item.link ? (
                   <Link
                     to={item.link}
-                    className={`nav-link ${location.pathname === item.link ? "active-link" : ""}`}
-                    style={{ textDecoration: "none", color: "#333" }}
-                  >{item.title}</Link>
+                    className={`nav-link ${isActive(item.link) ? "active" : ""}`}
+                  >
+                    {item.title}
+                  </Link>
                 ) : (
-                  <span style={{ cursor: "pointer" }}>{item.title} ▾</span>
+                  <span className="nav-link">{item.title} ▾</span>
                 )}
 
                 {(item.dropdown || item.dynamic) && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "115%",
-                      background: "white",
-                      width: 220,
-                      borderRadius: 6,
-                      padding: "8px 0",
-                      borderTop: "3px solid #7A54B1",
-                      boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
-                      opacity: dropdownOpen === index ? 1 : 0,
-                      visibility: dropdownOpen === index ? "visible" : "hidden",
-                      transform: dropdownOpen === index ? "translateY(0)" : "translateY(12px)",
-                      transition: "0.3s",
-                    }}
-                  >
+                  <div className={`dropdown ${dropdownOpen === i ? "show" : ""}`}>
                     {item.dropdown &&
-                      item.dropdown.map((sub, sIdx) => {
-                        const route = getRouteForDropdown(item.title, sub);
-                        return (
-                          <Link
-                            key={sIdx}
-                            to={route}
-                            style={{
-                              padding: "10px 15px",
-                              display: "block",
-                              textDecoration: "none",
-                              color: "#333",
-                            }}
-                            className={`dropdown-link ${
-                              location.pathname === route ? "active-dropdown" : ""
-                            }`}
-                          >
-                            {sub}
-                          </Link>
-                        );
-                      })}
-
+                      item.dropdown.map((sub) => (
+                        <Link key={sub} to={getRouteForDropdown(item.title, sub)}>
+                          {sub}
+                        </Link>
+                      ))}
                     {item.dynamic &&
-                      departments.map((dep) => (
-                        <Link
-                          key={dep._id}
-                          to={`/departments/${dep._id}`}
-                          style={{
-                            padding: "10px 15px",
-                            display: "block",
-                            textDecoration: "none",
-                            color: "#333",
-                          }}
-                          className={`dropdown-link ${
-                            location.pathname === `/departments/${dep._id}`
-                              ? "active-dropdown"
-                              : ""
-                          }`}
-                        >
-                          {dep.departmentName}
+                      departments.map((d) => (
+                        <Link key={d._id} to={`/departments/${d._id}`}>
+                          {d.departmentName}
                         </Link>
                       ))}
                   </div>
@@ -321,114 +356,63 @@ const Navbar = () => {
             ))}
           </ul>
         </div>
-      </div>
+      </header>
 
-      {/* OVERLAY */}
-      <div
-        className={`menu-overlay ${mobileOpen ? "show" : ""}`}
-        onClick={() => setMobileOpen(false)}
-      ></div>
+      {/* ================= MOBILE ================= */}
+      <div className="mobile-overlay" onClick={() => setMobileOpen(false)} />
 
-      {/* MOBILE MENU */}
-      <div className={`mobile-menu ${mobileOpen ? "open" : ""}`}>
+      <div className="mobile-menu">
         <div className="mobile-header">
-          <div style={{ display: "flex", gap: 10 }}>
-            <div style={{
-              width: 42, height: 42, background: "#7A54B1",
-              borderRadius: "50%", display: "flex", justifyContent: "center",
-              alignItems: "center", color: "white", fontWeight: 700
-            }}>S</div>
-
-            <strong style={{ color: "#7A54B1" }}>SSR</strong>
-          </div>
-
-          <button className="mobile-close-btn" onClick={() => setMobileOpen(false)}>
-            ✕
-          </button>
+          <strong style={{ color: "#7A54B1" }}>SSR Menu</strong>
+          <X onClick={() => setMobileOpen(false)} />
         </div>
 
-        {/* CTA Buttons */}
-        <div className="mobile-cta">
-        
-          <Link to="/login" className="mobile-cta-btn" onClick={() => setMobileOpen(false)}>
-            Login
-          </Link>
-        </div>
-
-        {/* MOBILE MENU LIST */}
-        {menuItems.map((item, index) => {
-          const mainActive =
-            item.link && location.pathname === item.link ? "active-mobile" : "";
-
-          return (
-            <div key={index}>
-              <div className="mobile-item">
-
-                {item.link ? (
-                  <Link
-                    to={item.link}
-                    onClick={() => setMobileOpen(false)}
-                    className={mainActive}
-                  >
-                    {item.title}
-                  </Link>
-                ) : (
-                  <span>{item.title}</span>
-                )}
-
-                {(item.dropdown || item.dynamic) && (
-                  <span
-                    className="plus-icon"
-                    onClick={() => toggleMobileDropdown(index)}
-                  >
-                    {mobileDropdown === index ? "–" : "+"}
-                  </span>
-                )}
+        {menuItems.map((item, i) => (
+          <div key={i} className="mobile-item">
+            {item.link ? (
+              <Link
+                to={item.link}
+                onClick={() => setMobileOpen(false)}
+                className={isActive(item.link) ? "mobile-active" : ""}
+              >
+                {item.title}
+              </Link>
+            ) : (
+              <div
+                className={`mobile-drop-head ${mobileDropdown === i ? "open" : ""}`}
+                onClick={() => toggleMobileDropdown(i)}
+              >
+                <span>{item.title}</span>
+                <ChevronDown size={18} />
               </div>
+            )}
 
-              {(item.dropdown || item.dynamic) && mobileDropdown === index && (
-                <div className="mobile-submenu">
-
-                  {/* Static submenu */}
-                  {item.dropdown &&
-                    item.dropdown.map((sub) => {
-                      const route = getRouteForDropdown(item.title, sub);
-                      return (
-                        <Link
-                          key={sub}
-                          to={route}
-                          onClick={() => setMobileOpen(false)}
-                          className={`mobile-subitem ${
-                            location.pathname === route ? "active-mobile" : ""
-                          }`}
-                        >
-                          {sub}
-                        </Link>
-                      );
-                    })}
-
-                  {/* Dynamic Departments */}
-                  {item.dynamic &&
-                    departments.map((dep) => {
-                      const depRoute = `/departments/${dep._id}`;
-                      return (
-                        <Link
-                          key={dep._id}
-                          to={depRoute}
-                          onClick={() => setMobileOpen(false)}
-                          className={`mobile-subitem ${
-                            location.pathname === depRoute ? "active-mobile" : ""
-                          }`}
-                        >
-                          {dep.departmentName}
-                        </Link>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
-          );
-        })}
+            {(item.dropdown || item.dynamic) && mobileDropdown === i && (
+              <div className="mobile-sub">
+                {item.dropdown &&
+                  item.dropdown.map((sub) => (
+                    <Link
+                      key={sub}
+                      to={getRouteForDropdown(item.title, sub)}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {sub}
+                    </Link>
+                  ))}
+                {item.dynamic &&
+                  departments.map((d) => (
+                    <Link
+                      key={d._id}
+                      to={`/departments/${d._id}`}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {d.departmentName}
+                    </Link>
+                  ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </>
   );

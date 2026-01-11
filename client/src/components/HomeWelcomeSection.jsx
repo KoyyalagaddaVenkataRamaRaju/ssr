@@ -66,9 +66,9 @@ const HomeWelcomeSection = () => {
     <>
       <style>{`
         :root{
-          --accent: #0bb394;        /* primary green */
+          --accent: #c399ee;        /* primary green */
           --accent-2: #ff7b29;     /* supporting orange for CTAs */
-          --muted: #6b7280;
+          --muted: #7a54b1;
           --bg: linear-gradient(180deg, #fbfbff 0%, #f6f8fb 100%);
         }
 
@@ -122,7 +122,7 @@ const HomeWelcomeSection = () => {
           gap: 8px;
           align-items: center;
           padding: 6px 10px;
-          background: rgba(11,179,148,0.12);
+          background: rgba(109, 10, 158, 0.23);
           color: var(--accent);
           font-weight: 700;
           border-radius: 999px;
@@ -154,7 +154,7 @@ const HomeWelcomeSection = () => {
         }
 
         .btn-primary-hero {
-          background: linear-gradient(90deg, var(--accent), #018e77);
+          background: linear-gradient(90deg, var(--accent), #7a54b1);
           border: none;
           color: white;
           padding: 10px 20px;
