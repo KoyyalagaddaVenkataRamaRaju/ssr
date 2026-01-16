@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { fetchAllSemsters,updateSemester,createSemester,setCurrentSemester ,deleteSemester} from "../services/semesterService.jsx";
+import { fetchAllSemsters, updateSemester, createSemester, setCurrentSemester, deleteSemester } from "../services/semesterService.jsx";
 import { fetchDepartment } from "../services/attendanceService.jsx";
 
 const SemesterManagement = () => {
@@ -38,12 +38,12 @@ const SemesterManagement = () => {
     applyFilters();
   }, [semesters, filterDepartment, filterAcademicYear]);
 
+  // ✅ FIXED: Same department fix as SubjectManagement
   const fetchDepartments = async () => {
     try {
       const response = await fetchDepartment();
-      const data = response.data;
       if (response.success) {
-        setDepartments(data);
+        setDepartments(response.data);
       }
     } catch (error) {
       console.error("Error fetching departments:", error);
@@ -96,12 +96,7 @@ const SemesterManagement = () => {
   };
 
   const handleSetCurrent = async (id) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to set this as the current semester? This will change the active semester for all related operations."
-      )
-    )
-      return;
+    if (!window.confirm("Are you sure you want to set this as the current semester? This will change the active semester for all related operations.")) return;
 
     try {
       const data = await setCurrentSemester(id);
@@ -131,12 +126,7 @@ const SemesterManagement = () => {
   };
 
   const handleDelete = async (id) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this semester? This action cannot be undone."
-      )
-    )
-      return;
+    if (!window.confirm("Are you sure you want to delete this semester? This action cannot be undone.")) return;
 
     try {
       const data = await deleteSemester(id);
@@ -172,73 +162,96 @@ const SemesterManagement = () => {
 
   return (
     <>
-      {/* PAGE STYLES (aligned with other admin pages) */}
+      {/* ================= STYLES (EXACT SAME AS SUBJECT MANAGEMENT) ================= */}
       <style>{`
         :root {
-          --primary: #6a4ed9;
-          --accent: #ff8c42;
-          --muted: #6b6b6b;
-          --card-bg: #ffffff;
+          --primary: #ad8ff8;
+          --primary-dark: #8b6fe6;
+          --soft: #f5f1ff;
+          --text: #1e293b;
+          --muted: #64748b;
         }
 
-        .admin-page {
+        body {
+          background: linear-gradient(135deg,#f7f4ff,#eef2ff);
+        }
+
+        .admin-layout {
           display: flex;
-          min-height: 100vh;
-          background: linear-gradient(135deg,#f3e5f5,#e0f7fa);
+          height: 100vh;
+          overflow: hidden;
         }
 
         .main-content {
           flex: 1;
-          padding: 28px 36px;
-          transition: margin-left .32s ease;
+          padding: clamp(14px, 2vw, 32px);
+          transition: margin-left .35s ease;
+          overflow-y: auto;
         }
 
         .page-title {
-          font-size: 28px;
-          font-weight: 800;
-          color: var(--primary);
-          margin-bottom: 4px;
+          font-size: clamp(20px, 2.5vw, 28px);
+          font-weight: 700;
+          color: var(--primary-dark);
         }
 
-        .small-muted {
-          color: var(--muted);
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .header-actions {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-          flex-wrap: wrap;
+        .card-ui {
+          background: #fff;
+          border-radius: 16px;
+          padding: 20px;
+          box-shadow: 0 10px 28px rgba(0,0,0,.08);
+          margin-bottom: 22px;
         }
 
         .btn-main {
-          padding: 10px 20px;
-          background: var(--primary);
+          background: linear-gradient(135deg,var(--primary-dark),var(--primary));
           color: #fff;
-          border-radius: 8px;
           border: none;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        .btn-main.danger {
-          background: #dc3545;
-        }
-
-        .card-surface {
-          background: var(--card-bg);
-          padding: 20px;
           border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.08);
-          margin-bottom: 22px;
+          padding: 10px 18px;
+          font-weight: 600;
+        }
+
+        .btn-danger-soft {
+          background: #dc3545;
+          color: #fff;
+          border-radius: 12px;
+          border: none;
+          padding: 10px 18px;
         }
 
         .form-grid {
           display: grid;
-          grid-template-columns: repeat(2,minmax(0,1fr));
-          gap: 18px;
+          grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+          gap: 16px;
+        }
+
+        .filter-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+          gap: 16px;
+        }
+
+        .table-wrapper {
+          max-height: 420px;
+          overflow: auto;
+        }
+
+        .table thead th {
+          position: sticky;
+          top: 0;
+          background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+          color: #fff;
+          white-space: nowrap;
+          z-index: 2;
+        }
+
+        .status-pill {
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          color: #fff;
+          font-weight: 600;
         }
 
         .form-label-strong {
@@ -246,79 +259,49 @@ const SemesterManagement = () => {
           margin-bottom: 5px;
           font-weight: 600;
           font-size: 14px;
-        }
-
-        .filter-grid {
-          display: grid;
-          grid-template-columns: repeat(2,minmax(0,1fr));
-          gap: 16px;
-        }
-
-        .table-card {
-          background: var(--card-bg);
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.06);
-        }
-
-        .table-heading {
-          margin-bottom: 10px;
-          font-size: 18px;
-          font-weight: 700;
-          color: #111827;
-        }
-
-        @media (max-width: 992px) {
-          .main-content { padding: 22px 12px; }
-          .form-grid { grid-template-columns: 1fr; }
+          color: var(--text);
         }
 
         @media (max-width: 768px) {
-          .main-content { padding: 16px 8px; }
-          .page-title { font-size: 22px; text-align:center; }
-          .small-muted { text-align:center; }
-          .header-actions { justify-content:center; }
-          .filter-grid { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 480px) {
-          .main-content { padding: 10px 4px; }
-          .page-title { font-size: 18px; }
-          .card-surface, .table-card { padding: 14px; }
+          .page-title { text-align: center; }
+          .header-flex { justify-content: center; }
+          .form-grid, .filter-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 
-      <div className="admin-page">
+      <div className="admin-layout">
         <Sidebar onToggle={setSidebarOpen} />
 
         <main
           className="main-content"
-          style={{ marginLeft: sidebarOpen ? "250px" : "80px" }}
+          style={{
+            marginLeft: sidebarOpen ? "250px" : "80px",
+          }}
         >
           {/* HEADER */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          <div className="d-flex justify-content-between align-items-center mb-3 header-flex flex-wrap gap-2">
             <div>
-              <h2 className="page-title">Semester Management</h2>
-              <p className="small-muted mb-0">
-                Manage semesters for all departments. The current semester affects timetables, attendance, and allocations.
-              </p>
+              <h1 className="page-title">Semester Management</h1>
+              <small className="text-muted">
+                Create, update and manage semesters across departments
+              </small>
             </div>
-            <div className="header-actions">
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className={`btn-main ${showForm ? "danger" : ""}`}
-              >
-                {showForm ? "Cancel" : "+ Create Semester"}
-              </button>
-            </div>
+
+            <button
+              className={showForm ? "btn-danger-soft" : "btn-main"}
+              onClick={() => setShowForm(!showForm)}
+            >
+              {showForm ? "Cancel" : "+ Create Semester"}
+            </button>
           </div>
 
-          {/* CREATE / EDIT FORM */}
+          {/* FORM */}
           {showForm && (
-            <section className="card-surface">
-              <h4 className="mb-3">
+            <section className="card-ui">
+              <h5 className="mb-3">
                 {editingSemester ? "Edit Semester" : "Create New Semester"}
-              </h4>
+              </h5>
+
               <form onSubmit={handleSubmit}>
                 <div className="form-grid">
                   <div>
@@ -405,9 +388,6 @@ const SemesterManagement = () => {
                       <option value="3">3rd Year</option>
                       <option value="4">4th Year</option>
                     </select>
-                    <small style={{ color: "#666" }}>
-                      Auto-calculated from semester number
-                    </small>
                   </div>
 
                   <div>
@@ -456,86 +436,40 @@ const SemesterManagement = () => {
                     />
                   </div>
 
-                  <div
-                    style={{
-                      gridColumn: "1 / -1",
-                      display: "flex",
-                      gap: "30px",
-                      marginTop: "10px",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.isActive}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            isActive: e.target.checked,
-                          })
-                        }
-                        style={{
-                          marginRight: "8px",
-                          width: "18px",
-                          height: "18px",
-                        }}
-                      />
-                      <span style={{ fontWeight: "bold" }}>Active Semester</span>
-                    </label>
-
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.isCurrent}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            isCurrent: e.target.checked,
-                          })
-                        }
-                        style={{
-                          marginRight: "8px",
-                          width: "18px",
-                          height: "18px",
-                        }}
-                      />
-                      <span style={{ fontWeight: "bold" }}>
-                        Set as Current Semester
-                      </span>
-                      <small style={{ marginLeft: "10px", color: "#666" }}>
-                        (Will affect timetables and attendance)
-                      </small>
-                    </label>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label className="form-label-strong">Status</label>
+                    <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
+                      <label style={{ display: "flex", alignItems: "center" }}>
+                        <input
+                          type="checkbox"
+                          checked={formData.isActive}
+                          onChange={(e) =>
+                            setFormData({ ...formData, isActive: e.target.checked })
+                          }
+                          style={{ marginRight: "8px" }}
+                        />
+                        Active Semester
+                      </label>
+                      <label style={{ display: "flex", alignItems: "center" }}>
+                        <input
+                          type="checkbox"
+                          checked={formData.isCurrent}
+                          onChange={(e) =>
+                            setFormData({ ...formData, isCurrent: e.target.checked })
+                          }
+                          style={{ marginRight: "8px" }}
+                        />
+                        Current Semester
+                      </label>
+                    </div>
                   </div>
                 </div>
 
                 <div className="mt-3 d-flex gap-2 flex-wrap">
                   <button
                     type="submit"
-                    className="btn"
-                    style={{
-                      padding: "12px 30px",
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontSize: "16px",
-                      fontWeight: "bold",
-                    }}
+                    className="btn-main"
+                    style={{ padding: "10px 24px" }}
                   >
                     {editingSemester ? "Update Semester" : "Create Semester"}
                   </button>
@@ -545,13 +479,12 @@ const SemesterManagement = () => {
                       onClick={resetForm}
                       className="btn"
                       style={{
-                        padding: "12px 30px",
+                        padding: "10px 24px",
                         backgroundColor: "#6c757d",
                         color: "white",
                         border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontSize: "16px",
+                        borderRadius: "12px",
+                        fontWeight: "500",
                       }}
                     >
                       Cancel Edit
@@ -563,7 +496,7 @@ const SemesterManagement = () => {
           )}
 
           {/* FILTERS */}
-          <section className="card-surface">
+          <section className="card-ui">
             <h5 className="mb-3">Filter Semesters</h5>
             <div className="filter-grid">
               <div>
@@ -583,9 +516,7 @@ const SemesterManagement = () => {
               </div>
 
               <div>
-                <label className="form-label-strong">
-                  Filter by Academic Year
-                </label>
+                <label className="form-label-strong">Filter by Academic Year</label>
                 <select
                   value={filterAcademicYear}
                   onChange={(e) => setFilterAcademicYear(e.target.value)}
@@ -603,17 +534,18 @@ const SemesterManagement = () => {
           </section>
 
           {/* TABLE */}
-          <section className="table-card">
-            <h5 className="table-heading">
+          <section className="card-ui">
+            <h5 className="mb-3">
               All Semesters ({filteredSemesters.length})
             </h5>
-            <div style={{ overflowX: "auto" }}>
-              <table className="table table-bordered table-striped mb-0">
+
+            <div className="table-wrapper">
+              <table className="table table-hover table-bordered mb-0">
                 <thead>
-                  <tr style={{ backgroundColor: "#007bff", color: "white" }}>
+                  <tr>
                     <th>Semester Name</th>
                     <th>Department</th>
-                    <th className="text-center">Sem #</th>
+                    <th className="text-center">Semester</th>
                     <th className="text-center">Year</th>
                     <th className="text-center">Academic Year</th>
                     <th className="text-center">Duration</th>
@@ -624,138 +556,66 @@ const SemesterManagement = () => {
                 <tbody>
                   {filteredSemesters.length === 0 ? (
                     <tr>
-                      <td
-                        colSpan="8"
-                        className="text-center py-3 text-muted"
-                      >
+                      <td colSpan="8" className="text-center py-3 text-muted">
                         No semesters found
                       </td>
                     </tr>
                   ) : (
-                    filteredSemesters.map((semester, index) => (
+                    filteredSemesters.map((semester) => (
                       <tr key={semester._id}>
-                        <td>
-                          <strong>{semester.semesterName}</strong>
-                        </td>
+                        <td><strong>{semester.semesterName}</strong></td>
                         <td>{semester.department?.departmentName || "N/A"}</td>
-                        <td className="text-center">
-                          {semester.semesterNumber}
-                        </td>
+                        <td className="text-center">{semester.semesterNumber}</td>
                         <td className="text-center">{semester.year}</td>
                         <td className="text-center">{semester.academicYear}</td>
-                        <td
-                          className="text-center"
-                          style={{ fontSize: "12px" }}
-                        >
-                          {new Date(
-                            semester.startDate
-                          ).toLocaleDateString()}{" "}
-                          -{" "}
-                          {new Date(
-                            semester.endDate
-                          ).toLocaleDateString()}
+                        <td className="text-center">
+                          {new Date(semester.startDate).toLocaleDateString()} - 
+                          {new Date(semester.endDate).toLocaleDateString()}
                         </td>
                         <td className="text-center">
-                          {semester.isCurrent && (
-                            <span
-                              style={{
-                                display: "block",
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                backgroundColor: "#28a745",
-                                color: "white",
-                                fontSize: "12px",
-                                marginBottom: "5px",
-                              }}
-                            >
-                              CURRENT
-                            </span>
-                          )}
-                          {semester.isActive && !semester.isCurrent && (
-                            <span
-                              style={{
-                                display: "block",
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                backgroundColor: "#17a2b8",
-                                color: "white",
-                                fontSize: "12px",
-                              }}
-                            >
-                              Active
-                            </span>
-                          )}
-                          {!semester.isActive && (
-                            <span
-                              style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                backgroundColor: "#6c757d",
-                                color: "white",
-                                fontSize: "12px",
-                              }}
-                            >
-                              Inactive
-                            </span>
-                          )}
-                        </td>
-                        <td className="text-center">
-                          <div
+                          <span
+                            className="status-pill"
                             style={{
-                              display: "flex",
-                              gap: "5px",
-                              justifyContent: "center",
-                              flexWrap: "wrap",
+                              backgroundColor: semester.isCurrent 
+                                ? "#10b981" 
+                                : semester.isActive 
+                                ? "#3b82f6" 
+                                : "#6b7280"
                             }}
                           >
+                            {semester.isCurrent ? "CURRENT" : semester.isActive ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td className="text-center">
+                          <div style={{ display: "flex", gap: "4px", justifyContent: "center", flexWrap: "wrap" }}>
                             {!semester.isCurrent && (
                               <button
                                 onClick={() => handleSetCurrent(semester._id)}
                                 className="btn btn-sm"
                                 style={{
-                                  padding: "6px 12px",
-                                  backgroundColor: "#007bff",
+                                  backgroundColor: "#3b82f6",
                                   color: "white",
                                   border: "none",
-                                  borderRadius: "4px",
-                                  fontSize: "12px",
+                                  borderRadius: "6px",
+                                  padding: "4px 8px",
+                                  fontSize: "12px"
                                 }}
-                                title="Set as current semester"
                               >
                                 Set Current
                               </button>
                             )}
                             <button
                               onClick={() => handleEdit(semester)}
-                              className="btn btn-sm"
-                              style={{
-                                padding: "6px 12px",
-                                backgroundColor: "#28a745",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                              }}
+                              className="btn btn-sm btn-success me-1"
+                              style={{ borderRadius: "6px" }}
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDelete(semester._id)}
-                              className="btn btn-sm"
-                              style={{
-                                padding: "6px 12px",
-                                backgroundColor: "#dc3545",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                              }}
+                              className="btn btn-sm btn-danger"
+                              style={{ borderRadius: "6px" }}
                               disabled={semester.isCurrent}
-                              title={
-                                semester.isCurrent
-                                  ? "Cannot delete current semester"
-                                  : "Delete semester"
-                              }
                             >
                               Delete
                             </button>

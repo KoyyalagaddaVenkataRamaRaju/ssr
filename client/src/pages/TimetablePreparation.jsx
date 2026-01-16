@@ -16,7 +16,6 @@ const TimetablePreparation = () => {
   const [allocations, setAllocations] = useState([]);
   const [timetables, setTimetables] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
@@ -33,7 +32,6 @@ const TimetablePreparation = () => {
   });
 
   const [selectedTeacher, setSelectedTeacher] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -57,76 +55,54 @@ const TimetablePreparation = () => {
     if (selectedBatch && selectedSection) {
       fetchTimetable();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBatch, selectedSection]);
 
+  // ✅ FIXED: Same department fix as SubjectManagement
   const fetchDepartments = async () => {
     try {
       const response = await fetchDepartment();
-      const data = response.data;
       if (response.success) {
-        setDepartments(data);
+        setDepartments(response.data);
       }
     } catch (error) {
       console.error("Error fetching departments:", error);
-      setError("Failed to fetch departments");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchBatches = async (departmentId) => {
-    console.log("Fetching batches for department:", departmentId);
     try {
       const response = await fetchBatchesByDepartment(departmentId);
-      console.log(response.data.batches);
       if (response.success) {
-        setBatches(response.data.batches);
-      } else {
-        setError(response.message || "Failed to fetch batches.");
+        setBatches(response.data.batches || response.data);
       }
-    } catch (err) {
-      setError("Failed to fetch batches. Please try again.");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching batches:", error);
     }
   };
 
   const fetchAllocations = async (departmentId, batchId, section) => {
     try {
-      const response = await fetchTeacherandSubjectAllocations(
-        departmentId,
-        batchId,
-        section
-      );
-      console.log(response.data);
+      const response = await fetchTeacherandSubjectAllocations(departmentId, batchId, section);
       if (response.success) {
         setAllocations(response.data);
-        // reset teacher/subject selection when allocations change
         setSelectedTeacher("");
-        setSelectedSubject("");
         setFormData((prev) => ({ ...prev, teacherAllocation: "" }));
-      } else {
-        setError(response.message || "Failed to fetch batches.");
       }
-    } catch (err) {
-      setError("Failed to fetch batches. Please try again.");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching allocations:", error);
     }
   };
 
   const fetchTimetable = async () => {
     try {
-      const data = await fetchTimetablebyBatchandSection(
-        selectedBatch,
-        selectedSection
-      );
-
+      const data = await fetchTimetablebyBatchandSection(selectedBatch, selectedSection);
       if (data.success) {
         setTimetables(data.data);
       }
     } catch (error) {
       console.error("Error fetching timetable:", error);
-      setError(error.message || "Failed to fetch timetable");
     }
   };
 
@@ -142,7 +118,6 @@ const TimetablePreparation = () => {
 
   const handleBatchChange = (e) => {
     const batchId = e.target.value;
-    console.log(batchId);
     setSelectedBatch(batchId);
     if (batchId && selectedDepartment && selectedSection) {
       fetchAllocations(selectedDepartment, batchId, selectedSection);
@@ -160,9 +135,7 @@ const TimetablePreparation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const selectedAllocation = allocations.find(
-      (a) => a._id === formData.teacherAllocation
-    );
+    const selectedAllocation = allocations.find((a) => a._id === formData.teacherAllocation);
     if (!selectedAllocation) {
       alert("Please select a teacher allocation");
       return;
@@ -186,9 +159,7 @@ const TimetablePreparation = () => {
 
     try {
       const response = await createTimetable(timetableData);
-      console.log(response.data);
-      const data = response.data;
-      if (data.success) {
+      if (response.success || response.data?.success) {
         alert("Timetable entry added successfully!");
         fetchTimetable();
         setFormData({
@@ -200,36 +171,31 @@ const TimetablePreparation = () => {
           roomNumber: "",
           academicYear: "2025-2026",
         });
-      } else {
-        alert("Error: " + data.error);
       }
     } catch (error) {
-      console.error("Error creating timetable entry:", error);
-      alert("Failed to create timetable entry");
+      alert("Error: " + error.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to remove this timetable entry?"
-      )
-    )
-      return;
+    if (!window.confirm("Are you sure you want to remove this timetable entry?")) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/api/timetable/${id}`, {
+      // Use service method instead of direct API call
+      const response = await fetch(`/api/timetable/${id}`, {
         method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
       });
-
       const data = await response.json();
       if (data.success) {
         alert("Timetable entry removed successfully");
         fetchTimetable();
       }
     } catch (error) {
-      console.error("Error deleting timetable entry:", error);
-      alert("Failed to remove timetable entry");
+      alert("Error: " + error.message);
     }
   };
 
@@ -240,100 +206,184 @@ const TimetablePreparation = () => {
 
   return (
     <>
+      {/* ================= STYLES (EXACT SAME AS SUBJECT MANAGEMENT + TIMETABLE GRID) ================= */}
       <style>{`
         :root {
-          --primary: #6a4ed9;
-          --muted: #6b6b6b;
-          --card-bg: #ffffff;
+          --primary: #ad8ff8;
+          --primary-dark: #8b6fe6;
+          --soft: #f5f1ff;
+          --text: #1e293b;
+          --muted: #64748b;
         }
 
-        .admin-page {
+        body {
+          background: linear-gradient(135deg,#f7f4ff,#eef2ff);
+        }
+
+        .admin-layout {
           display: flex;
-          min-height: 100vh;
-          background: linear-gradient(135deg,#f3e5f5,#e0f7fa);
+          height: 100vh;
+          overflow: hidden;
         }
 
         .main-content {
           flex: 1;
-          padding: 24px 32px;
-          transition: margin-left .32s ease;
+          padding: clamp(14px, 2vw, 32px);
+          transition: margin-left .35s ease;
+          overflow-y: auto;
         }
 
         .page-title {
-          font-size: 28px;
-          font-weight: 800;
-          color: var(--primary);
-          margin-bottom: 4px;
+          font-size: clamp(20px, 2.5vw, 28px);
+          font-weight: 700;
+          color: var(--primary-dark);
         }
 
-        .small-muted {
-          color: var(--muted);
-          font-size: 14px;
-        }
-
-        .card-surface {
-          background: var(--card-bg);
+        .card-ui {
+          background: #fff;
+          border-radius: 16px;
           padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.08);
+          box-shadow: 0 10px 28px rgba(0,0,0,.08);
           margin-bottom: 22px;
         }
 
-        .table-card {
-          background: var(--card-bg);
-          padding: 20px;
+        .btn-main {
+          background: linear-gradient(135deg,var(--primary-dark),var(--primary));
+          color: #fff;
+          border: none;
           border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.08);
-        }
-
-        .period-cell {
-          background-color: #f1f5f9;
+          padding: 10px 18px;
           font-weight: 600;
         }
 
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+          gap: 16px;
+        }
+
+        .select-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+          gap: 16px;
+        }
+
+        .timetable-grid {
+          display: grid;
+          grid-template-columns: 120px repeat(6, 1fr);
+          gap: 1px;
+          background: #e2e8f0;
+          border-radius: 12px;
+          overflow: hidden;
+          max-height: 500px;
+          overflow-y: auto;
+        }
+
+        .period-header {
+          background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+          color: white;
+          padding: 12px;
+          font-weight: 700;
+          text-align: center;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+
+        .day-header {
+          background: linear-gradient(135deg,#10b981,#059669);
+          color: white;
+          padding: 12px;
+          font-weight: 600;
+          text-align: center;
+          position: sticky;
+          left: 0;
+          z-index: 5;
+        }
+
+        .timetable-cell {
+          min-height: 80px;
+          padding: 12px;
+          background: white;
+          border: 1px solid #e2e8f0;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          transition: all 0.2s;
+        }
+
+        .timetable-cell:hover {
+          background: #f8fafc;
+          transform: translateY(-2px);
+        }
+
+        .timetable-cell.filled {
+          background: linear-gradient(135deg,#dbeafe,#bfdbfe);
+          border-left: 4px solid var(--primary-dark);
+        }
+
+        .subject-name {
+          font-weight: 700;
+          font-size: 14px;
+          color: var(--text);
+        }
+
+        .teacher-name, .room-number {
+          font-size: 12px;
+          color: var(--muted);
+        }
+
+        .form-label-strong {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: 600;
+          font-size: 14px;
+          color: var(--text);
+        }
+
         @media (max-width: 992px) {
-          .main-content { padding: 20px 14px; }
+          .timetable-grid {
+            grid-template-columns: 100px repeat(6, 1fr);
+          }
+          .timetable-cell { min-height: 70px; padding: 8px; }
         }
+
         @media (max-width: 768px) {
-          .main-content { padding: 16px 10px; }
-          .page-title { font-size: 22px; text-align: center; }
-        }
-        @media (max-width: 480px) {
-          .main-content { padding: 10px 6px; }
-          .card-surface, .table-card { padding: 14px; }
+          .page-title { text-align: center; }
+          .form-grid, .select-grid { grid-template-columns: 1fr; }
+          .timetable-grid {
+            grid-template-columns: 90px repeat(6, minmax(70px, 1fr));
+            font-size: 12px;
+          }
+          .period-header, .day-header { padding: 8px; font-size: 13px; }
         }
       `}</style>
 
-      <div className="admin-page">
+      <div className="admin-layout">
         <Sidebar onToggle={setSidebarOpen} />
 
         <main
           className="main-content"
-          style={{ marginLeft: sidebarOpen ? "250px" : "80px" }}
+          style={{
+            marginLeft: sidebarOpen ? "250px" : "80px",
+          }}
         >
-          {/* Header */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          {/* HEADER */}
+          <div className="d-flex justify-content-between align-items-center mb-3 header-flex flex-wrap gap-2">
             <div>
-              <h2 className="page-title">Timetable Preparation</h2>
-              <p className="small-muted mb-0">
-                Prepare weekly timetables for each department, batch, and section.
-              </p>
+              <h1 className="page-title">Timetable Preparation</h1>
+              <small className="text-muted">
+                Create weekly timetables for departments, batches, and sections
+              </small>
             </div>
-            {loading && (
-              <span className="small-muted">Loading...</span>
-            )}
           </div>
 
-          {error && (
-            <div className="alert alert-danger py-2">{error}</div>
-          )}
-
-          {/* Select Class */}
-          <section className="card-surface">
+          {/* SELECT CLASS */}
+          <section className="card-ui">
             <h5 className="mb-3">Select Class</h5>
-            <div className="row g-3">
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">Department</label>
+            <div className="select-grid">
+              <div>
+                <label className="form-label-strong">Department</label>
                 <select
                   value={selectedDepartment}
                   onChange={handleDepartmentChange}
@@ -348,24 +398,25 @@ const TimetablePreparation = () => {
                 </select>
               </div>
 
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">Batch</label>
+              <div>
+                <label className="form-label-strong">Batch</label>
                 <select
                   value={selectedBatch}
                   onChange={handleBatchChange}
                   className="form-control"
+                  disabled={!selectedDepartment}
                 >
                   <option value="">Select Batch</option>
                   {batches.map((batch) => (
-                    <option key={batch._id} value={batch.batchId}>
+                    <option key={batch._id} value={batch._id}>
                       {batch.batchName}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">Section</label>
+              <div>
+                <label className="form-label-strong">Section</label>
                 <select
                   value={selectedSection}
                   onChange={handleSectionChange}
@@ -380,38 +431,32 @@ const TimetablePreparation = () => {
             </div>
           </section>
 
-          {/* Add Timetable Entry */}
+          {/* ADD TIMETABLE ENTRY */}
           {selectedBatch && (
-            <section className="card-surface">
+            <section className="card-ui">
               <h5 className="mb-3">Add Timetable Entry</h5>
               <form onSubmit={handleSubmit}>
-                <div className="row g-3">
-                  <div className="col-md-4">
-                    <label className="form-label fw-semibold">Day of Week</label>
+                <div className="form-grid">
+                  <div>
+                    <label className="form-label-strong">Day of Week</label>
                     <select
                       value={formData.dayOfWeek}
-                      onChange={(e) =>
-                        setFormData({ ...formData, dayOfWeek: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, dayOfWeek: e.target.value })}
                       required
                       className="form-control"
                     >
                       {days.map((day) => (
-                        <option key={day} value={day}>
-                          {day}
-                        </option>
+                        <option key={day} value={day}>{day}</option>
                       ))}
                     </select>
                   </div>
 
-                  <div className="col-md-4">
-                    <label className="form-label fw-semibold">Period</label>
+                  <div>
+                    <label className="form-label-strong">Period</label>
                     <select
                       value={formData.periodNumber}
                       onChange={(e) => {
-                        const period = periods.find(
-                          (p) => p.number === parseInt(e.target.value)
-                        );
+                        const period = periods.find((p) => p.number === parseInt(e.target.value));
                         setFormData({
                           ...formData,
                           periodNumber: period.number,
@@ -424,186 +469,130 @@ const TimetablePreparation = () => {
                     >
                       {periods.map((period) => (
                         <option key={period.number} value={period.number}>
-                          Period {period.number} ({period.start} - {period.end})
+                          P{period.number} ({period.start} - {period.end})
                         </option>
                       ))}
                     </select>
                   </div>
 
-                  <div className="col-md-4">
-                    <label className="form-label fw-semibold">Teacher</label>
-                    <select
-                      value={selectedTeacher}
-                      onChange={(e) => {
-                        const teacherId = e.target.value;
-                        setSelectedTeacher(teacherId);
-                        setSelectedSubject("");
-                        setFormData({ ...formData, teacherAllocation: "" });
-                      }}
-                      required
-                      className="form-control"
-                    >
-                      <option value="">Select Teacher</option>
-                      {Array.from(
-                        new Map(
-                          allocations.map((a) => [a.teacher?._id, a.teacher])
-                        ).values()
-                      )
-                        .filter(Boolean)
-                        .map((teacher) => (
-                          <option key={teacher._id} value={teacher._id}>
-                            {teacher.name}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label fw-semibold">Subject</label>
+                  <div>
+                    <label className="form-label-strong">Subject</label>
                     <select
                       value={formData.teacherAllocation}
                       onChange={(e) => {
                         const allocationId = e.target.value;
-                        setSelectedSubject(allocationId);
-                        const alloc = allocations.find(
-                          (a) => a._id === allocationId
-                        );
-                        if (alloc && alloc.teacher)
-                          setSelectedTeacher(alloc.teacher._id);
-                        setFormData({
-                          ...formData,
-                          teacherAllocation: allocationId,
-                        });
+                        const alloc = allocations.find((a) => a._id === allocationId);
+                        if (alloc && alloc.teacher) setSelectedTeacher(alloc.teacher._id);
+                        setFormData({ ...formData, teacherAllocation: allocationId });
                       }}
                       required
                       className="form-control"
                     >
                       <option value="">Select Subject</option>
-                      {allocations
-                        .filter((a) =>
-                          selectedTeacher
-                            ? a.teacher && a.teacher._id === selectedTeacher
-                            : true
-                        )
-                        .map((allocation) => (
-                          <option key={allocation._id} value={allocation._id}>
-                            {allocation.subject?.subjectName}
-                          </option>
-                        ))}
+                      {allocations.map((allocation) => (
+                        <option key={allocation._id} value={allocation._id}>
+                          {allocation.subject?.subjectName}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
-                  <div className="col-md-4">
-                    <label className="form-label fw-semibold">Room Number</label>
+                  <div>
+                    <label className="form-label-strong">Room Number</label>
                     <input
                       type="text"
                       value={formData.roomNumber}
-                      onChange={(e) =>
-                        setFormData({ ...formData, roomNumber: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
                       placeholder="e.g., Room 101"
                       className="form-control"
                     />
                   </div>
 
-                  <div className="col-md-4">
-                    <label className="form-label fw-semibold">Academic Year</label>
-                    <input
-                      type="text"
-                      value={formData.academicYear}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          academicYear: e.target.value,
-                        })
-                      }
-                      required
-                      className="form-control"
-                    />
+                  <div style={{ gridColumn: "1 / -1", alignSelf: "end" }}>
+                    <button
+                      type="submit"
+                      className="btn-main"
+                      style={{ 
+                        padding: "12px 32px", 
+                        width: "100%",
+                        fontSize: "16px"
+                      }}
+                      disabled={!formData.teacherAllocation}
+                    >
+                      Add to Timetable
+                    </button>
                   </div>
                 </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary mt-3"
-                >
-                  Add to Timetable
-                </button>
               </form>
             </section>
           )}
 
-          {/* Weekly Timetable */}
+          {/* WEEKLY TIMETABLE */}
           {selectedBatch && (
-            <section className="table-card">
-              <h5 className="mb-3">Weekly Timetable</h5>
-              <div className="table-responsive">
-                <table
-                  className="table table-bordered align-middle"
-                  style={{ minWidth: "900px" }}
-                >
-                  <thead className="table-primary text-center">
-                    <tr>
-                      <th style={{ minWidth: "120px" }}>Period / Day</th>
-                      {days.map((day) => (
-                        <th key={day}>{day}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {periods.map((period) => (
-                      <tr key={period.number}>
-                        <td className="text-center period-cell">
-                          P{period.number}
-                          <br />
-                          <small>
-                            {period.start} - {period.end}
-                          </small>
-                        </td>
-                        {days.map((day) => {
-                          const entry = getTimetableCell(day, period.number);
-                          return (
-                            <td
-                              key={day}
-                              style={{
-                                backgroundColor: entry ? "#e8f4f8" : "white",
-                                verticalAlign: "top",
-                              }}
-                            >
-                              {entry ? (
-                                <div>
-                                  <div className="fw-semibold mb-1">
-                                    {entry.subject?.subjectName}
-                                  </div>
-                                  <div
-                                    className="small text-muted"
-                                    style={{ lineHeight: 1.3 }}
-                                  >
-                                    {entry.teacher?.name}
-                                  </div>
-                                  {entry.roomNumber && (
-                                    <div className="small text-muted">
-                                      {entry.roomNumber}
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={() => handleDelete(entry._id)}
-                                    className="btn btn-sm btn-danger mt-2"
-                                    style={{ fontSize: "11px" }}
-                                  >
-                                    Remove
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="text-muted">-</div>
+            <section className="card-ui">
+              <h5 className="mb-3">
+                Weekly Timetable - {selectedSection} 
+                <span className="ms-2" style={{ fontSize: "14px", color: "#64748b" }}>
+                  ({days.join(", ")})
+                </span>
+              </h5>
+              
+              <div className="timetable-grid">
+                {/* Period Headers */}
+                <div></div>
+                {days.map((day) => (
+                  <div key={day} className="period-header">{day}</div>
+                ))}
+                
+                {/* Timetable Rows */}
+                {periods.map((period) => (
+                  <>
+                    <div className="day-header">
+                      <div>P{period.number}</div>
+                      <small style={{ fontSize: "11px", opacity: 0.9 }}>
+                        {period.start}-{period.end}
+                      </small>
+                    </div>
+                    {days.map((day) => {
+                      const entry = getTimetableCell(day, period.number);
+                      return (
+                        <div
+                          key={`${day}-${period.number}`}
+                          className={`timetable-cell ${entry ? "filled" : ""}`}
+                        >
+                          {entry ? (
+                            <>
+                              <div className="subject-name">
+                                {entry.subject?.subjectName}
+                              </div>
+                              <div className="teacher-name">
+                                {entry.teacher?.name}
+                              </div>
+                              {entry.roomNumber && (
+                                <div className="room-number">{entry.roomNumber}</div>
                               )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                              <button
+                                onClick={() => handleDelete(entry._id)}
+                                className="btn btn-sm btn-danger mt-1"
+                                style={{ 
+                                  padding: "2px 8px", 
+                                  fontSize: "11px",
+                                  width: "100%"
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </>
+                          ) : (
+                            <div className="text-muted" style={{ opacity: 0.5 }}>
+                              -
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
+                ))}
               </div>
             </section>
           )}

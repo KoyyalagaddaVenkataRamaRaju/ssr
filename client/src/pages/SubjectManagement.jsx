@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { createSubject, fetchAllSubjects,updateSubject,deleteSubject } from "../services/subjectService.jsx";
-import {fetchDepartment } from "../services/attendanceService.jsx";
+import { createSubject, fetchAllSubjects, updateSubject, deleteSubject } from "../services/subjectService.jsx";
+import { fetchDepartment } from "../services/attendanceService.jsx";
 
 const SubjectManagement = () => {
   const [departments, setDepartments] = useState([]);
@@ -146,73 +146,96 @@ const SubjectManagement = () => {
 
   return (
     <>
-      {/* PAGE STYLES (similar vibe to AdminHeroCarousel) */}
+      {/* ================= STYLES ================= */}
       <style>{`
         :root {
-          --primary: #6a4ed9;
-          --accent: #ff8c42;
-          --muted: #6b6b6b;
-          --card-bg: #ffffff;
+          --primary: #ad8ff8;
+          --primary-dark: #8b6fe6;
+          --soft: #f5f1ff;
+          --text: #1e293b;
+          --muted: #64748b;
         }
 
-        .admin-page {
+        body {
+          background: linear-gradient(135deg,#f7f4ff,#eef2ff);
+        }
+
+        .admin-layout {
           display: flex;
-          min-height: 100vh;
-          background: linear-gradient(135deg,#f3e5f5,#e0f7fa);
+          height: 100vh;
+          overflow: hidden;
         }
 
         .main-content {
           flex: 1;
-          padding: 28px 36px;
-          transition: margin-left .32s ease;
+          padding: clamp(14px, 2vw, 32px);
+          transition: margin-left .35s ease;
+          overflow-y: auto;
         }
 
         .page-title {
-          font-size: 28px;
-          font-weight: 800;
-          color: var(--primary);
-          margin-bottom: 4px;
+          font-size: clamp(20px, 2.5vw, 28px);
+          font-weight: 700;
+          color: var(--primary-dark);
         }
 
-        .small-muted {
-          color: var(--muted);
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .header-actions {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-          flex-wrap: wrap;
+        .card-ui {
+          background: #fff;
+          border-radius: 16px;
+          padding: 20px;
+          box-shadow: 0 10px 28px rgba(0,0,0,.08);
+          margin-bottom: 22px;
         }
 
         .btn-main {
-          padding: 10px 18px;
-          background: var(--primary);
+          background: linear-gradient(135deg,var(--primary-dark),var(--primary));
           color: #fff;
-          border-radius: 8px;
           border: none;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        .btn-main.danger {
-          background: #dc3545;
-        }
-
-        .card-surface {
-          background: var(--card-bg);
-          padding: 20px;
           border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.08);
-          margin-bottom: 22px;
+          padding: 10px 18px;
+          font-weight: 600;
+        }
+
+        .btn-danger-soft {
+          background: #dc3545;
+          color: #fff;
+          border-radius: 12px;
+          border: none;
+          padding: 10px 18px;
         }
 
         .form-grid {
           display: grid;
-          grid-template-columns: repeat(2,minmax(0,1fr));
-          gap: 18px;
+          grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+          gap: 16px;
+        }
+
+        .filter-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+          gap: 16px;
+        }
+
+        .table-wrapper {
+          max-height: 420px;
+          overflow: auto;
+        }
+
+        .table thead th {
+          position: sticky;
+          top: 0;
+          background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+          color: #fff;
+          white-space: nowrap;
+          z-index: 2;
+        }
+
+        .status-pill {
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          color: #fff;
+          font-weight: 600;
         }
 
         .form-label-strong {
@@ -220,86 +243,48 @@ const SubjectManagement = () => {
           margin-bottom: 5px;
           font-weight: 600;
           font-size: 14px;
+          color: var(--text);
         }
 
-        .filter-grid {
-          display: grid;
-          grid-template-columns: repeat(3,minmax(0,1fr));
-          gap: 16px;
-        }
-
-        .table-card {
-          background: var(--card-bg);
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.06);
-        }
-
-        .table-heading {
-          margin-bottom: 10px;
-          font-size: 18px;
-          font-weight: 700;
-          color: #111827;
-        }
-
-        .status-pill {
-          padding: 4px 8px;
-          border-radius: 999px;
-          font-size: 12px;
-          color: #fff;
-        }
-
-        @media (max-width: 992px) {
-          .main-content { padding: 22px 12px; }
-          .form-grid { grid-template-columns: 1fr; }
-          .filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-        }
         @media (max-width: 768px) {
-          .main-content { padding: 16px 8px; }
-          .filter-grid { grid-template-columns: 1fr; }
-          .page-title { font-size: 22px; text-align:center; }
-          .small-muted { text-align:center; }
-          .header-actions { justify-content:center; }
-        }
-        @media (max-width: 480px) {
-          .main-content { padding: 10px 4px; }
-          .page-title { font-size: 18px; }
-          .card-surface, .table-card { padding: 14px; }
+          .page-title { text-align: center; }
+          .header-flex { justify-content: center; }
+          .form-grid, .filter-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 
-      <div className="admin-page">
+      <div className="admin-layout">
         <Sidebar onToggle={setSidebarOpen} />
 
         <main
           className="main-content"
-          style={{ marginLeft: sidebarOpen ? "250px" : "80px" }}
+          style={{
+            marginLeft: sidebarOpen ? "250px" : "80px",
+          }}
         >
-          {/* Header */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          {/* HEADER */}
+          <div className="d-flex justify-content-between align-items-center mb-3 header-flex flex-wrap gap-2">
             <div>
-              <h2 className="page-title">Subject Management</h2>
-              <div className="small-muted">
+              <h1 className="page-title">Subject Management</h1>
+              <small className="text-muted">
                 Create, update and manage all subjects across departments
-              </div>
+              </small>
             </div>
 
-            <div className="header-actions">
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className={`btn-main ${showForm ? "danger" : ""}`}
-              >
-                {showForm ? "Cancel" : "+ Create Subject"}
-              </button>
-            </div>
+            <button
+              className={showForm ? "btn-danger-soft" : "btn-main"}
+              onClick={() => setShowForm(!showForm)}
+            >
+              {showForm ? "Cancel" : "+ Create Subject"}
+            </button>
           </div>
 
-          {/* CREATE / EDIT FORM */}
+          {/* FORM */}
           {showForm && (
-            <section className="card-surface">
-              <h4 className="mb-3">
+            <section className="card-ui">
+              <h5 className="mb-3">
                 {editingSubject ? "Edit Subject" : "Create New Subject"}
-              </h4>
+              </h5>
 
               <form onSubmit={handleSubmit}>
                 <div className="form-grid">
@@ -461,15 +446,8 @@ const SubjectManagement = () => {
                 <div className="mt-3 d-flex gap-2 flex-wrap">
                   <button
                     type="submit"
-                    className="btn"
-                    style={{
-                      padding: "10px 24px",
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "6px",
-                      fontWeight: "600",
-                    }}
+                    className="btn-main"
+                    style={{ padding: "10px 24px" }}
                   >
                     {editingSubject ? "Update Subject" : "Create Subject"}
                   </button>
@@ -483,7 +461,7 @@ const SubjectManagement = () => {
                         backgroundColor: "#6c757d",
                         color: "white",
                         border: "none",
-                        borderRadius: "6px",
+                        borderRadius: "12px",
                         fontWeight: "500",
                       }}
                     >
@@ -496,7 +474,7 @@ const SubjectManagement = () => {
           )}
 
           {/* FILTERS */}
-          <section className="card-surface">
+          <section className="card-ui">
             <h5 className="mb-3">Filter Subjects</h5>
             <div className="filter-grid">
               <div>
@@ -549,14 +527,15 @@ const SubjectManagement = () => {
           </section>
 
           {/* TABLE */}
-          <section className="table-card">
-            <h5 className="table-heading">
+          <section className="card-ui">
+            <h5 className="mb-3">
               All Subjects ({filteredSubjects.length})
             </h5>
-            <div style={{ overflowX: "auto" }}>
-              <table className="table table-bordered table-striped mb-0">
+
+            <div className="table-wrapper">
+              <table className="table table-hover table-bordered mb-0">
                 <thead>
-                  <tr style={{ backgroundColor: "#007bff", color: "white" }}>
+                  <tr>
                     <th>Code</th>
                     <th>Subject Name</th>
                     <th>Department</th>
@@ -575,26 +554,24 @@ const SubjectManagement = () => {
                       </td>
                     </tr>
                   ) : (
-                    filteredSubjects.map((subject, index) => (
+                    filteredSubjects.map((subject) => (
                       <tr key={subject._id}>
                         <td>
                           <strong>{subject.subjectCode}</strong>
                         </td>
                         <td>{subject.subjectName}</td>
-                        <td>
-                          {subject.department?.departmentName || "N/A"}
-                        </td>
+                        <td>{subject.department?.departmentName || "N/A"}</td>
                         <td className="text-center">{subject.year}</td>
                         <td className="text-center">{subject.semester}</td>
                         <td className="text-center">
                           <span
                             className="status-pill"
                             style={{
-                              backgroundColor:
+                              background:
                                 subject.subjectType === "Practical" ||
                                 subject.subjectType === "Lab"
-                                  ? "#ffc107"
-                                  : "#17a2b8",
+                                  ? "#f59e0b"
+                                  : "#3b82f6",
                             }}
                           >
                             {subject.subjectType || "Theory"}
@@ -604,25 +581,15 @@ const SubjectManagement = () => {
                         <td className="text-center">
                           <button
                             onClick={() => handleEdit(subject)}
-                            className="btn btn-sm me-2"
-                            style={{
-                              backgroundColor: "#28a745",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                            }}
+                            className="btn btn-sm btn-success me-2"
+                            style={{ borderRadius: "6px" }}
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDelete(subject._id)}
-                            className="btn btn-sm"
-                            style={{
-                              backgroundColor: "#dc3545",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "4px",
-                            }}
+                            className="btn btn-sm btn-danger"
+                            style={{ borderRadius: "6px" }}
                           >
                             Delete
                           </button>

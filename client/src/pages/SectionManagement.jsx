@@ -14,7 +14,6 @@ const SectionManagement = () => {
   const [batches, setBatches] = useState([]);
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [formMode, setFormMode] = useState("create"); // still kept, in case you use later
   const [error, setError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -24,45 +23,39 @@ const SectionManagement = () => {
     year: "",
     numberOfSections: 1,
     capacity: 60,
-    academicYear:
-      new Date().getFullYear() + "-" + (new Date().getFullYear() + 1),
+    academicYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
   });
 
   const [viewFilters, setViewFilters] = useState({
     department: "",
     batch: "",
-    academicYear:
-      new Date().getFullYear() + "-" + (new Date().getFullYear() + 1),
+    academicYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
   });
 
   useEffect(() => {
     fetchDepartments();
   }, []);
 
+  // ✅ FIXED: Same department fix as SubjectManagement
   const fetchDepartments = async () => {
     try {
       const response = await fetchDepartment();
-      const data = response.data;
       if (response.success) {
-        setDepartments(data);
+        setDepartments(response.data);
       }
     } catch (error) {
       console.error("Error fetching departments:", error);
-      alert("Failed to fetch departments");
     }
   };
 
   const fetchBatches = async (departmentId) => {
     try {
       const response = await fetchBatchesByDepartment(departmentId);
-      console.log(response.data);
       if (response.success) {
-        setBatches(response.data);
-      } else {
-        setError(response.message || "Failed to fetch batches.");
+        setBatches(response.data || []);
       }
-    } catch (err) {
-      setError("Failed to fetch batches. Please try again.");
+    } catch (error) {
+      console.error("Error fetching batches:", error);
     } finally {
       setLoading(false);
     }
@@ -70,8 +63,6 @@ const SectionManagement = () => {
 
   const handleDepartmentChange = (e) => {
     const departmentId = e.target.value;
-    console.log(departmentId);
-    console.log("Selected Department ID:", departmentId);
     setFormData({
       ...formData,
       department: departmentId,
@@ -80,6 +71,8 @@ const SectionManagement = () => {
     });
     if (departmentId) {
       fetchBatches(departmentId);
+    } else {
+      setBatches([]);
     }
   };
 
@@ -97,10 +90,9 @@ const SectionManagement = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]:
-        name === "numberOfSections" || name === "capacity" || name === "year"
-          ? parseInt(value)
-          : value,
+      [name]: name === "numberOfSections" || name === "capacity" || name === "year"
+        ? parseInt(value) || ""
+        : value,
     });
   };
 
@@ -124,30 +116,22 @@ const SectionManagement = () => {
         academicYear: formData.academicYear,
       };
 
-      console.log(sectionData);
-
       const response = await createSection(sectionData);
-      const data = await response.data;
-      console.log(data);
-
       if (response.success) {
-        alert(data.message || "Sections created successfully!");
+        alert("Sections created successfully!");
+        // Reset form
         setFormData({
           department: "",
           batch: "",
           year: "",
           numberOfSections: 1,
           capacity: 60,
-          academicYear:
-            new Date().getFullYear() + "-" + (new Date().getFullYear() + 1),
+          academicYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
         });
-        fetchSections();
-      } else {
-        alert("Error: " + data.error);
+        setBatches([]);
       }
     } catch (error) {
-      console.error("Error creating sections:", error);
-      alert("Failed to create sections");
+      alert("Error: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -159,41 +143,24 @@ const SectionManagement = () => {
     const academicYear = viewFilters.academicYear || "";
 
     try {
-      const response =
-        await fetchSectionsbyDepartementandBatchandYear(
-          departmentId,
-          batchId,
-          academicYear
-        );
-      const data = response.data;
-
+      const response = await fetchSectionsbyDepartementandBatchandYear(
+        departmentId,
+        batchId,
+        academicYear
+      );
       if (response.success) {
-        setSections(data);
+        setSections(response.data);
       }
     } catch (error) {
       console.error("Error fetching sections:", error);
     }
   };
 
-  const handleViewDepartmentChange = async (e) => {
-    const departmentId = e.target.value;
-    console.log("view" + departmentId);
+  const handleViewFiltersChange = (e) => {
+    const { name, value } = e.target;
     setViewFilters({
       ...viewFilters,
-      department: departmentId,
-      batch: "",
-    });
-
-    if (departmentId) {
-      console.log("view" + departmentId);
-      await fetchBatchesByDepartment(departmentId); // keep same logic
-    }
-  };
-
-  const handleViewBatchChange = (e) => {
-    setViewFilters({
-      ...viewFilters,
-      batch: e.target.value,
+      [name]: value,
     });
   };
 
@@ -202,131 +169,169 @@ const SectionManagement = () => {
   };
 
   const handleDeleteSection = async (sectionId) => {
-    if (
-      window.confirm(
-        "Are you sure you want to deactivate this section?"
-      )
-    ) {
+    if (window.confirm("Are you sure you want to deactivate this section?")) {
       try {
-        const response = await fetch(
-          `http://localhost:3000/api/sections/${sectionId}`,
-          {
-            method: "DELETE",
-          }
-        );
-
+        const response = await fetch(`/api/sections/${sectionId}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
-
         if (data.success) {
           alert("Section deactivated successfully");
           fetchSections();
-        } else {
-          alert("Error: " + data.error);
         }
       } catch (error) {
-        console.error("Error deleting section:", error);
-        alert("Failed to delete section");
+        alert("Error: " + error.message);
       }
     }
   };
 
   return (
     <>
+      {/* ================= STYLES (EXACT SAME AS SUBJECT MANAGEMENT) ================= */}
       <style>{`
         :root {
-          --primary: #6a4ed9;
-          --muted: #6b6b6b;
-          --card-bg: #ffffff;
+          --primary: #ad8ff8;
+          --primary-dark: #8b6fe6;
+          --soft: #f5f1ff;
+          --text: #1e293b;
+          --muted: #64748b;
         }
 
-        .admin-page {
+        body {
+          background: linear-gradient(135deg,#f7f4ff,#eef2ff);
+        }
+
+        .admin-layout {
           display: flex;
-          min-height: 100vh;
-          background: linear-gradient(135deg,#f3e5f5,#e0f7fa);
+          height: 100vh;
+          overflow: hidden;
         }
 
         .main-content {
           flex: 1;
-          padding: 24px 32px;
-          transition: margin-left .32s ease;
+          padding: clamp(14px, 2vw, 32px);
+          transition: margin-left .35s ease;
+          overflow-y: auto;
         }
 
         .page-title {
-          font-size: 28px;
-          font-weight: 800;
-          color: var(--primary);
-          margin-bottom: 4px;
+          font-size: clamp(20px, 2.5vw, 28px);
+          font-weight: 700;
+          color: var(--primary-dark);
         }
 
-        .small-muted {
-          color: var(--muted);
-          font-size: 14px;
-        }
-
-        .card-surface {
-          background: var(--card-bg);
+        .card-ui {
+          background: #fff;
+          border-radius: 16px;
           padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.08);
+          box-shadow: 0 10px 28px rgba(0,0,0,.08);
           margin-bottom: 22px;
         }
 
-        .table-card {
-          background: var(--card-bg);
-          padding: 20px;
+        .btn-main {
+          background: linear-gradient(135deg,var(--primary-dark),var(--primary));
+          color: #fff;
+          border: none;
           border-radius: 12px;
-          box-shadow: 0 6px 18px rgba(15,23,42,0.08);
+          padding: 12px 24px;
+          font-weight: 600;
+          width: 100%;
         }
 
-        @media (max-width: 992px) {
-          .main-content { padding: 20px 16px; }
+        .btn-secondary {
+          background: #6c757d;
+          color: #fff;
+          border: none;
+          border-radius: 12px;
+          padding: 12px 24px;
+          font-weight: 500;
+          width: 100%;
         }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+          gap: 16px;
+        }
+
+        .filter-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+          gap: 16px;
+        }
+
+        .table-wrapper {
+          max-height: 420px;
+          overflow: auto;
+        }
+
+        .table thead th {
+          position: sticky;
+          top: 0;
+          background: linear-gradient(135deg,var(--primary),var(--primary-dark));
+          color: #fff;
+          white-space: nowrap;
+          z-index: 2;
+        }
+
+        .status-pill {
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          color: #fff;
+          font-weight: 600;
+        }
+
+        .form-label-strong {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: 600;
+          font-size: 14px;
+          color: var(--text);
+        }
+
         @media (max-width: 768px) {
-          .main-content { padding: 16px 10px; }
-          .page-title { font-size: 22px; text-align: center; }
-        }
-        @media (max-width: 480px) {
-          .main-content { padding: 10px 6px; }
-          .card-surface, .table-card { padding: 14px; }
+          .page-title { text-align: center; }
+          .header-flex { justify-content: center; }
+          .form-grid, .filter-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 
-      <div className="admin-page">
+      <div className="admin-layout">
         <Sidebar onToggle={setSidebarOpen} />
 
         <main
           className="main-content"
-          style={{ marginLeft: sidebarOpen ? "250px" : "80px" }}
+          style={{
+            marginLeft: sidebarOpen ? "250px" : "80px",
+          }}
         >
           {/* HEADER */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          <div className="d-flex justify-content-between align-items-center mb-3 header-flex flex-wrap gap-2">
             <div>
-              <h2 className="page-title">Section Management</h2>
-              <p className="small-muted mb-0">
-                Create and manage sections for each department, batch, and academic year.
-              </p>
+              <h1 className="page-title">Section Management</h1>
+              <small className="text-muted">
+                Create and manage sections for departments and batches
+              </small>
             </div>
           </div>
 
-          {/* ERROR */}
-          {error && (
-            <div className="alert alert-danger py-2">{error}</div>
-          )}
-
-          {/* CREATE SECTIONS */}
-          <section className="card-surface">
+          {/* CREATE SECTIONS FORM */}
+          <section className="card-ui">
             <h5 className="mb-3">Create Sections</h5>
-
             <form onSubmit={handleSubmit}>
-              <div className="row g-3 mb-3">
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold">
-                    Department
-                  </label>
+              <div className="form-grid">
+                <div>
+                  <label className="form-label-strong">Department <span style={{ color: "red" }}>*</span></label>
                   <select
                     value={formData.department}
                     onChange={handleDepartmentChange}
                     className="form-control"
+                    required
                   >
                     <option value="">Select Department</option>
                     {departments.map((dept) => (
@@ -337,41 +342,31 @@ const SectionManagement = () => {
                   </select>
                 </div>
 
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold">
-                    Batch
-                  </label>
+                <div>
+                  <label className="form-label-strong">Batch <span style={{ color: "red" }}>*</span></label>
                   <select
                     value={formData.batch}
                     onChange={handleBatchChange}
-                    disabled={!formData.department}
                     className="form-control"
-                    style={{
-                      opacity: !formData.department ? 0.5 : 1,
-                    }}
+                    disabled={!formData.department}
                   >
                     <option value="">Select Batch</option>
                     {batches.map((batch) => (
-                      <option key={batch._id} value={batch.batchId}>
+                      <option key={batch._id} value={batch._id}>
                         {batch.batchName}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold">
-                    Year
-                  </label>
+                <div>
+                  <label className="form-label-strong">Year <span style={{ color: "red" }}>*</span></label>
                   <select
+                    name="year"
                     value={formData.year}
                     onChange={handleInputChange}
-                    name="year"
-                    disabled={!formData.batch}
                     className="form-control"
-                    style={{
-                      opacity: !formData.batch ? 0.5 : 1,
-                    }}
+                    disabled={!formData.batch}
                   >
                     <option value="">Select Year</option>
                     <option value="1">Year 1</option>
@@ -381,10 +376,8 @@ const SectionManagement = () => {
                   </select>
                 </div>
 
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold">
-                    Number of Sections
-                  </label>
+                <div>
+                  <label className="form-label-strong">Number of Sections</label>
                   <select
                     name="numberOfSections"
                     value={formData.numberOfSections}
@@ -400,10 +393,8 @@ const SectionManagement = () => {
                   </select>
                 </div>
 
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold">
-                    Student Capacity
-                  </label>
+                <div>
+                  <label className="form-label-strong">Student Capacity</label>
                   <input
                     type="number"
                     name="capacity"
@@ -415,47 +406,40 @@ const SectionManagement = () => {
                   />
                 </div>
 
-                <div className="col-md-4">
-                  <label className="form-label fw-semibold">
-                    Academic Year
-                  </label>
+                <div>
+                  <label className="form-label-strong">Academic Year</label>
                   <input
                     type="text"
                     value={formData.academicYear}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        academicYear: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
                     className="form-control"
+                    placeholder="e.g., 2025-2026"
                   />
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-primary"
-                style={{ minWidth: "180px" }}
-              >
-                {loading ? "Creating..." : "Create Sections"}
-              </button>
+                <div style={{ gridColumn: "1 / -1", display: "flex", gap: "12px" }}>
+                  <button
+                    type="submit"
+                    className="btn-main"
+                    disabled={loading || !formData.department || !formData.batch || !formData.year}
+                  >
+                    {loading ? "Creating..." : "Create Sections"}
+                  </button>
+                </div>
+              </div>
             </form>
           </section>
 
-          {/* VIEW SECTIONS FILTER */}
-          <section className="card-surface">
+          {/* VIEW FILTERS */}
+          <section className="card-ui">
             <h5 className="mb-3">View Sections</h5>
-
-            <div className="row g-3 mb-3">
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">
-                  Department (Optional)
-                </label>
+            <div className="filter-grid">
+              <div>
+                <label className="form-label-strong">Department</label>
                 <select
+                  name="department"
                   value={viewFilters.department}
-                  onChange={handleViewDepartmentChange}
+                  onChange={handleViewFiltersChange}
                   className="form-control"
                 >
                   <option value="">All Departments</option>
@@ -467,13 +451,12 @@ const SectionManagement = () => {
                 </select>
               </div>
 
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">
-                  Batch (Optional)
-                </label>
+              <div>
+                <label className="form-label-strong">Batch</label>
                 <select
+                  name="batch"
                   value={viewFilters.batch}
-                  onChange={handleViewBatchChange}
+                  onChange={handleViewFiltersChange}
                   className="form-control"
                 >
                   <option value="">All Batches</option>
@@ -485,42 +468,37 @@ const SectionManagement = () => {
                 </select>
               </div>
 
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">
-                  Academic Year
-                </label>
+              <div>
+                <label className="form-label-strong">Academic Year</label>
                 <input
                   type="text"
+                  name="academicYear"
                   value={viewFilters.academicYear}
-                  onChange={(e) =>
-                    setViewFilters({
-                      ...viewFilters,
-                      academicYear: e.target.value,
-                    })
-                  }
+                  onChange={handleViewFiltersChange}
                   className="form-control"
+                  placeholder="e.g., 2025-2026"
                 />
               </div>
-            </div>
 
-            <button
-              onClick={handleViewApply}
-              className="btn btn-success"
-              style={{ minWidth: "150px" }}
-            >
-              Load Sections
-            </button>
+              <div style={{ alignSelf: "end" }}>
+                <button
+                  onClick={handleViewApply}
+                  className="btn-secondary"
+                  style={{ height: "100%", padding: "12px 24px" }}
+                >
+                  Load Sections
+                </button>
+              </div>
+            </div>
           </section>
 
           {/* SECTIONS TABLE */}
           {sections.length > 0 && (
-            <section className="table-card">
-              <h5 className="mb-3">
-                Sections List ({sections.length})
-              </h5>
-              <div className="table-responsive">
-                <table className="table table-bordered table-striped align-middle">
-                  <thead className="table-primary">
+            <section className="card-ui">
+              <h5 className="mb-3">Sections List ({sections.length})</h5>
+              <div className="table-wrapper">
+                <table className="table table-hover table-bordered mb-0">
+                  <thead>
                     <tr>
                       <th>Section</th>
                       <th>Department</th>
@@ -535,41 +513,27 @@ const SectionManagement = () => {
                   <tbody>
                     {sections.map((section) => (
                       <tr key={section._id}>
-                        <td className="fw-semibold">
-                          {section.sectionName}
-                        </td>
-                        <td>
-                          {section.department?.departmentName || "N/A"}
-                        </td>
-                        <td>
-                          {section.batch?.batchName || "N/A"}
-                        </td>
+                        <td><strong>{section.sectionName}</strong></td>
+                        <td>{section.department?.departmentName || "N/A"}</td>
+                        <td>{section.batch?.batchName || "N/A"}</td>
+                        <td className="text-center">{section.year}</td>
+                        <td className="text-center">{section.capacity}</td>
+                        <td className="text-center">{section.academicYear}</td>
                         <td className="text-center">
-                          {section.year}
-                        </td>
-                        <td className="text-center">
-                          {section.capacity}
-                        </td>
-                        <td className="text-center">
-                          {section.academicYear}
-                        </td>
-                        <td
-                          className="text-center"
-                          style={{
-                            color: section.isActive
-                              ? "#28a745"
-                              : "#dc3545",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {section.isActive ? "Active" : "Inactive"}
+                          <span
+                            className="status-pill"
+                            style={{
+                              backgroundColor: section.isActive ? "#10b981" : "#ef4444"
+                            }}
+                          >
+                            {section.isActive ? "Active" : "Inactive"}
+                          </span>
                         </td>
                         <td className="text-center">
                           <button
-                            onClick={() =>
-                              handleDeleteSection(section._id)
-                            }
+                            onClick={() => handleDeleteSection(section._id)}
                             className="btn btn-sm btn-danger"
+                            style={{ borderRadius: "6px", padding: "4px 12px" }}
                           >
                             Deactivate
                           </button>
@@ -582,18 +546,12 @@ const SectionManagement = () => {
             </section>
           )}
 
-          {sections.length === 0 && viewFilters.department && (
-            <div
-              className="mt-3 text-center"
-              style={{
-                padding: "30px",
-                backgroundColor: "#f9f9f9",
-                borderRadius: "10px",
-                color: "#666",
-              }}
-            >
-              No sections found for the selected criteria
-            </div>
+          {sections.length === 0 && (viewFilters.department || viewFilters.batch || viewFilters.academicYear) && (
+            <section className="card-ui text-center py-5" style={{ backgroundColor: "#f8fafc" }}>
+              <div style={{ color: "#64748b", fontSize: "16px" }}>
+                No sections found for the selected criteria
+              </div>
+            </section>
           )}
         </main>
       </div>

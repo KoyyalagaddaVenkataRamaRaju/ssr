@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Image, Plus, Search, CheckCircle, XCircle, Edit3, Trash2 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -6,17 +7,13 @@ const AdminHeroCarousel = () => {
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
-
   const [showModal, setShowModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
   const [editingSlide, setEditingSlide] = useState(null);
   const [order, setOrder] = useState(0);
   const [isActive, setIsActive] = useState(true);
   const [preview, setPreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-
-  // UI controls
   const [searchQ, setSearchQ] = useState("");
   const [onlyActive, setOnlyActive] = useState(false);
   const [sortDir, setSortDir] = useState("asc");
@@ -24,7 +21,6 @@ const AdminHeroCarousel = () => {
   const API_URL = import.meta.env.VITE_API_URL;
   const fileInputRef = useRef(null);
 
-  // Fetch slides
   const fetchSlides = async () => {
     setLoading(true);
     try {
@@ -32,7 +28,7 @@ const AdminHeroCarousel = () => {
       const data = await res.json();
       if (data.success) setSlides(data.data || []);
       else showAlert("danger", "Failed to load slides");
-    } catch (err) {
+    } catch {
       showAlert("danger", "Network error");
     } finally {
       setLoading(false);
@@ -43,7 +39,6 @@ const AdminHeroCarousel = () => {
     fetchSlides();
   }, []);
 
-  // ESC closes modal
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape" && showModal) closeModal();
@@ -60,12 +55,10 @@ const AdminHeroCarousel = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const form = new FormData();
       form.append("order", order);
       form.append("isActive", isActive ? "true" : "false");
-
       if (imageFile) form.append("image", imageFile);
 
       const method = editingSlide ? "PUT" : "POST";
@@ -78,13 +71,11 @@ const AdminHeroCarousel = () => {
 
       if (data.success) {
         showAlert("success", editingSlide ? "Slide updated" : "Slide added");
-        await fetchSlides();
+        fetchSlides();
         closeModal();
       } else {
-        showAlert("danger", data.message || "Failed to save slide");
+        showAlert("danger", data.message || "Save failed");
       }
-    } catch (err) {
-      showAlert("danger", "Saving failed");
     } finally {
       setLoading(false);
     }
@@ -110,28 +101,18 @@ const AdminHeroCarousel = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this slide?")) return;
-
     try {
-      const res = await fetch(`${API_URL}/api/hero-carousel/slides/${id}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        showAlert("success", "Slide deleted");
-        fetchSlides();
-      } else {
-        showAlert("danger", "Delete failed");
-      }
-    } catch (err) {
-      showAlert("danger", "Network error");
+      await fetch(`${API_URL}/api/hero-carousel/slides/${id}`, { method: "DELETE" });
+      showAlert("success", "Slide deleted");
+      fetchSlides();
+    } catch {
+      showAlert("danger", "Delete failed");
     }
   };
 
   const onFileChange = (e) => {
     const f = e.target.files[0];
-    if (!f) return setPreview(null);
-
+    if (!f) return;
     setImageFile(f);
     setPreview(URL.createObjectURL(f));
   };
@@ -142,51 +123,91 @@ const AdminHeroCarousel = () => {
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
-  // Filter + sort
   const displayed = slides
-    .filter((s) => {
-      if (!searchQ) return true;
-      return String(s.order).includes(searchQ);
-    })
+    .filter((s) => (searchQ ? String(s.order).includes(searchQ) : true))
     .filter((s) => (onlyActive ? s.isActive : true))
-    .sort((a, b) => {
-      const A = Number(a.order || 0);
-      const B = Number(b.order || 0);
-      return sortDir === "asc" ? A - B : B - A;
-    });
+    .sort((a, b) =>
+      sortDir === "asc" ? a.order - b.order : b.order - a.order
+    );
 
   return (
     <>
-      {/* RESPONSIVE STYLING */}
       <style>{`
         :root {
-          --primary: #6a4ed9;
-          --accent: #ff8c42;
-          --muted: #6b6b6b;
+          --sidebar-width: 250px;
+          --sidebar-collapsed: 80px;
+          --primary: #ad8ff8;
+          --primary-dark: #8b6fe6;
+          --primary-soft: #f5f1ff;
+          --text-dark: #1e293b;
+          --text-muted: #64748b;
+          --border: #e5e7eb;
+          --success: #10b981;
+          --danger: #ef4444;
+          --warning: #f59e0b;
         }
 
-        .admin-page {
+        body {
+          margin: 0;
+          height: 100vh;
+          font-family: 'Inter', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+          background: linear-gradient(135deg, #f7f4ff, #eef2ff);
+          color: var(--text-dark);
+          overflow: hidden;
+        }
+
+        .admin-container {
           display: flex;
-          min-height: 100vh;
-          background: linear-gradient(135deg,#f3e5f5,#e0f7fa);
+          height: 100vh;
+          width: 100%;
         }
 
         .main-content {
-          flex: 1;
-          padding: 28px 36px;
-          transition: margin-left .32s ease;
+          flex-grow: 1;
+          padding: clamp(16px, 3vw, 36px);
+          transition: margin-left 0.36s cubic-bezier(.2,.9,.2,1);
+          overflow-y: auto;
+          height: 100vh;
+        }
+
+        .main-content::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+          background: var(--primary);
+          border-radius: 8px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb:hover {
+          background: var(--primary-dark);
+        }
+
+        .admin-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          margin-bottom: clamp(20px, 4vw, 32px);
+          flex-wrap: wrap;
         }
 
         .page-title {
-          font-size: 32px;
-          font-weight: 800;
-          color: var(--primary);
+          font-size: clamp(20px, 2.5vw, 32px);
+          font-weight: 700;
+          letter-spacing: -0.2px;
+          color: var(--primary-dark);
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 12px;
         }
 
-        .small-muted {
-          color: var(--muted);
-          font-size: 15px;
+        .subtitle {
+          font-size: clamp(14px, 2vw, 16px);
+          color: var(--text-muted);
           font-weight: 500;
+          margin: 0;
         }
 
         .toolbar {
@@ -196,288 +217,478 @@ const AdminHeroCarousel = () => {
           flex-wrap: wrap;
         }
 
-        .search-input {
-          min-width: 200px;
-          max-width: 380px;
-          width: 100%;
+        @media (max-width: 768px) {
+          .toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            gap: 8px;
+          }
         }
 
-        .cards-grid {
+        .search-wrapper {
+          position: relative;
+          min-width: 240px;
+          flex: 1;
+        }
+
+        .search-wrapper input {
+          padding-left: 44px !important;
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-muted);
+          z-index: 2;
+          pointer-events: none;
+        }
+
+        .carousel-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
-          gap: 18px;
-          margin-top: 18px;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: clamp(18px, 3vw, 24px);
+          margin-top: clamp(20px, 4vw, 32px);
         }
 
-        .card-advanced {
-          background: linear-gradient(180deg,#ffffff,#fbfbfd);
-          border-radius: 12px;
-          padding: 14px;
-          border: 1px solid rgba(110,100,180,0.06);
-          transition: .22s ease;
-          box-shadow: 0 6px 20px rgba(25,30,50,0.04);
+        @media (max-width: 640px) {
+          .carousel-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+        }
+
+        .slide-card {
+          background: linear-gradient(135deg, #ffffff, var(--primary-soft));
+          border-radius: 16px;
+          padding: clamp(20px, 4vw, 28px);
+          text-align: center;
+          box-shadow: 0 10px 30px rgba(173,143,248,0.18);
+          transition: all 0.3s ease;
+          border: 1px solid rgba(173,143,248,0.12);
+          height: 100%;
           display: flex;
           flex-direction: column;
           align-items: center;
         }
 
-        .slide-wrap {
-          width: 100%;
-          height: 150px;
-          background: #fafafa;
-          border-radius: 8px;
-          overflow: hidden;
+        .slide-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 20px 40px rgba(173,143,248,0.28);
         }
 
-        .slide-wrap img {
+        .slide-image {
+          width: 100%;
+          height: clamp(140px, 30vw, 180px);
+          background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+          border-radius: 12px;
+          overflow: hidden;
+          margin-bottom: 16px;
+          border: 2px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .slide-image img {
           width: 100%;
           height: 100%;
           object-fit: cover;
         }
 
+        .slide-meta {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          justify-content: center;
+          margin-bottom: 20px;
+        }
+
+        .badge-custom {
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: clamp(12px, 2vw, 14px);
+          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+        }
+
         .badge-order {
-          padding: 5px 8px;
-          font-size: 14px;
-          border-radius: 999px;
-          background: rgba(106,78,217,.08);
-          color: var(--primary);
-          font-weight: 700;
+          background: rgba(173,143,248,0.15);
+          color: var(--primary-dark);
         }
 
-        .badge-state {
-          padding: 5px 8px;
-          font-size: 14px;
-          border-radius: 999px;
-          color: white;
-          font-weight: 700;
+        .badge-active {
+          background: rgba(16,185,129,0.2);
+          color: var(--success);
         }
 
-        .badge-active { background: #28c76f; }
-        .badge-inactive { background: #99a0a6; }
-
-        .btn, .btn-sm {
-          font-size: 15px;
+        .badge-inactive {
+          background: rgba(148,163,184,0.3);
+          color: #94a3b8;
         }
 
-        /* Modal styling */
+        .card-actions {
+          margin-top: auto;
+          width: 100%;
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .btn-custom {
+          flex: 1;
+          padding: clamp(10px, 2vw, 12px) !important;
+          border-radius: 10px !important;
+          font-weight: 600 !important;
+          font-size: clamp(13px, 2vw, 14px) !important;
+          transition: all 0.3s ease !important;
+          border: none !important;
+          min-height: 44px;
+        }
+
+        .btn-edit-custom {
+          background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+          color: white !important;
+        }
+
+        .btn-edit-custom:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 8px 20px rgba(245,158,11,0.4) !important;
+        }
+
+        .btn-delete-custom {
+          background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+          color: white !important;
+        }
+
+        .btn-delete-custom:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 8px 20px rgba(239,68,68,0.4) !important;
+        }
+
         .modal-backdrop-custom {
           position: fixed;
           inset: 0;
-          background: rgba(7,8,12,0.36);
-          backdrop-filter: blur(4px);
+          background: rgba(7,8,12,0.5);
+          backdrop-filter: blur(12px);
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 12px;
+          padding: clamp(12px, 4vw, 24px);
           z-index: 2000;
         }
 
-        .modal-glass {
+        .modal-content-custom {
           width: 100%;
-          max-width: 400px;
-          background: rgba(255,255,255,.97);
-          padding: 14px 8px;
-          border-radius: 16px;
-          box-shadow: 0 10px 42px rgba(25,30,50,0.08);
-          backdrop-filter: blur(8px);
+          max-width: clamp(360px, 90vw, 500px);
+          background: rgba(255,255,255,0.98);
+          border-radius: 20px;
+          padding: clamp(24px, 6vw, 32px);
+          box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+          backdrop-filter: blur(16px);
+          max-height: 90vh;
+          overflow-y: auto;
         }
 
-        .preview-img {
-          max-height: 180px;
+        .modal-header-custom {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 24px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid var(--border);
+          gap: 12px;
+        }
+
+        .modal-title-custom {
+          font-size: clamp(18px, 4vw, 24px);
+          font-weight: 700;
+          color: var(--text-dark);
+          margin: 0;
+          flex: 1;
+        }
+
+        .preview-image {
           width: 100%;
+          max-height: clamp(160px, 40vw, 220px);
           object-fit: cover;
           border-radius: 12px;
+          border: 3px solid var(--border);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
 
-        @media (max-width: 992px) {
-          .main-content { padding: 22px 10px; }
+        .alert-custom {
+          border-radius: 12px;
+          border: none;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: clamp(12px, 2vw, 16px) clamp(20px, 3vw, 24px);
         }
-        @media(max-width: 840px) {
-          .main-content { padding: 8px 2vw; }
-          .toolbar { gap:6px; }
+
+        .alert-custom.success {
+          background: rgba(16,185,129,0.15);
+          color: var(--success);
+          border: 1px solid rgba(16,185,129,0.3);
         }
-        @media(max-width: 675px) {
-          .page-title { font-size: 20px; text-align:center; }
-          .toolbar { flex-direction: column; align-items: stretch; gap:6px; }
-          .modal-glass { max-width: 97vw; }
-          .main-content { padding:4px 1vw;}
-          .search-input { min-width:80px; }
-          .cards-grid { grid-template-columns:1fr; }
-          .card-advanced { padding: 8px; }
+
+        .alert-custom.danger {
+          background: rgba(239,68,68,0.15);
+          color: var(--danger);
+          border: 1px solid rgba(239,68,68,0.3);
         }
-        @media(max-width: 445px) {
-          .modal-glass { padding: 3vw 1vw;}
-          .main-content { padding:1vw; }
-          .page-title { font-size: 15px; }
-          .preview-img { max-height: 110px; }
-          .card-advanced { font-size:13px;}
-          .btn,.btn-sm { font-size:13px;}
+
+        .loading-state, .empty-state {
+          text-align: center;
+          padding: clamp(60px, 15vw, 100px);
+          color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+          .admin-header {
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+            gap: 16px;
+          }
+          .toolbar {
+            justify-content: center;
+          }
+          .card-actions {
+            flex-direction: column;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .modal-content-custom {
+            margin: 8px;
+            padding: clamp(16px, 8vw, 24px);
+          }
         }
       `}</style>
-      <div className="admin-page">
+
+      <div className="admin-container">
         <Sidebar onToggle={setSidebarOpen} />
-        <main
+        <main 
           className="main-content"
           style={{
-            marginLeft: sidebarOpen ? "250px" : "80px",
+            marginLeft: sidebarOpen 
+              ? "var(--sidebar-width)" 
+              : "var(--sidebar-collapsed)",
           }}
         >
           {/* HEADER */}
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          <div className="admin-header">
             <div>
-              <h2 className="page-title">Hero Carousel</h2>
-              <div className="small-muted">Manage homepage hero slider images</div>
+              <h1 className="page-title">
+                <Image size={28} />
+                Hero Carousel
+              </h1>
+              <p className="subtitle">Manage homepage hero slider images</p>
             </div>
 
             <div className="toolbar">
-              <div className="search-input">
+              <div className="search-wrapper position-relative">
+                <Search className="search-icon" size={20} />
                 <input
                   type="search"
-                  className="form-control"
-                  placeholder="Search by order…"
+                  className="form-control form-control-lg"
+                  placeholder="Search by order..."
                   value={searchQ}
                   onChange={(e) => setSearchQ(e.target.value)}
                 />
               </div>
-              <div className="d-flex gap-2 align-items-center">
-                <div className="form-check form-switch me-1">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={onlyActive}
-                    onChange={(e) => setOnlyActive(e.target.checked)}
-                  />
-                </div>
-                <label className="small-muted me-2">Active only</label>
+
+              <div className="form-check form-switch">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={onlyActive}
+                  onChange={(e) => setOnlyActive(e.target.checked)}
+                  id="activeOnly"
+                />
+                <label className="form-check-label text-muted fw-medium" htmlFor="activeOnly">
+                  Active only
+                </label>
               </div>
-              <div className="btn-group">
+
+              <div className="btn-group" role="group">
                 <button
-                  className={`btn btn-sm btn-outline-secondary ${sortDir === "asc" ? "active" : ""}`}
+                  className={`btn btn-outline-primary btn-sm ${sortDir === "asc" ? "active" : ""}`}
                   onClick={() => setSortDir("asc")}
                 >
-                  Order ↑
+                  ↑ Order
                 </button>
                 <button
-                  className={`btn btn-sm btn-outline-secondary ${sortDir === "desc" ? "active" : ""}`}
+                  className={`btn btn-outline-primary btn-sm ${sortDir === "desc" ? "active" : ""}`}
                   onClick={() => setSortDir("desc")}
                 >
-                  Order ↓
+                  ↓ Order
                 </button>
               </div>
-              <button
-                className="btn btn-primary"
+
+              <button 
+                className="btn btn-primary px-4 fw-semibold" 
                 style={{ background: "var(--primary)", border: "none" }}
                 onClick={() => setShowModal(true)}
               >
-                + Add
+                <Plus size={20} className="me-2" />
+                Add Slide
               </button>
             </div>
           </div>
+
           {/* ALERT */}
           {alert && (
-            <div className={`alert alert-${alert.type}`}>
+            <div className={`alert-custom alert alert-${alert.type} mb-4`}>
+              {alert.type === "success" ? <CheckCircle size={20} /> : <XCircle size={20} />}
               {alert.message}
             </div>
           )}
 
-          {/* GRID */}
+          {/* CONTENT */}
           {loading ? (
-            <div className="small-muted">Loading slides…</div>
+            <div className="loading-state">
+              <div style={{ fontSize: 'clamp(48px, 12vw, 64px)', marginBottom: '20px', opacity: 0.6 }}>
+                ⏳
+              </div>
+              Loading slides...
+            </div>
           ) : displayed.length === 0 ? (
-            <div className="small-muted mt-3">No slides found.</div>
+            <div className="empty-state">
+              <div style={{ fontSize: 'clamp(64px, 16vw, 80px)', marginBottom: '24px', opacity: 0.6 }}>
+                🖼️
+              </div>
+              {searchQ || onlyActive ? "No slides match your filters" : "No slides available. Add your first slide!"}
+            </div>
           ) : (
-            <section className="cards-grid mt-3">
+            <div className="carousel-grid">
               {displayed.map((slide) => (
-                <article key={slide._id} className="card-advanced">
-                  <div className="slide-wrap">
-                    <img src={slide.imageUrl} alt="Slide" />
+                <div key={slide._id} className="slide-card h-100">
+                  <div className="slide-image">
+                    <img src={slide.imageUrl} alt={`Slide ${slide.order}`} />
                   </div>
-                  <div className="meta d-flex gap-2 mt-3">
-                    <div className="badge-order">Order: {slide.order}</div>
-                    <div
-                      className={`badge-state ${
-                        slide.isActive ? "badge-active" : "badge-inactive"
-                      }`}
-                    >
+                  <div className="slide-meta">
+                    <div className="badge-custom badge-order">
+                      Order: {slide.order}
+                    </div>
+                    <div className={`badge-custom ${slide.isActive ? "badge-active" : "badge-inactive"}`}>
                       {slide.isActive ? "Active" : "Inactive"}
                     </div>
                   </div>
-                  <div className="card-actions mt-2">
-                    <button
-                      className="btn btn-outline-warning btn-sm me-2"
+                  <div className="card-actions">
+                    <button 
+                      className="btn-custom btn-edit-custom btn" 
                       onClick={() => handleEdit(slide)}
                     >
+                      <Edit3 size={16} className="me-1" />
                       Edit
                     </button>
-                    <button
-                      className="btn btn-outline-danger btn-sm"
+                    <button 
+                      className="btn-custom btn-delete-custom btn" 
                       onClick={() => handleDelete(slide._id)}
                     >
+                      <Trash2 size={16} className="me-1" />
                       Delete
                     </button>
                   </div>
-                </article>
+                </div>
               ))}
-            </section>
+            </div>
           )}
+
           {/* MODAL */}
           {showModal && (
-            <div className="modal-backdrop-custom">
-              <div className="modal-glass">
-                <header className="modal-header d-flex justify-content-between">
-                  <h3 className="modal-title">
-                    {editingSlide ? "Edit Slide" : "Add Slide"}
+            <div className="modal-backdrop-custom" onClick={closeModal}>
+              <div className="modal-content-custom" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header-custom">
+                  <h3 className="modal-title-custom">
+                    {editingSlide ? "Edit Slide" : "Add New Slide"}
                   </h3>
                   <div className="d-flex gap-2">
-                    <button className="btn btn-light btn-sm" onClick={clearImage}>
-                      Clear Image
-                    </button>
+                    {preview && (
+                      <button className="btn btn-outline-secondary btn-sm" onClick={clearImage}>
+                        Clear
+                      </button>
+                    )}
                     <button className="btn btn-outline-secondary btn-sm" onClick={closeModal}>
-                      Close
+                      <XCircle size={16} />
                     </button>
                   </div>
-                </header>
+                </div>
+
                 <form onSubmit={handleSubmit}>
-                  <div className="form-group mt-3">
-                    <label className="form-label">Slide Image</label>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Slide Image</label>
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
-                      className="form-control"
+                      className="form-control form-control-lg"
                       onChange={onFileChange}
                       required={!editingSlide}
                     />
                   </div>
+
                   {preview && (
-                    <div className="text-center mt-3">
-                      <img src={preview} className="preview-img" alt="Preview" />
+                    <div className="text-center mb-4">
+                      <img src={preview} className="preview-image" alt="Preview" />
                     </div>
                   )}
-                  <div className="form-group mt-3">
-                    <label className="form-label">Order</label>
+
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold">Order</label>
                     <input
                       type="number"
-                      className="form-control"
+                      className="form-control form-control-lg"
                       value={order}
-                      onChange={(e) => setOrder(e.target.value)}
+                      onChange={(e) => setOrder(Number(e.target.value))}
+                      min="0"
+                      placeholder="Enter order number"
                     />
                   </div>
-                  <div className="form-check form-switch mt-3">
+
+                  <div className="form-check form-switch mb-4">
                     <input
-                      type="checkbox"
                       className="form-check-input"
+                      type="checkbox"
                       checked={isActive}
                       onChange={(e) => setIsActive(e.target.checked)}
+                      id="slideActive"
                     />
-                    <label className="form-check-label">Active</label>
+                    <label className="form-check-label fw-medium" htmlFor="slideActive">
+                      Active
+                    </label>
                   </div>
-                  <div className="d-flex justify-content-end mt-3 gap-2">
-                    <button type="button" className="btn btn-secondary" onClick={closeModal}>
+
+                  <div className="d-flex gap-3 justify-content-end">
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-secondary px-4" 
+                      onClick={closeModal}
+                    >
                       Cancel
                     </button>
-                    <button className="btn btn-primary btn-primary-adv">
-                      {editingSlide ? "Update" : "Add"}
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary px-4 fw-semibold"
+                      disabled={loading}
+                      style={{ background: "var(--primary)", border: "none" }}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" />
+                          Saving...
+                        </>
+                      ) : editingSlide ? (
+                        "Update Slide"
+                      ) : (
+                        "Add Slide"
+                      )}
                     </button>
                   </div>
                 </form>

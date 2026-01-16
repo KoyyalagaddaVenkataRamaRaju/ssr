@@ -356,11 +356,7 @@ const Sidebar = ({ onToggle }) => {
                 icon: Image,
                 path: "/admin/recruiters",
               },
-              {
-                name: "Gallery",
-                icon: Images,
-                path: "/admin/gallery",
-              },
+              
             ],
           },
           
