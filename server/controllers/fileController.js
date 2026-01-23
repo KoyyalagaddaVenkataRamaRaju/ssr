@@ -1,10 +1,5 @@
 import Application from '../models/Application.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { uploadToS3, deleteFromS3 } from '../config/s3.js';
 
 export const uploadFile = async (req, res) => {
   try {
@@ -14,32 +9,29 @@ export const uploadFile = async (req, res) => {
         message: 'No file uploaded',
       });
     }
-    // ensure uploads/applications directory exists
-    const uploadDir = path.join(__dirname, '../uploads/applications');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    // create a safe unique filename
-    const timestamp = Date.now();
-    const safeName = `${timestamp}-${req.file.originalname.replace(/[^a-zA-Z0-9.\-]/g, '_')}`;
-    const filePath = path.join(uploadDir, safeName);
-
-    // write buffer to disk
-    fs.writeFileSync(filePath, req.file.buffer);
-
-    const urlPath = `/uploads/applications/${safeName}`;
+    // Upload to S3
+    const folder = req.body.folder || 'applications';
+    const result = await uploadToS3(
+      req.file.originalname,
+      req.file.buffer,
+      req.file.mimetype,
+      folder
+    );
 
     const fileObject = {
-      filename: safeName,
+      filename: result.fileName,
       originalName: req.file.originalname,
       mimetype: req.file.mimetype,
       size: req.file.size,
-      url: urlPath,
+      url: result.url,
+      s3Key: result.key,
       uploadedAt: new Date(),
     };
 
     return res.status(200).json({
       success: true,
-      message: 'File uploaded successfully',
+      message: 'File uploaded successfully to S3',
       file: fileObject,
     });
   } catch (error) {
@@ -61,36 +53,28 @@ export const uploadMultipleFiles = async (req, res) => {
       });
     }
 
-    const processedFiles = req.files.map((file) => ({
-      filename: file.originalname,
+    const folder = req.body.folder || 'applications';
+
+    // Upload all files to S3 in parallel
+    const uploadPromises = req.files.map((file) =>
+      uploadToS3(file.originalname, file.buffer, file.mimetype, folder)
+    );
+
+    const uploadResults = await Promise.all(uploadPromises);
+
+    const filesSaved = req.files.map((file, index) => ({
+      filename: uploadResults[index].fileName,
+      originalName: file.originalname,
       mimetype: file.mimetype,
       size: file.size,
-      data: file.buffer.toString('base64'),
+      url: uploadResults[index].url,
+      s3Key: uploadResults[index].key,
       uploadedAt: new Date(),
     }));
 
-    // save multiple files to disk and return urls
-    const uploadDir = path.join(__dirname, '../uploads/applications');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-    const filesSaved = req.files.map((file) => {
-      const timestamp = Date.now() + Math.floor(Math.random() * 1000);
-      const safeName = `${timestamp}-${file.originalname.replace(/[^a-zA-Z0-9.\-]/g, '_')}`;
-      const filePath = path.join(uploadDir, safeName);
-      fs.writeFileSync(filePath, file.buffer);
-      return {
-        filename: safeName,
-        originalName: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-        url: `/uploads/applications/${safeName}`,
-        uploadedAt: new Date(),
-      };
-    });
-
     return res.status(200).json({
       success: true,
-      message: 'Files uploaded successfully',
+      message: 'Files uploaded successfully to S3',
       files: filesSaved,
     });
   } catch (error) {

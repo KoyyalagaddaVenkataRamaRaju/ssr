@@ -6,6 +6,7 @@ import { fetchBatchesByDepartment, fetchSectionsByDepartment } from '../services
 import { adminRegisterUser } from '../services/authService';
 import { useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import FileLink from '../components/FileLink';
 import {
   ArrowLeft,
   User,
@@ -380,27 +381,6 @@ function ApplicationDetails() {
   );
 }
 
-/* ---------- FILE LINK COMPONENT ---------- */
-const FileLink = ({ label, file }) => {
-  if (!file?.url) return null;
-
-  const isImage = /\.(jpg|jpeg|png)$/i.test(file.url);
-
-  return (
-    <div style={styles.fileRow}>
-      <span style={styles.fileLabel}>{label}</span>
-      {isImage ? (
-        <a href={file.url} target="_blank" rel="noreferrer">
-          <img src={file.url} alt={label} style={styles.filePreview} />
-        </a>
-      ) : (
-        <a href={file.url} target="_blank" rel="noreferrer" style={styles.fileBtn}>
-          View / Download
-        </a>
-      )}
-    </div>
-  );
-};
 
 /* ---------- SMALL UI COMPONENTS ---------- */
 const Card = ({ title, icon, children }) => (
@@ -439,11 +419,6 @@ const styles = {
   backBtn: { display: 'flex', alignItems: 'center', gap: 6, background: '#334155', color: '#fff', padding: '10px 16px', borderRadius: 8, border: 'none' },
   primaryBtn: { background: '#2563eb', color: '#fff', padding: '12px 18px', borderRadius: 10, border: 'none' },
   saveBtn: { marginTop: 14, width: '100%', background: '#10b981', color: '#fff', padding: 14, borderRadius: 12, border: 'none', fontWeight: 800 },
-
-  fileRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px dashed #e5e7eb' },
-  fileLabel: { fontWeight: 600 },
-  fileBtn: { padding: '6px 12px', background: '#2563eb', color: '#fff', borderRadius: 6, fontSize: 13, textDecoration: 'none' },
-  filePreview: { width: 60, height: 60, objectFit: 'cover', borderRadius: 8, border: '1px solid #e5e7eb' },
 
   center: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 },
 };
